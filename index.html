@@ -77,28 +77,16 @@
 		<div id="uiInGame" class="unselectable ignore-pointer">
 			
 			<div id="actionsInactive" class="hidden">
-				<!--
+				
 				<ul id="navStart"  class="action-item nav nav-inline nav-buttons ignore-pointer hidden">
-					<li id="buttonLoad" class="disabled dim">
-						<button class="btn btn-large btn-inverse btn-circle-large">
-							<img src="img/load_rev_64.png" class="iconk-large">
-							<h2><small>load</small></h2>
-						</button>
-					</li>
 					<li id="buttonStart">
 						<button class="btn btn-huge btn-inverse btn-circle-giant">
-							<img src="img/face_perfect_rev_64.png" class="iconk-giant">
+							<img src="img/apple-touch-icon-precomposed.png" class="iconk-giant">
 							<h2 class="logo-type">Start</h2>
 						</button>
 					</li>
-					<li id="buttonContinue" class="disabled dim">
-						<button class="btn btn-large btn-inverse btn-circle-large">
-							<img src="img/rock_rev_64.png" class="iconk-large">
-							<h2><small>continue</small></h2>
-						</button>
-					</li>
 				</ul>
-				-->
+				
 			</div>
 			
 			<div id="actionsActive" class="container-center ignore-pointer">
@@ -128,7 +116,7 @@
 								<li class="dropdown">
 									<a href="#" id="logoDropdownToggle" class="dropdown-toggle" data-toggle="dropdown">
 										<div class="logo">
-											<img src="img/logo.png" alt="onGameStart US 2013" class="iconk-small">
+											<img src="img/logo.png" alt="onGameStart US 2013" class="iconk">
 											<h1 class="logo-type visuallyhidden">onGameStart US 2013</h1>
 											<b class="caret"></b>
 										</div>
@@ -174,25 +162,24 @@
 								<ul class="nav nav-pills">
 									<li>
 										<a href="#howto" class="nav-icon">
-											<img src="img/keyboard_rev_64.png" class="iconk-small">
+											<img src="img/accessibility_rev_64.png" class="iconk-large">
 											<p class="inline-type">How to Play</p>
 										</a>
 									</li>
 									<li>
 										<a href="#about" class="nav-icon">
-											<img src="img/info_rev_64.png" class="iconk-small">
+											<img src="img/info_rev_64.png" class="iconk-large">
 											<p class="inline-type">About</p>
 										</a>
 									</li>
 									<li>
 										<a href="#speakers" class="nav-icon">
-											<img src="img/talk_rev_64.png" class="iconk-small">
+											<img src="img/talk_rev_64.png" class="iconk-large">
 											<p class="inline-type">Speakers</p>
 										</a>
 									</li>
 								</ul>
 							</div>
-							-->
 							<!-- END navigation -->
 						</div>
 					</div>
@@ -332,15 +319,17 @@
 				<!-- END menuActive -->
 				
 				<!-- howto -->
-				<section id="howto" class="menu hidden active">
+				<section id="howto" class="menu hidden">
 					
 					<div class="menu-inner container">
 						
-						<header class="subhead container-center">
-							<img src="img/keyboard_64.png"  class="iconk-giant">
-							<h1>How to Play</h1>
-							<h2 class="sidekick-type">Mouse, Keyboard, or Touch!</h2>
-							<div id="navFarming" class="subnavbar is-sticky">
+						<header class="subhead">
+							<div class="container-center">
+								<img src="img/accessibility_64.png"  class="iconk-giant">
+								<h1 class="inline-type">How to Play</h1>
+								<h2 class="sidekick-type">Mouse & Keyboard or Touch!</h2>
+							</div>
+							<div id="navHowto" class="subnavbar is-sticky">
 								<div class="navbar-inner">
 									<div class="container">
 										<ul class="nav nav-pills pull-left">
@@ -373,11 +362,13 @@
 					
 					<div class="menu-inner container">
 						
-						<header class="subhead container-center">
-							<img src="img/info_64.png"  class="iconk-giant">
-							<h1>About</h1>
-							<h2 class="sidekick-type">HTML5 Game Conference</h2>
-							<div id="navFarming" class="subnavbar is-sticky">
+						<header class="subhead">
+							<div class="container-center">
+								<img src="img/info_64.png"  class="iconk-giant">
+								<h1 class="inline-type">About</h1>
+								<h2 class="sidekick-type">HTML5 Game Conference</h2>
+							</div>
+							<div id="navAbout" class="subnavbar is-sticky">
 								<div class="navbar-inner">
 									<div class="container">
 										<ul class="nav nav-pills pull-left">
@@ -417,8 +408,11 @@
 							<div class="row">
 								<div class="span12">
 									<p>&copy; onGameStart US 2013</p>
-									<p>Conference presented by <a href="http://michalbe.blogspot.com/" target="_blank">Michal Budzynski</a></p>
-									<p>Designed and developed by <a href="http://www.collinhover.com/" target="_blank">Collin Hover</a></p>
+									<p>
+										Conference presented by <a href="http://michalbe.blogspot.com/" target="_blank">Michal Budzynski</a><br/>
+										Website & Game developed by <a href="http://www.collinhover.com/" target="_blank">Collin Hover</a><br/>
+										Visuals by <a href="http://michalbe.blogspot.com/" target="_blank">Michal Budzynski</a></p>
+									</p>
 								</div>
 							</div>
 						</footer>
@@ -434,10 +428,12 @@
 					
 					<div class="menu-inner container">
 						
-						<header class="subhead container-center">
-							<img src="img/talk_64.png"  class="iconk-giant">
-							<h1>Speakers</h1>
-							<h2 class="sidekick-type">Look at all these people!</h2>
+						<header class="subhead">
+							<div class="container-center">
+								<img src="img/talk_64.png"  class="iconk-giant">
+								<h1 class="inline-type">Speakers</h1>
+								<h2 class="sidekick-type">Look at all these people!</h2>
+							</div>
 						</header>
 						
 					</div>
