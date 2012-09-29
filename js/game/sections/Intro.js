@@ -88,6 +88,10 @@
 			
 			_Player.enable();
 			
+			// constrain camera controls
+			
+			//main.cameraControls.
+			
 			// signals
 			
 			shared.signals.onGameUpdated.add( update );

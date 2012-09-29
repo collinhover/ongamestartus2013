@@ -181,11 +181,6 @@
 	
 	function signed_angle_between_coplanar_vectors ( vFrom, vTo, vNormal ) {
 		
-		/*var sina = |Va x Vb| / ( |Va| * |Vb| );
-			cosa = (Va . Vb) / ( |Va| * |Vb| );
-
-		angle = atan2( sina, cosa );*/
-		
 		var angle = angle_between_vectors( vFrom, vTo ),
 			sign = vNormal.dot( axis_between_vectors( vFrom, vTo ) );
 		

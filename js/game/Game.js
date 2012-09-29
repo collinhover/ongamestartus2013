@@ -497,6 +497,7 @@ var OGSUS = (function (main) {
 		// camera controls
 		
 		main.cameraControls = new _CameraControls.Instance( main.camera, main.world );
+		main.cameraControls.enable();
 		
 		// passes
         
@@ -1055,6 +1056,7 @@ var OGSUS = (function (main) {
 			_Player.enable();
 			
 			main.cameraControls.target = _Player.character;
+			main.cameraControls.rotationMaxX = Math.PI * 0.25;
 			
 			// signal
 			

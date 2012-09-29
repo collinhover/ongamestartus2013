@@ -163,9 +163,9 @@
 		
 		// pointer
 		
-		actions.add( 'pointer', {
+		/*actions.add( 'pointer', {
 			eventCallbacks: {
-				/*drag: function ( parameters ) {
+				drag: function ( parameters ) {
 					
 					// start rotating camera if character is not acting
 					
@@ -182,7 +182,7 @@
 					
 					main.cameraControls.rotate( undefined, true );
 					
-				},*/
+				},
 				wheel: function ( parameters ) {
 					
 					main.cameraControls.zoom( parameters.event );
@@ -190,7 +190,7 @@
 				}
 			},
 			deactivateCallbacks: 'dragend'
-		} );
+		} );*/
 		
 		// wasd / arrows
 		
