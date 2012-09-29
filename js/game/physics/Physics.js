@@ -532,11 +532,11 @@
 		velocityForceRotatedLength = velocityForceRotated.length();
 		
 		// get bounding radius
-		boundingRadius = rigidBody.radius;
+		//boundingRadius = rigidBody.radius;
 		
 		// get bounding radius in direction of velocity
 		// more accurate than plain radius, but about 4x more cost
-		//boundingRadius = rigidBody.bounds_in_direction( velocityForceRotated ).length();
+		boundingRadius = rigidBody.bounds_in_direction( velocityForceRotated ).length();
 		
 		// rotate offset if needed
 		
@@ -597,7 +597,7 @@
 		
 		// if velocity low enough, set zero
 		
-		if ( velocity.collision || velocityForce.length() < 0.01 ) {
+		if ( velocityForce.length() < 0.01 ) {
 			velocityForce.multiplyScalar( 0 );
 		}
 		
