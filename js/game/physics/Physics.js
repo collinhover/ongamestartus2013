@@ -502,7 +502,7 @@
 			intersection,
 			intersectionDist;
 		
-		if ( rigidBody.dynamic !== true || velocityForce.isZero() === true ) {
+		if ( rigidBody.dynamic !== true || velocity.lockedUntilChanged === true || velocityForce.isZero() === true ) {
 			
 			velocity.moving = false;
 			
@@ -532,15 +532,15 @@
 		velocityForceRotatedLength = velocityForceRotated.length();
 		
 		// get bounding radius
-		//boundingRadius = rigidBody.radius;
+		boundingRadius = rigidBody.radius;
 		
 		// get bounding radius in direction of velocity
 		// more accurate than plain radius, but about 4x more cost
-		boundingRadius = rigidBody.offset_in_direction( velocityForceRotated ).length();
+		//boundingRadius = rigidBody.bounds_in_direction( velocityForceRotated ).length();
 		
 		// rotate offset if needed
 		
-		if ( velocityOffset.length() > 0 ) {
+		if ( velocityOffset.lengthSq() > 0 ) {
 			
 			velocityOffset = _VectorHelper.rotate_vector3_to_mesh_rotation( mesh, velocityOffset );
 			
@@ -558,7 +558,7 @@
 		} );
 		
 		// modify velocity based on intersection distances to avoid passing through or into objects
-		
+		//console.log( 'intersection', intersection, 'velocityForceRotatedLength', velocityForceRotatedLength, 'boundingRadius', boundingRadius );
 		if ( intersection ) {
 			
 			velocity.intersection = intersection;
@@ -572,7 +572,7 @@
 				velocityForceScalar = ( intersectionDist - boundingRadius ) / velocityForceRotatedLength;
 				
 				velocityForceRotated.multiplyScalar( velocityForceScalar );
-				
+				//console.log( ' > intersection too close: intersectionDist', intersectionDist, ' velocityForceScalar ', velocityForceScalar );
 				velocity.moving = false;
 				
 				velocity.collision = intersection;
@@ -584,7 +584,7 @@
 			
 			velocity.intersection = false;
 			velocity.collision = false;
-		
+			
 		}
 		
 		// add velocity to position
@@ -597,7 +597,7 @@
 		
 		// if velocity low enough, set zero
 		
-		if ( velocityForce.length() < 0.01 ) {
+		if ( velocity.collision || velocityForce.length() < 0.01 ) {
 			velocityForce.multiplyScalar( 0 );
 		}
 		

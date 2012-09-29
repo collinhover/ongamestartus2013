@@ -328,7 +328,7 @@
 				distanceSpeedMod = Math.min( 1, distance / Math.max( this.distanceSpeed, this.distanceThresholdMax ) );
 				
 				// normal / magnitude to target
-				console.log( 'this.distanceSpeed', this.distanceSpeed );
+				
 				this.distanceNormal.sub( target.position, this.position ).normalize();
 				this.distanceMagnitude.copy( this.distanceNormal ).multiplyScalar( this.distanceSpeed * distanceSpeedMod );
 				

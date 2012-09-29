@@ -50,6 +50,7 @@
 		// functions
 		
 		_VectorHelper.clamp = clamp;
+		_VectorHelper.different = different;
 		_VectorHelper.distance_to = distance_to;
 		_VectorHelper.rotate_vector3_relative_to = rotate_vector3_relative_to;
 		_VectorHelper.rotate_vector3_to_mesh_rotation = rotate_vector3_to_mesh_rotation;
@@ -79,6 +80,16 @@
 		v.z = _MathHelper.clamp( v.z, vmin.z, vmax.z );
 		
 		return v;
+		
+	}
+	
+	function different ( va, vb ) {
+		
+		if ( va.x !== vb.x || va.y !== vb.y || va.z !== vb.z || ( va.hasOwnProperty( 'w' ) && va.w !== vb.w ) ) {
+			return true;
+		}
+		
+		return false;
 		
 	}
 	
@@ -218,7 +229,7 @@
 			// if new axis is exactly opposite of current
 			// replace new axis with orthonormal axis
 			
-			if ( axis.length() === 0 ) {
+			if ( axis.lengthSq === 0 ) {
 				
 				axis.copy( axisOrthonormal && axisOrthonormal.lengthSq() > 0 ? axisOrthonormal : get_orthonormal_vectors( axisFrom, true ) );
 				
