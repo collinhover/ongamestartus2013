@@ -169,9 +169,7 @@ var OGSUS = (function (main) {
             onLoadListCompleted : new signals.Signal(),
             onLoadAllCompleted : new signals.Signal(),
 			
-			onAssetReady : new signals.Signal(),
-            
-            onError : new signals.Signal()
+			onAssetReady : new signals.Signal()
             
         };
         
@@ -1843,8 +1841,6 @@ var OGSUS = (function (main) {
     }
 	
 	function on_error ( error, url, lineNumber ) {
-		
-		shared.signals.onError.dispatch( error, url, lineNumber );
 		
 		// pause game
 		
