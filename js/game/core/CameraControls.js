@@ -85,8 +85,6 @@
 				this.boundRadius = this._target instanceof THREE.Object3D ? this._target.boundRadius : this.boundRadiusBase;
 				this.boundRadiusPct = _MathHelper.clamp( this.boundRadius / this.boundRadiusBase, this.boundRadiusPctMin, this.boundRadiusPctMax );
 				
-				this.positionMove.z = this.boundRadiusMod * this.boundRadius;
-				
 			}
 		});
 		
@@ -127,6 +125,7 @@
 		this.positionOffset = new THREE.Vector3();
 		this.positionOffsetTarget = new THREE.Vector3();
 		this.positionOffsetSpeed = 0.1;
+		this.positionOffsetSpeedWhenNew = 0.05;
 		this.boundRadiusBase = 500;
 		this.boundRadiusModMin = 1.25;
 		this.boundRadiusModMax = this.boundRadiusMod = 3;
@@ -151,6 +150,7 @@
 		this.rotationMinY = -Math.PI;
 		this.rotationSpeed = 0.1;
 		this.rotationSpeedDelta = 0.001;
+		this.rotationReturnDecay = 0.8;
 		this.rotationDeltaDecay = 0.8;
 		
 		this.distanceThresholdPassed = false;
@@ -231,13 +231,13 @@
 	
 	function rotate_update () {
 		
-		var target = this.target;
+		var target = this._target;
 		
 		// while moving, return to 0 rotation offset
 		
 		if ( this.targetNew === true || ( target && target.moving === true && this.rotating !== true ) ) {
 			
-			this.rotationRotated.set( 0, 0, 0 );
+			this.rotationRotated.multiplyScalar( this.rotationReturnDecay );
 			
 		}
 		else {
@@ -280,7 +280,8 @@
 		
 		this.positionOffsetTarget.add( this.positionBase, this.positionMove );
 		
-		this.positionOffset.lerpSelf( this.positionOffsetTarget, this.positionOffsetSpeed );
+		this.positionOffset.lerpSelf( this.positionOffsetTarget, this.targetNew === true ? this.positionOffsetSpeedWhenNew : this.positionOffsetSpeed );
+		
 		
 	}
 	
@@ -292,7 +293,7 @@
 	
 	function update () {
 		
-		var target = this.target,
+		var target = this._target,
 			scale,
 			rigidBody,
 			gravityBody,
@@ -307,11 +308,6 @@
 			positionOffsetScaled = this.utilVec31Update,
 			rotationTargetNew = this.utilQ32Update,
 			cameraLerpDelta = this.cameraLerpDelta;
-		
-		// update
-		
-		rotate_update.call( this );
-		zoom_update.call( this );
 		
 		// handle target
 		
@@ -341,15 +337,6 @@
 				this.targetNew = true;
 				this.distanceSpeedPctWhenNew = 0;
 				this.cameraLerpDeltaWhenNew = 0;
-				
-				if ( typeof this.targetLast !== 'undefined' ) {
-					
-					positionOffsetScaled.set( 0, 0, this.targetLast.boundRadius * this.boundRadiusMod ).multiplyScalar( scale );
-					this.camera.quaternion.multiplyVector3( positionOffsetScaled );
-					
-					this.position.addSelf( positionOffsetScaled );
-					
-				}
 					
 			}
 			
@@ -472,6 +459,11 @@
 			qToNew = _PhysicsHelper.rotate_relative_to_source ( this.quaternion, this.position, upReferencePosition, this.up, this.forward, 1, true );
 			
 		}
+		
+		// update
+		
+		rotate_update.call( this );
+		zoom_update.call( this );
 		
 		// get camera target rotation
 		
