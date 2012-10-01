@@ -327,12 +327,10 @@
 		
 		this.velocityMovement = new VelocityTracker( { 
 			damping: parameters.movementDamping,
-			offset: parameters.movementOffset,
 			relativeRotation: this.mesh
 		} );
 		this.velocityGravity = new VelocityTracker( { 
 			damping: parameters.gravityDamping,
-			offset: parameters.gravityOffset
 		} );
 		
 		// safety net
@@ -378,9 +376,7 @@
 		parameters.dynamic = this.dynamic;
 		parameters.mass = this.mass;
 		parameters.movementDamping = this.velocityMovement.damping.clone();
-		parameters.movementOffset = this.velocityMovement.offset.clone();
 		parameters.gravityDamping = this.velocityGravity.damping.clone();
-		parameters.gravityOffset = this.velocityGravity.offset.clone();
 		
 		return new _RigidBody.Instance( mesh, parameters );
 		
