@@ -768,7 +768,6 @@
 			
 			main.scene.add( character );
 			character.quaternion.setFromAxisAngle( new THREE.Vector3( 0, 1, 0 ), Math.PI );
-			_PhysicsHelper.rotate_relative_to_source ( character.quaternion, character.position, main.world, character.rigidBody.up, character.rigidBody.forward, 1, character.rigidBody )
 			
 			showing = true;
 			

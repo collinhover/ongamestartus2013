@@ -207,7 +207,7 @@
 		
 		// check for invalid axes, i.e. axis with all 0
 		
-		if ( axisTo.lengthSq() === 0 || axisFrom.lengthSq() === 0 ) {
+		if ( typeof axisTo === 'undefined' || axisTo.lengthSq() === 0 || axisFrom.lengthSq() === 0 ) {
 			
 			return false;
 			
@@ -224,7 +224,7 @@
 			// if new axis is exactly opposite of current
 			// replace new axis with orthonormal axis
 			
-			if ( axis.lengthSq === 0 ) {
+			if ( axis.lengthSq() === 0 ) {
 				
 				axis.copy( axisOrthonormal && axisOrthonormal.lengthSq() > 0 ? axisOrthonormal : get_orthonormal_vectors( axisFrom, true ) );
 				

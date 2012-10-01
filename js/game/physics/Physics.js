@@ -162,6 +162,10 @@
 				
 				if ( adding === true ) {
 					
+					// snap rotation on next update
+					
+					rigidBody.rotateSnapOnNextUpdate = true;
+					
 					// bodies
 					
 					if ( index === -1 ) {
@@ -289,9 +293,8 @@
 			gravityOrigin = this.utilVec31Update,
 			gravityMagnitude = this.utilVec32Update,
 			gravityUp = this.utilVec33Update,
+			lerpDelta,
 			velocityGravity,
-			velocityGravityForceUpDir = this.utilVec34Update,
-			velocityGravityForceUpDirRot = this.utilVec35Update,
 			velocityMovement,
 			safetynet;
 		
@@ -333,29 +336,37 @@
 				
 			}
 			
+			// add non rotated gravity to gravity velocity
+			
 			gravityMagnitude.multiplyScalar( timeDeltaMod );
+			
+			velocityGravity.force.addSelf( gravityMagnitude );
 			
 			// rotate to stand on source
 			
-			_PhysicsHelper.rotate_relative_to_source( mesh.quaternion, mesh.position, gravityOrigin, rigidBody.axes.up, rigidBody.axes.forward, rigidBody.lerpDelta, rigidBody );
+			if ( rigidBody.rotateSnapOnNextUpdate === true ) {
+				
+				lerpDelta = 1;
+				rigidBody.rotateSnapOnNextUpdate = false;
+				
+			}
+			else {
+				
+				lerpDelta = rigidBody.lerpDelta;
+				
+			}
+			
+			_PhysicsHelper.rotate_relative_to_source( mesh.quaternion, mesh.position, gravityOrigin, rigidBody.axes.up, rigidBody.axes.forward, lerpDelta, rigidBody );
 			
 			// movement velocity
 			
 			this.handle_velocity( rigidBody, velocityMovement );
 			
-			// find up direction
+			// find up direction and set relative rotation of gravity
 			
 			gravityUp.sub( mesh.position, gravityOrigin ).normalize();
 			
-			// add non rotated gravity to gravity velocity
-			
-			velocityGravity.force.addSelf( gravityMagnitude );
-			
 			velocityGravity.relativeRotation = gravityUp;
-			
-			velocityGravityForceUpDir.copy( velocityGravity.force ).negate().normalize();
-			
-			velocityGravityForceUpDirRot = _VectorHelper.rotate_vector3_relative_to( velocityGravity.relativeRotation, velocityGravityForceUpDir, velocityGravityForceUpDirRot );
 			
 			// gravity velocity
 			
@@ -368,113 +379,6 @@
 			// post physics
 			// TODO: correct safety net for octree and non-infinite rays
 			
-			/*
-			
-			// get velocity collisions
-			
-			velocityGravityCollision = velocityGravity.collision;
-			velocityMovementCollision = velocityMovement.collision;
-			
-			// get velocity collision rigid bodies
-			
-			if ( velocityGravityCollision ) {
-				velocityGravityCollisionRigidBody = velocityGravityCollision.object.rigidBody;
-			}
-			if ( velocityMovementCollision ) {
-				velocityMovementCollisionRigidBody = velocityMovementCollision.object.rigidBody;
-			}
-			
-			// get distance to current gravity body
-			
-			if ( gravityBody instanceof _RigidBody.Instance ) {
-				
-				gravityBodyDistance = gravityBodyDifference.sub( mesh.position, gravityMesh.position ).length();
-				
-			}
-			else {
-				
-				gravityBodyDistance = Number.MAX_VALUE;
-			
-			}
-			
-			// if rigidBody is not safe
-			if ( rigidBody.safe === false ) {
-				
-				// rescue rigidBody and set back to last safe
-				
-				mesh.position.copy( safetynet.position );
-				
-				if ( mesh.useQuaternion === true ) {
-					
-					mesh.quaternion.copy( safetynet.quaternion );
-					
-				}
-				else {
-					
-					mesh.matrix.setRotationFromQuaternion( safetynet.quaternion );
-					
-				}
-				
-				velocityGravity.reset();
-				velocityMovement.reset();
-				
-				rigidBody.safe = true;
-				
-				// safety net end
-					
-				rigidBody.onSafetyNetEnd.dispatch();
-				
-				shared.signals.physicssafetynetend.dispatch( rigidBody );
-				
-			}		
-			// if velocity gravity force is moving towards source
-			else if ( velocityGravityForceUpDirRot.equals( gravityUp ) ) {
-				
-				// if no intersection
-				if ( gravityBodyDistance < rigidBody.radius * 0.5 && !velocityGravityCollision ) {
-					console.log(' SAFETY NET: ', gravityBodyDistance, velocityGravityCollision );
-					// set rigidBody to unsafe, but do not reset to safe position immediately
-					// wait until next update to allow dispatched signals to be handled first
-					
-					rigidBody.safe = false;
-					
-					// safety net start
-					
-					if ( rigidBody.onSafetyNetStarted ) {
-						
-						rigidBody.onSafetyNetStarted.dispatch();
-						
-					}
-					
-					shared.signals.physicssafetynetstart.dispatch( rigidBody );
-					
-				}
-				// rigidBody is safe
-				else {
-					
-					velocityGravity.timeWithoutIntersection = velocityGravity.updatesWithoutIntersection = 0;
-					
-					rigidBody.safe = true;
-					
-					// copy last safe position and rotation into rigidBody
-					
-					safetynet.position.copy( mesh.position );
-					
-					if ( mesh.useQuaternion === true ) {
-						
-						safetynet.quaternion.copy( mesh.quaternion );
-						
-					}
-					else {
-						
-						safetynet.quaternion.setFromRotationMatrix( mesh.matrix );
-						
-					}
-					
-				}
-				
-			}
-			*/
 		}
 		
 	}
