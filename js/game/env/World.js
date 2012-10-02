@@ -119,7 +119,7 @@
 				bodyType: 'mesh'
 			}
 		} );
-		temp1.position.set( 200, 1450, 200 );
+		temp1.position.set( 100, 1450, 200 );
 		this.add( temp1 );
 		
 		var temp2 = new _Model.Instance( {
@@ -129,7 +129,7 @@
 				bodyType: 'mesh'
 			}
 		} );
-		temp2.position.set( 250, 1450, 250 );
+		temp2.position.set( 150, 1450, 250 );
 		this.add( temp2 );
 		
 		var temp3 = new _Model.Instance( {
@@ -139,9 +139,28 @@
 				bodyType: 'mesh'
 			}
 		} );
-		temp3.position.set( 200, 1450, 250 );
+		temp3.position.set( 200, 1450, 300 );
 		this.add( temp3 );
 		
+		var temp4 = new _Model.Instance( {
+			geometry: new THREE.CubeGeometry( 200, 150, 200 ),
+			material: new THREE.MeshLambertMaterial( { color: 0x555555, ambient: 0xAAAAAA } ),
+			physics: {
+				bodyType: 'mesh'
+			}
+		} );
+		temp4.position.set( 420, 1450, 300 );
+		this.add( temp4 );
+		
+		var temp5 = new _Model.Instance( {
+			geometry: new THREE.CubeGeometry( 200, 300, 200 ),
+			material: new THREE.MeshLambertMaterial( { color: 0x555555, ambient: 0xAAAAAA } ),
+			physics: {
+				bodyType: 'mesh'
+			}
+		} );
+		temp5.position.set( 420, 1350, 600 );
+		this.add( temp5 );
 		
 		main.scene.add( this );
 		

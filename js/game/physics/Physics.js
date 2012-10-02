@@ -16,8 +16,7 @@
 		_MathHelper,
 		_VectorHelper,
 		_ObjectHelper,
-		_PhysicsHelper,
-		scaleSpeedExp = Math.log( 1.5 );
+		_PhysicsHelper;
 	
 	/*===================================================
     
@@ -366,7 +365,7 @@
 			
 			gravityUp.sub( mesh.position, gravityOrigin ).normalize();
 			
-			velocityGravity.relativeRotation = gravityUp;
+			velocityGravity.relativeTo = gravityUp;
 			
 			// gravity velocity
 			
@@ -393,20 +392,16 @@
 		
 		var mesh = rigidBody.mesh,
 			position = mesh.position,
-			scale = mesh.scale,
-			scaleModded = this.utilVec31Velocity.copy( scale ),
-			velocityForce = velocity.force,
-			velocityForceRotated = velocity.forceRotated,
-			velocityForceRotatedLength,
-			velocityForceScalar,
-			velocityOffset = velocity.offset,
-			velocityDamping = velocity.damping,
-			relativeRotation = velocity.relativeRotation,
+			force = velocity.force,
+			forceLength,
+			forceRotated,
+			forceScalar,
+			damping = velocity.damping,
 			boundingRadius,
 			intersection,
 			intersectionDist;
 		
-		if ( rigidBody.dynamic !== true || velocity.lockedUntilChanged === true || velocityForce.isZero() === true ) {
+		if ( rigidBody.dynamic !== true || velocity.lockedUntilChanged === true || force.isZero() === true ) {
 			
 			velocity.moving = false;
 			
@@ -419,50 +414,35 @@
 			
 		}
 		
-		// if velocity is relative to rotation, else will just copy force into rotated
+		// get length
 		
-		velocityForceRotated = _VectorHelper.rotate_vector3_relative_to( relativeRotation, velocityForce, velocityForceRotated );
+		forceLength = force.length();
 		
-		// scale velocity
+		// make velocity relative
 		
-		scaleModded.x = Math.pow( scaleModded.x, scaleSpeedExp );
-		scaleModded.y = Math.pow( scaleModded.y, scaleSpeedExp );
-		scaleModded.z = Math.pow( scaleModded.z, scaleSpeedExp );
-		
-		velocityForceRotated.multiplySelf( scaleModded );
-		
-		// get rotated length
-		
-		velocityForceRotatedLength = velocityForceRotated.length();
+		velocity.update();
+		forceRotated = velocity.forceRotated;
 		
 		// get bounding radius
 		//boundingRadius = rigidBody.radius;
 		
 		// get bounding radius in direction of velocity
 		// more accurate than plain radius, but about 4x more cost
-		boundingRadius = rigidBody.bounds_in_direction( velocityForceRotated ).length();
-		
-		// rotate offset if needed
-		
-		if ( velocityOffset.lengthSq() > 0 ) {
-			
-			velocityOffset = _VectorHelper.rotate_vector3_to_mesh_rotation( mesh, velocityOffset );
-			
-		}
+		boundingRadius = rigidBody.bounds_in_direction( forceRotated ).length();
 		
 		// get intersection
 		
 		intersection = _RayHelper.raycast( {
 			octree: this.octree,
 			origin: position,
-			direction: velocityForceRotated,
-			offset: velocityOffset,
-			far: velocityForceRotatedLength + boundingRadius,
+			direction: forceRotated,
+			offsets: velocity.offsetsRotated,
+			far: forceLength + boundingRadius,
 			ignore: mesh
 		} );
 		
 		// modify velocity based on intersection distances to avoid passing through or into objects
-		//console.log( 'intersection', intersection, 'velocityForceRotatedLength', velocityForceRotatedLength, 'boundingRadius', boundingRadius );
+		
 		if ( intersection ) {
 			
 			velocity.intersection = intersection;
@@ -471,12 +451,12 @@
 			
 			// set the rotated velocity to be no more than intersection distance
 			
-			if ( intersectionDist - velocityForceRotatedLength <= boundingRadius ) {
+			if ( intersectionDist - forceLength <= boundingRadius ) {
 				
-				velocityForceScalar = ( intersectionDist - boundingRadius ) / velocityForceRotatedLength;
+				forceScalar = ( intersectionDist - boundingRadius ) / forceLength;
 				
-				velocityForceRotated.multiplyScalar( velocityForceScalar );
-				//console.log( ' > intersection too close: intersectionDist', intersectionDist, ' velocityForceScalar ', velocityForceScalar );
+				forceRotated.multiplyScalar( forceScalar );
+				//console.log( ' > intersection too close: intersectionDist', intersectionDist, ' forceScalar ', forceScalar );
 				velocity.moving = false;
 				
 				velocity.collision = intersection;
@@ -493,16 +473,16 @@
 		
 		// add velocity to position
 		
-		position.addSelf( velocityForceRotated );
+		position.addSelf( forceRotated );
 		
 		// damp velocity
 		
-		velocityForce.multiplySelf( velocityDamping );
+		force.multiplySelf( damping );
 		
 		// if velocity low enough, set zero
 		
-		if ( velocityForce.length() < 0.01 ) {
-			velocityForce.multiplyScalar( 0 );
+		if ( force.length() < 0.01 ) {
+			force.multiplyScalar( 0 );
 		}
 		
 		// return intersection

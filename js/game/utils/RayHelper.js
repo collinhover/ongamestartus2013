@@ -24,6 +24,8 @@
 		utilVec31Box,
 		utilVec32Box,
 		utilVec31Casting,
+		utilVec32Casting,
+		utilVec33Casting,
 		utilVec31CastMesh,
 		utilVec32CastMesh,
 		utilVec33CastMesh,
@@ -85,6 +87,8 @@
 		utilVec31Box = new THREE.Vector3();
 		utilVec32Box = new THREE.Vector3();
 		utilVec31Casting = new THREE.Vector3();
+		utilVec32Casting = new THREE.Vector3();
+		utilVec33Casting = new THREE.Vector3();
 		utilVec31CastMesh = new THREE.Vector3();
 		utilVec32CastMesh = new THREE.Vector3();
 		utilVec33CastMesh = new THREE.Vector3();
@@ -399,7 +403,11 @@
 		
 		var i, l,
 			j, k,
-			ray,
+			ray = utilRay1Casting,
+			origin = utilVec31Casting,
+			offsetNone = utilVec32Casting,
+			offsets,
+			offset,
 			ignore,
 			objects,
 			object,
@@ -407,7 +415,7 @@
 			colliders,
 			camera,
 			pointer,
-			pointerPosition = utilVec31Casting,
+			pointerPosition = utilVec33Casting,
 			projector = utilProjector1Casting,
 			octree,
 			hierarchySearch,
@@ -423,6 +431,7 @@
 		
 		parameters = parameters || {};
 		
+		offsets = parameters.offsets || [ offsetNone ];
 		objects = main.ensure_array( parameters.objects ).slice( 0 );
 		colliders = main.ensure_array( parameters.colliders ).slice( 0 );
 		octree = parameters.octree;
@@ -431,38 +440,6 @@
 		camera = parameters.camera;
 		pointer = parameters.pointer;
 		ignore = parameters.ignore;
-		
-		// ray
-		
-		if ( parameters.ray instanceof THREE.Ray !== true ) {
-			
-			ray = parameters.ray = utilRay1Casting;
-			
-			// origin
-			
-			if ( parameters.origin instanceof THREE.Vector3 ) {
-				
-				ray.origin.copy( parameters.origin );
-				
-			}
-			
-			// direction
-			
-			if ( parameters.direction instanceof THREE.Vector3 ) {
-				
-				ray.direction.copy( parameters.direction );
-				
-			}
-			
-			// offset
-			
-			if ( parameters.offset instanceof THREE.Vector3 ) {
-				
-				ray.origin.addSelf( parameters.offset );
-				
-			}
-			
-		}
 		
 		// if using pointer
 		
@@ -480,10 +457,20 @@
 			
 			// set ray
 
-			ray.origin.copy( camera.position );
+			origin.copy( camera.position );
 			ray.direction.copy( pointerPosition.subSelf( camera.position ) );
 			
 		}
+		else {
+			
+			origin.copy( parameters.origin || parameters.ray.origin );
+			ray.direction.copy( parameters.direction || parameters.ray.direction );
+			
+		}
+		
+		// normalize ray direction
+		
+		ray.direction.normalize();
 		
 		// ray length
 		
@@ -493,75 +480,83 @@
 			
 		}
 		
-		// normalize ray direction
+		// for each offset
 		
-		ray.direction.normalize();
-		
-		// if using octree search for potential colliders
-		
-		if ( typeof octree !== 'undefined' ) {
+		for ( i = 0, l = offsets.length; i < l; i++ ) {
 			
-			colliders = colliders.concat( octree.search( ray.origin, ray.far, true, ray.direction ) );
+			// offset ray
 			
-		}
-		
-		// objects
-		
-		if ( objects.length > 0 ) {
-		
-			// account for hierarchy
+			offset = offsets[ i ];
 			
-			if ( hierarchySearch !== false ) {
+			ray.origin.copy( origin ).addSelf( offset );
+		
+			// if using octree search for potential colliders
+			
+			if ( typeof octree !== 'undefined' ) {
 				
-				// if intersection of hierarchy allowed, add all object children to objects list
+				colliders = colliders.concat( octree.search( ray.origin, ray.far, true, ray.direction ) );
 				
-				if ( hierarchyIntersect === true ) {
+			}
+			
+			// objects
+			
+			if ( objects.length > 0 ) {
+			
+				// account for hierarchy
+				
+				if ( hierarchySearch !== false ) {
 					
-					objects = _SceneHelper.extract_children_from_objects( objects, objects );
-				
-				}
-				// else raycast children and add reference to ancestor
-				else {
+					// if intersection of hierarchy allowed, add all object children to objects list
 					
-					for ( i = 0, l = objects.length; i < l; i++ ) {
+					if ( hierarchyIntersect === true ) {
 						
-						object = objects[ i ];
+						objects = _SceneHelper.extract_children_from_objects( objects, objects );
+					
+					}
+					// else raycast children and add reference to ancestor
+					else {
 						
-						children = _SceneHelper.extract_children_from_objects( object );
-						
-						childIntersections = raycast_objects( ray, children );
-						
-						for ( j = 0, k = childIntersections.length; j < k; j++ ) {
+						for ( i = 0, l = objects.length; i < l; i++ ) {
 							
-							childIntersections[ j ].ancestor = object;
+							object = objects[ i ];
+							
+							children = _SceneHelper.extract_children_from_objects( object );
+							
+							childIntersections = raycast_objects( ray, children );
+							
+							for ( j = 0, k = childIntersections.length; j < k; j++ ) {
+								
+								childIntersections[ j ].ancestor = object;
+								
+							}
+							
+							intersections = intersections.concat( childIntersections );
 							
 						}
-						
-						intersections = intersections.concat( childIntersections );
 						
 					}
 					
 				}
 				
+				// raycast objects
+				
+				intersections = intersections.concat( raycast_objects( ray, objects ) );
+				
 			}
 			
-			// raycast objects
+			// colliders
 			
-			intersections = intersections.concat( raycast_objects( ray, objects ) );
+			if ( colliders.length > 0 ) {
+				
+				// raycast_colliders is about 25% slower but supports casting non-planar quads
+				
+				intersections = intersections.concat( raycast_colliders( ray, colliders ) );
+				//intersections = intersections.concat( ray.intersectOctreeObjects( colliders ) );
+				
+			}
 			
 		}
 		
-		// colliders
-		
-		if ( colliders.length > 0 ) {
-			
-			// raycast_colliders is about 25% slower but supports casting non-planar quads
-			
-			intersections = intersections.concat( raycast_colliders( ray, colliders ) );
-			//intersections = intersections.concat( ray.intersectOctreeObjects( colliders ) );
-			
-		}
-		//console.log( 'colliders', colliders, ' intersections', intersections );
 		// sort intersections
 		
 		intersections.sort( sort_intersections );
