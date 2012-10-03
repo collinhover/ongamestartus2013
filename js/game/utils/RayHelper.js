@@ -111,9 +111,6 @@
 		
 		// functions
 		
-		_RayHelper.distance_from_intersection = distance_from_intersection;
-		_RayHelper.closest_point_from_line_to_point = closest_point_from_line_to_point;
-		
 		_RayHelper.Collider = Collider;
 		_RayHelper.PlaneCollider = PlaneCollider;
 		_RayHelper.SphereCollider = SphereCollider;
@@ -169,43 +166,6 @@
 
 		return rt;
 
-	}
-	
-	function distance_from_intersection ( point, origin, direction, length ) {
-		
-		return _VectorHelper.distance_to( point, closest_point_from_line_to_point( point, origin, direction, length ) );
-		
-	}
-	
-	function closest_point_from_line_to_point ( point, origin, direction, length ) {
-		
-		var dot,
-			dotClamped,
-			originToPoint = utilVec31LinePoint.sub( point, origin ),
-			directionMagnitude = utilVec32LinePoint.copy( direction ).normalize(),
-			pointClosest = utilVec33LinePoint;
-		
-		dot = originToPoint.dot( direction );
-		
-		// if line segment
-		
-		if( main.is_number( length ) && length > 0 ) {
-			
-			dotClamped = _MathHelper.clamp( dot / length, 0, 1 );
-			
-		}
-		// else infinite ray
-		else {
-			
-			length = 1;
-			dotClamped = Math.max( 0, dot );
-			
-		}
-		
-		pointClosest.add( origin, directionMagnitude.multiplyScalar( dotClamped * length ) );
-		
-		return pointClosest;
-		
 	}
 	
 	function point_outside_triangle ( p, a, b, c ) {
@@ -942,14 +902,15 @@
 			faces,
 			face,
 			rayLocal = localize_ray( ray, object ),
-			collisionNormal = utilVec31CastMesh,
-			faceDist,
-			minDist = Number.MAX_VALUE,
-			minFace,
+			collision,
+			distance,
+			distanceMin = Number.MAX_VALUE,
+			faceMin,
 			intersection = {
 				object: object,
 				distance: Number.MAX_VALUE,
-				normal: new THREE.Vector3()
+				normal: new THREE.Vector3(),
+				point: new THREE.Vector3()
 			};
 		
 		// handle faces
@@ -980,39 +941,42 @@
 				
 				p3.copy( vertices[ face.d ] ).multiplySelf( scale );
 				
-				//faceDist = raycast_triangle( rayLocal, p0, p1, p3, minDist, collisionNormal, object );
-				faceDist = raycast_triangle( rayLocal, p0, p1, p3, object, minDist, side );
+				collision = raycast_triangle( rayLocal, p0, p1, p3, object, distanceMin, side );
+				distance = collision.distance;
 				
-				if( faceDist < minDist ) {
+				if( distance < distanceMin ) {
 					
-					minDist = faceDist;
-					minFace = face;
-					intersection.normal.copy( collisionNormal );
+					distanceMin = distance;
+					faceMin = face;
+					intersection.normal.copy( collision.normal );
+					intersection.point.copy( collision.point );
 					
 				}
 				
-				//faceDist = raycast_triangle( rayLocal, p1, p2, p3, minDist, collisionNormal, object );
-				faceDist = raycast_triangle( rayLocal, p1, p2, p3, object, minDist, side );
+				collision = raycast_triangle( rayLocal, p1, p2, p3, object, distanceMin, side );
+				distance = collision.distance;
 				
-				if( faceDist < minDist ) {
+				if( distance < distanceMin ) {
 					
-					minDist = faceDist;
-					minFace = face;
-					intersection.normal.copy( collisionNormal );
+					distanceMin = distance;
+					faceMin = face;
+					intersection.normal.copy( collision.normal );
+					intersection.point.copy( collision.point );
 					
 				}
 				
 			}
 			else {
 				
-				//faceDist = raycast_triangle( rayLocal, p0, p1, p2, minDist, collisionNormal, object );
-				faceDist = raycast_triangle( rayLocal, p0, p1, p2, object, minDist, side, face.normal );
+				collision = raycast_triangle( rayLocal, p0, p1, p2, object, distanceMin, side, face.normal );
+				distance = collision.distance;
 				
-				if( faceDist < minDist ) {
+				if( distance < distanceMin ) {
 					
-					minDist = faceDist;
-					minFace = face;
-					intersection.normal.copy( collisionNormal );
+					distanceMin = distance;
+					faceMin = face;
+					intersection.normal.copy( collision.normal );
+					intersection.point.copy( collision.point );
 					
 				}
 				
@@ -1020,15 +984,15 @@
 			
 		}
 		
-		intersection.distance = minDist;
-		intersection.face = minFace;
+		intersection.distance = distanceMin;
+		intersection.face = faceMin;
 		intersection.normal.normalize();
 		
 		return intersection;
 		
 	}
 	
-	function raycast_triangle ( ray, p0, p1, p2, object, minDist, side, normal ) {
+	function raycast_triangle ( ray, p0, p1, p2, object, distanceMin, side, normal ) {
 		
 		var e1 = utilVec31Triangle,
 			e2 = utilVec32Triangle,
@@ -1037,7 +1001,7 @@
 			dotDirectionNormal,
 			planeDistance,
 			dotOriginNormal,
-			pointInPlane,
+			point,
 			distance;
 		
 		// calculate normal if not provided
@@ -1078,7 +1042,7 @@
 			}
 			else {
 				
-				return Number.MAX_VALUE;
+				return { distance: Number.MAX_VALUE };
 				
 			}
 		
@@ -1094,7 +1058,11 @@
 		// distance > 0 would take us behind ray, as dotDirectionNormal must be negative
 		// so distance should be negative or zero at this point
 		
-		if ( distance > 0 || distance < dotDirectionNormal * ray.far || distance < dotDirectionNormal * minDist ) return Number.MAX_VALUE;
+		if ( distance > 0 || distance < dotDirectionNormal * ray.far || distance < dotDirectionNormal * distanceMin ) {
+			
+			return { distance: Number.MAX_VALUE };
+			
+		}
 		
 		// complete distance
 
@@ -1102,15 +1070,15 @@
 		
 		// ray has point in plane of triangle, now we need to know if point is inside triangle
 		
-		pointInPlane = utilVec34Triangle.copy( direction ).multiplyScalar( distance ).addSelf( origin );
+		point = utilVec34Triangle.copy( direction ).multiplyScalar( distance ).addSelf( origin );
 		
-		if ( point_outside_triangle( pointInPlane, p0, p1, p2 ) ) {
+		if ( point_outside_triangle( point, p0, p1, p2 ) ) {
 			
-			return Number.MAX_VALUE;
+			return { distance: Number.MAX_VALUE };
 			
 		}
 		
-		return distance;
+		return { distance: distance, point: point, normal: normal };
 
 	}
 	

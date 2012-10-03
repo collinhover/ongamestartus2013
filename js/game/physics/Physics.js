@@ -98,6 +98,8 @@
 		this.utilVec34Update = new THREE.Vector3();
 		this.utilVec35Update = new THREE.Vector3();
 		this.utilVec31Velocity = new THREE.Vector3();
+		this.utilVec32Velocity = new THREE.Vector3();
+		this.utilQ1Velocity = new THREE.Quaternion();
 		
 		// octree
 		
@@ -393,17 +395,25 @@
 		var mesh = rigidBody.mesh,
 			position = mesh.position,
 			force = velocity.force,
+			forceRotated = velocity.forceRotated,
 			forceLength,
-			forceRotated,
 			forceScalar,
 			damping = velocity.damping,
 			boundingRadius,
+			direction = this.utilVec31Velocity,
+			angle,
+			angleInverted,
+			axisInitial = this.utilVec32Velocity,
+			axisDown,
+			collisionAngleFixQ,
 			intersection,
-			intersectionDist;
+			intersectionDist,
+			normalOfIntersected;
 		
-		if ( rigidBody.dynamic !== true || velocity.lockedUntilChanged === true || force.isZero() === true ) {
+		if ( rigidBody.dynamic !== true || force.isZero() === true ) {
 			
 			velocity.moving = false;
+			force.multiplyScalar( 0 );
 			
 			return;
 			
@@ -421,7 +431,6 @@
 		// make velocity relative
 		
 		velocity.update();
-		forceRotated = velocity.forceRotated;
 		
 		// get bounding radius
 		//boundingRadius = rigidBody.radius;
@@ -441,9 +450,63 @@
 			ignore: mesh
 		} );
 		
-		// modify velocity based on intersection distances to avoid passing through or into objects
+		if ( intersection ) {
+			
+			// gravity offsets may allow character to walk up steep walls
+			// check intersection normal vs normal of velocity, and compare angle between to velocity.collisionAngleThreshold
+			
+			if ( velocity.collisionAngleThreshold < _RigidBody.collisionAngleThresholdMax ) {
+				
+				direction.copy( velocity.up ).multiplyScalar( -1 );
+				velocity.relativeToQ.multiplyVector3( direction );
+				
+				normalOfIntersected = intersection.normal;
+				
+				// the perfect collision is an intersection normal direction opposite of the velocity direction
+				
+				angle = _VectorHelper.angle_between_vectors( direction, normalOfIntersected );
+				angleInverted = ( Math.PI - angle );
+				
+				// but we also know that if the angle is above the max collision angle, it is likely on the back side
+				
+				if ( angleInverted > _RigidBody.collisionAngleThresholdMax ) {
+					
+					angleInverted = angle - _RigidBody.collisionAngleThresholdMax;
+					
+				}
+				
+				if ( angleInverted >= velocity.collisionAngleThreshold ) {
+				
+					// find axis parallel to intersected and in general direction of velocity
+					
+					axisInitial.copy( _VectorHelper.axis_between_vectors( direction, normalOfIntersected ) );
+					axisDown = _VectorHelper.axis_between_vectors( normalOfIntersected, axisInitial );
+					collisionAngleFixQ = _VectorHelper.q_to_axis( direction, axisDown );
+					
+					// update velocity with new fixed rotation
+					
+					velocity.update( collisionAngleFixQ );
+					
+					// redo raycast with new fixed rotation of velocity force
+					
+					intersection = _RayHelper.raycast( {
+						octree: this.octree,
+						origin: position,
+						direction: forceRotated,
+						offsets: velocity.offsetsRotated,
+						far: forceLength + boundingRadius,
+						ignore: mesh
+					} );
+					
+				}
+				
+			}
+			
+		}
 		
 		if ( intersection ) {
+			
+			// modify velocity based on intersection distances to avoid passing through or into objects
 			
 			velocity.intersection = intersection;
 			
@@ -456,7 +519,7 @@
 				forceScalar = ( intersectionDist - boundingRadius ) / forceLength;
 				
 				forceRotated.multiplyScalar( forceScalar );
-				//console.log( ' > intersection too close: intersectionDist', intersectionDist, ' forceScalar ', forceScalar );
+				
 				velocity.moving = false;
 				
 				velocity.collision = intersection;
@@ -478,12 +541,6 @@
 		// damp velocity
 		
 		force.multiplySelf( damping );
-		
-		// if velocity low enough, set zero
-		
-		if ( force.length() < 0.01 ) {
-			force.multiplyScalar( 0 );
-		}
 		
 		// return intersection
 		

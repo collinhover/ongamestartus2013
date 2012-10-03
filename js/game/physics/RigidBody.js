@@ -49,6 +49,8 @@
 		
 		_RigidBody.damping = 0.97;
 		_RigidBody.offsetPct = 0.4;
+		_RigidBody.collisionAngleThresholdMax = Math.PI * 0.5;
+		_RigidBody.gravityCollisionAngleThreshold = Math.PI * 0.25;
 		_RigidBody.lerpDelta = 0.1;
 		_RigidBody.lerpDeltaGravityChange = 0;
 		_RigidBody.gravityBodyRadiusAdditionPct = 1;
@@ -142,7 +144,9 @@
 		this.utilVec33GravityBody = new THREE.Vector3();
 		this.utilVec34GravityBody = new THREE.Vector3();
 		this.utilVec31Bounds = new THREE.Vector3();
-		this.utilQ4Bounds = new THREE.Quaternion();
+		this.utilQ1Bounds = new THREE.Quaternion();
+		this.utilQ1Relative= new THREE.Quaternion();
+		this.utilMat41Relative = new THREE.Matrix4();
 		
 		// handle parameters
 		
@@ -335,6 +339,7 @@
 		this.velocityMovement = new VelocityTracker( { 
 			rigidBody: this,
 			damping: parameters.movementDamping,
+			collisionAngleThreshold: parameters.movementCollisionAngleThreshold,
 			relativeTo: this.mesh,
 			offsets: parameters.movementOffsets || [ 
 				new THREE.Vector3( -width * offsetPct, 0, 0 ), // left waist side
@@ -343,15 +348,10 @@
 			]
 		} );
 		
-		
-		
-		// TODO: gravity offsets allowing character to walk up steep walls... needs a max collision normal to up/down normal difference check
-		
-		
-		
 		this.velocityGravity = new VelocityTracker( { 
 			rigidBody: this,
 			damping: parameters.gravityDamping,
+			collisionAngleThreshold: parameters.gravityCollisionAngleThreshold || _RigidBody.gravityCollisionAngleThreshold,
 			offsets: parameters.gravityOffsets || [ 
 				new THREE.Vector3( -width * offsetPct, 0, -depth * offsetPct ),
 				new THREE.Vector3( width * offsetPct, 0, -depth * offsetPct ),
@@ -435,7 +435,9 @@
 		this.damping = new THREE.Vector3( 1, 1, 1 );
 		this.offsets = [];
 		this.offsetsRotated = [];
+		this.collisionAngleThreshold = Math.min( parameters.collisionAngleThreshold || _RigidBody.collisionAngleThresholdMax, _RigidBody.collisionAngleThresholdMax );
 		this.relativeTo = parameters.relativeTo;
+		this.relativeToQ = new THREE.Quaternion();
 		this.rotatedRelativeTo = [];
 		this.up = shared.cardinalAxes.up.clone();
 		this.moving = false;
@@ -486,13 +488,29 @@
 		
 	}
 	
-	VelocityTracker.prototype.update = function () {
+	VelocityTracker.prototype.update = function ( relativeToQNew ) {
 		
 		var i, l,
 			offsetRotated,
 			rigidBody = this.rigidBody,
 			mesh,
 			scaleMax = 1;
+		
+		// update relative to q
+		
+		if ( relativeToQNew instanceof THREE.Quaternion === false ) {
+			
+			relativeToQNew = retrieve_relative_to_q( this.relativeTo, this.up );
+			
+		}
+		
+		if ( relativeToQNew instanceof THREE.Quaternion ) {
+			
+			this.relativeToQ.copy( relativeToQNew );
+			
+		}
+		
+		// find scale
 		
 		if (  this.rigidBody ) {
 			
@@ -506,13 +524,15 @@
 			
 		}
 		
-		this.forceRotated.copy( rotate_vector3_relative_to( this.force, this.relativeTo, this.up ) );
+		// rotate force and offsets
+		
+		this.forceRotated.copy( rotate_vector3_relative_to( this.force, this.relativeToQ ) );
 		
 		for ( i = 0, l = this.offsets.length; i < l; i++ ) {
 			
 			offsetRotated = this.offsetsRotated[ i ];
 			
-			offsetRotated.copy( rotate_vector3_relative_to( this.offsets[ i ], this.relativeTo, this.up ) );
+			offsetRotated.copy( rotate_vector3_relative_to( this.offsets[ i ], this.relativeToQ ) );
 			
 			if ( scaleMax !== 1 ) {
 				
@@ -598,31 +618,51 @@
     
     =====================================================*/
 	
+	function retrieve_relative_to_q ( to, up ) {
+		
+		var matrix;
+		
+		if ( to ) {
+			
+			if ( to instanceof THREE.Object3D ) {
+				
+				if ( to.useQuaternion === true ) {
+					
+					to = to.quaternion;
+					
+				}
+				else {
+					
+					matrix = utilMat41Relative.extractRotation( to.matrix );
+					to = utilQ1Relative.setFromRotationMatrix( matrix );
+					
+				}
+				
+			}
+			
+			if ( to instanceof THREE.Vector3 ) {;
+				
+				to = _VectorHelper.q_to_axis( up, to );
+				
+			}
+			
+		}
+		
+		return to;
+		
+	}
+	
 	function rotate_vector3_relative_to ( vec3, to, up ) {
 		
 		var vec3Rotated = utilVec31Rotated.copy( vec3 );
 		
-		if ( to instanceof THREE.Object3D ) {
+		if ( to instanceof THREE.Quaternion !== true ) {
 			
-			if ( to.useQuaternion === true ) {
-				
-				to = to.quaternion;
-				
-			}
-			else {
-				
-				to = to.matrix;
-				
-			}
-			
-		}
-		else if ( to instanceof THREE.Vector3 ) {;
-			
-			to = _VectorHelper.q_to_axis( up, to );
-			
+			to = retrieve_relative_to_q( to, up );
+		
 		}
 		
-		if ( to instanceof THREE.Quaternion || to instanceof THREE.Matrix4 ) {
+		if ( to instanceof THREE.Quaternion ) {
 			
 			to.multiplyVector3( vec3Rotated );
 			
@@ -636,7 +676,7 @@
 		
 		var boundsHalf = this.collider_dimensions_scaled().multiplyScalar( 0.5 ).subSelf( _ObjectHelper.center_offset( this.mesh ) ),
 			localDirection = this.utilVec31Bounds,
-			meshRotation = this.utilQ4Bounds;
+			meshRotation = this.utilQ1Bounds;
 		
 		// get local direction
 		// seems like extra unnecessary work
@@ -654,7 +694,7 @@
 		
 		// rotate to match mesh
 		
-		return rotate_vector3_relative_to( boundsHalf, this.mesh, this.up );
+		return rotate_vector3_relative_to( boundsHalf, this.mesh );
 		
 	}
 	
