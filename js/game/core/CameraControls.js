@@ -137,7 +137,7 @@
 		this.rotationOffset = new THREE.Quaternion();
 		this.rotationOffsetTarget = new THREE.Quaternion();
 		this.rotationConstrained = new THREE.Vector3();
-		this.rotationBase = new THREE.Vector3( -Math.PI * 0.2, 0, 0 );
+		this.rotationBase = new THREE.Vector3( -Math.PI * 0.2, Math.PI, 0 );
 		this.rotationRotated = new THREE.Vector3();
 		this.rotationTotal = new THREE.Vector3();
 		this.rotationDelta = new THREE.Vector3();

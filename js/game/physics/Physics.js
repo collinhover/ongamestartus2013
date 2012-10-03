@@ -16,8 +16,7 @@
 		_MathHelper,
 		_VectorHelper,
 		_ObjectHelper,
-		_PhysicsHelper,
-		scaleSpeedExp = Math.log( 1.5 );
+		_PhysicsHelper;
 	
 	/*===================================================
     
@@ -99,6 +98,8 @@
 		this.utilVec34Update = new THREE.Vector3();
 		this.utilVec35Update = new THREE.Vector3();
 		this.utilVec31Velocity = new THREE.Vector3();
+		this.utilVec32Velocity = new THREE.Vector3();
+		this.utilQ1Velocity = new THREE.Quaternion();
 		
 		// octree
 		
@@ -366,7 +367,7 @@
 			
 			gravityUp.sub( mesh.position, gravityOrigin ).normalize();
 			
-			velocityGravity.relativeRotation = gravityUp;
+			velocityGravity.relativeTo = gravityUp;
 			
 			// gravity velocity
 			
@@ -393,22 +394,26 @@
 		
 		var mesh = rigidBody.mesh,
 			position = mesh.position,
-			scale = mesh.scale,
-			scaleModded = this.utilVec31Velocity.copy( scale ),
-			velocityForce = velocity.force,
-			velocityForceRotated = velocity.forceRotated,
-			velocityForceRotatedLength,
-			velocityForceScalar,
-			velocityOffset = velocity.offset,
-			velocityDamping = velocity.damping,
-			relativeRotation = velocity.relativeRotation,
+			force = velocity.force,
+			forceRotated = velocity.forceRotated,
+			forceLength,
+			forceScalar,
+			damping = velocity.damping,
 			boundingRadius,
+			direction = this.utilVec31Velocity,
+			angle,
+			angleInverted,
+			axisInitial = this.utilVec32Velocity,
+			axisDown,
+			collisionAngleFixQ,
 			intersection,
-			intersectionDist;
+			intersectionDist,
+			normalOfIntersected;
 		
-		if ( rigidBody.dynamic !== true || velocity.lockedUntilChanged === true || velocityForce.isZero() === true ) {
+		if ( rigidBody.dynamic !== true || force.isZero() === true ) {
 			
 			velocity.moving = false;
+			force.multiplyScalar( 0 );
 			
 			return;
 			
@@ -419,51 +424,89 @@
 			
 		}
 		
-		// if velocity is relative to rotation, else will just copy force into rotated
+		// get length
 		
-		velocityForceRotated = _VectorHelper.rotate_vector3_relative_to( relativeRotation, velocityForce, velocityForceRotated );
+		forceLength = force.length();
 		
-		// scale velocity
+		// make velocity relative
 		
-		scaleModded.x = Math.pow( scaleModded.x, scaleSpeedExp );
-		scaleModded.y = Math.pow( scaleModded.y, scaleSpeedExp );
-		scaleModded.z = Math.pow( scaleModded.z, scaleSpeedExp );
-		
-		velocityForceRotated.multiplySelf( scaleModded );
-		
-		// get rotated length
-		
-		velocityForceRotatedLength = velocityForceRotated.length();
+		velocity.update();
 		
 		// get bounding radius
 		//boundingRadius = rigidBody.radius;
 		
 		// get bounding radius in direction of velocity
 		// more accurate than plain radius, but about 4x more cost
-		boundingRadius = rigidBody.bounds_in_direction( velocityForceRotated ).length();
-		
-		// rotate offset if needed
-		
-		if ( velocityOffset.lengthSq() > 0 ) {
-			
-			velocityOffset = _VectorHelper.rotate_vector3_to_mesh_rotation( mesh, velocityOffset );
-			
-		}
+		boundingRadius = rigidBody.bounds_in_direction( forceRotated ).length();
 		
 		// get intersection
 		
 		intersection = _RayHelper.raycast( {
 			octree: this.octree,
 			origin: position,
-			direction: velocityForceRotated,
-			offset: velocityOffset,
-			far: velocityForceRotatedLength + boundingRadius,
+			direction: forceRotated,
+			offsets: velocity.offsetsRotated,
+			far: forceLength + boundingRadius,
 			ignore: mesh
 		} );
 		
-		// modify velocity based on intersection distances to avoid passing through or into objects
-		//console.log( 'intersection', intersection, 'velocityForceRotatedLength', velocityForceRotatedLength, 'boundingRadius', boundingRadius );
 		if ( intersection ) {
+			
+			// gravity offsets may allow character to walk up steep walls
+			// check intersection normal vs normal of velocity, and compare angle between to velocity.collisionAngleThreshold
+			
+			if ( velocity.collisionAngleThreshold < _RigidBody.collisionAngleThresholdMax ) {
+				
+				direction.copy( velocity.up ).multiplyScalar( -1 );
+				velocity.relativeToQ.multiplyVector3( direction );
+				
+				normalOfIntersected = intersection.normal;
+				
+				// the perfect collision is an intersection normal direction opposite of the velocity direction
+				
+				angle = _VectorHelper.angle_between_vectors( direction, normalOfIntersected );
+				angleInverted = ( Math.PI - angle );
+				
+				// but we also know that if the angle is above the max collision angle, it is likely on the back side
+				
+				if ( angleInverted > _RigidBody.collisionAngleThresholdMax ) {
+					
+					angleInverted = angle - _RigidBody.collisionAngleThresholdMax;
+					
+				}
+				
+				if ( angleInverted >= velocity.collisionAngleThreshold ) {
+				
+					// find axis parallel to intersected and in general direction of velocity
+					
+					axisInitial.copy( _VectorHelper.axis_between_vectors( direction, normalOfIntersected ) );
+					axisDown = _VectorHelper.axis_between_vectors( normalOfIntersected, axisInitial );
+					collisionAngleFixQ = _VectorHelper.q_to_axis( direction, axisDown );
+					
+					// update velocity with new fixed rotation
+					
+					velocity.update( collisionAngleFixQ );
+					
+					// redo raycast with new fixed rotation of velocity force
+					
+					intersection = _RayHelper.raycast( {
+						octree: this.octree,
+						origin: position,
+						direction: forceRotated,
+						offsets: velocity.offsetsRotated,
+						far: forceLength + boundingRadius,
+						ignore: mesh
+					} );
+					
+				}
+				
+			}
+			
+		}
+		
+		if ( intersection ) {
+			
+			// modify velocity based on intersection distances to avoid passing through or into objects
 			
 			velocity.intersection = intersection;
 			
@@ -471,12 +514,12 @@
 			
 			// set the rotated velocity to be no more than intersection distance
 			
-			if ( intersectionDist - velocityForceRotatedLength <= boundingRadius ) {
+			if ( intersectionDist - forceLength <= boundingRadius ) {
 				
-				velocityForceScalar = ( intersectionDist - boundingRadius ) / velocityForceRotatedLength;
+				forceScalar = ( intersectionDist - boundingRadius ) / forceLength;
 				
-				velocityForceRotated.multiplyScalar( velocityForceScalar );
-				//console.log( ' > intersection too close: intersectionDist', intersectionDist, ' velocityForceScalar ', velocityForceScalar );
+				forceRotated.multiplyScalar( forceScalar );
+				
 				velocity.moving = false;
 				
 				velocity.collision = intersection;
@@ -493,17 +536,11 @@
 		
 		// add velocity to position
 		
-		position.addSelf( velocityForceRotated );
+		position.addSelf( forceRotated );
 		
 		// damp velocity
 		
-		velocityForce.multiplySelf( velocityDamping );
-		
-		// if velocity low enough, set zero
-		
-		if ( velocityForce.length() < 0.01 ) {
-			velocityForce.multiplyScalar( 0 );
-		}
+		force.multiplySelf( damping );
 		
 		// return intersection
 		
