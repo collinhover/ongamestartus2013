@@ -1055,6 +1055,7 @@ var OGSUS = (function (main) {
 			
 			main.cameraControls.target = _Player.character;
 			main.cameraControls.rotationMaxX = Math.PI * 0.25;
+			main.cameraControls.rotateTarget = true;
 			
 			// signal
 			

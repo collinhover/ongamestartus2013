@@ -80,6 +80,10 @@
 			get : function () { return this.movement.rotate.turn; }
 		});
 		
+		Object.defineProperty( _Character.Instance.prototype, 'facing', { 
+			get : function () { return this.movement.rotate.facing; }
+		});
+		
 	}
 	
 	/*===================================================
@@ -145,12 +149,13 @@
 		// rotate
 		rotate = this.movement.rotate = {};
 		rotate.lerpDelta = parametersMovement.rotateLerpDelta || 1;
-		rotate.direction = new THREE.Vector3( 0, 0, 1 );
-		rotate.directionLast = rotate.direction.clone();
-		rotate.turnAngle = 0;
+		rotate.facingDirection = new THREE.Vector3( 0, 0, 1 );
+		rotate.facingDirectionLast = rotate.facingDirection.clone();
+		rotate.facing = new THREE.Quaternion();
+		rotate.facingAngle = 0;
 		rotate.turn = new THREE.Quaternion();
+		rotate.turnAngle = 0;
 		rotate.turnSpeed = parametersMovement.rotateTurnSpeed || 0.025;
-		rotate.directionAngle = 0;
 		rotate.axis = new THREE.Vector3( 0, 1, 0 );
 		rotate.delta = new THREE.Quaternion();
 		rotate.vector = new THREE.Quaternion();
@@ -210,7 +215,7 @@
 		var movement = this.movement,
 			state = movement.state,
 			rotate = movement.rotate,
-			rotateDirection = rotate.direction,
+			rotateFacingDirection = rotate.facingDirection,
 			forwardBack;
 		
 		// handle state property
@@ -225,31 +230,31 @@
 		
 		if ( state.forward === 1 ) {
 			
-			rotateDirection.z = 1;
-			rotateDirection.x = 0;
+			rotateFacingDirection.z = 1;
+			rotateFacingDirection.x = 0;
 			forwardBack = true;
 			
 		}
 		else if ( state.back === 1 ) {
 			
-			rotateDirection.z = -1;
-			rotateDirection.x = 0;
+			rotateFacingDirection.z = -1;
+			rotateFacingDirection.x = 0;
 			forwardBack = true;
 			
 		}
 		
 		if ( state.left === 1 || state.right === 1 ) {
 			
-			rotateDirection.x = state.left - state.right;
+			rotateFacingDirection.x = state.left - state.right;
 			
 			if ( forwardBack !== true ) {
 				
-				rotateDirection.z = 0;
+				rotateFacingDirection.z = 0;
 				
 			}
 			else {
 				
-				rotateDirection.normalize();
+				rotateFacingDirection.normalize();
 				
 			}
 			
@@ -271,19 +276,19 @@
 		
 		if ( main.is_number( dx ) ) {
 			
-			rotate.direction.x = dx;
+			rotate.facingDirection.x = dx;
 			
 		}
 		
 		if ( main.is_number( dy ) ) {
 			
-			rotate.direction.y = dy;
+			rotate.facingDirection.y = dy;
 			
 		}
 		
 		if ( main.is_number( dz ) ) {
 			
-			rotate.direction.z = dz;
+			rotate.facingDirection.z = dz;
 			
 		}
 		
@@ -294,8 +299,8 @@
 		var rotate = this.movement.rotate,
 			rotateAxis = rotate.axis,
 			rotateDelta = rotate.delta,
-			rotateAngleTarget = _MathHelper.degree_between_180( rotate.directionAngle + rotateAngleDelta ),
-			rotateAngleDeltaShortest = _MathHelper.shortest_rotation_between_angles( rotate.directionAngle, rotateAngleTarget );
+			rotateAngleTarget = _MathHelper.degree_between_180( rotate.facingAngle + rotateAngleDelta ),
+			rotateAngleDeltaShortest = _MathHelper.shortest_rotation_between_angles( rotate.facingAngle, rotateAngleTarget );
 		
 		// find delta quaternion
 		
@@ -303,8 +308,8 @@
 		
 		// copy deltas
 		
-		rotateDelta.multiplyVector3( rotate.direction );
-		rotate.directionAngle = rotateAngleTarget;
+		rotateDelta.multiplyVector3( rotate.facingDirection );
+		rotate.facingAngle = rotateAngleTarget;
 		
 	}
 	
@@ -378,12 +383,12 @@
 			moveSpeedRatio = Math.min( 1, ( moveSpeedBack / moveSpeed ) * 2 ),
 			moveSpeedPct = Math.min( 1, ( moveVec.length() / moveSpeed ) ),
 			rotateTurnAngleDelta,
-			rotateDirectionAngleDelta,
-			rotateDirectionAngleDeltaShortest,
-			rotateDirectionAngleTarget,
 			rotateAxis = rotate.axis,
-			rotateDirection = rotate.direction,
-			rotateDirectionLast = rotate.directionLast,
+			rotateFacingAngleDelta,
+			rotateFacingAngleDeltaShortest,
+			rotateFacingAngleTarget,
+			rotateFacingDirection = rotate.facingDirection,
+			rotateFacingDirectionLast = rotate.facingDirectionLast,
 			rotateDelta = rotate.delta,
 			rotateLerpDelta = rotate.lerpDelta * timeDeltaMod,
 			jumpSpeedStart,
@@ -435,7 +440,7 @@
 		// update rotation angles
 		
 		rotateTurnAngleDelta = ( state.left - state.right ) * rotate.turnSpeed;
-		rotateDirectionAngleDelta = _VectorHelper.signed_angle_between_coplanar_vectors( rotateDirectionLast, rotateDirection, rotateAxis ) * rotateLerpDelta;
+		rotateFacingAngleDelta = _VectorHelper.signed_angle_between_coplanar_vectors( rotateFacingDirectionLast, rotateFacingDirection, rotateAxis ) * rotateLerpDelta;
 		
 		// if moving
 		
@@ -458,18 +463,19 @@
 			
 			// rotate by direction angle change
 			
-			if ( rotateDirectionAngleDelta !== 0 ) {
+			if ( rotateFacingAngleDelta !== 0 ) {
 				
-				rotateDirectionAngleTarget = _MathHelper.degree_between_180( rotate.directionAngle + rotateDirectionAngleDelta );
-				rotateDirectionAngleDeltaShortest = _MathHelper.shortest_rotation_between_angles( rotate.directionAngle, rotateDirectionAngleTarget );
-				rotateDelta.setFromAxisAngle( rotateAxis, rotateDirectionAngleDeltaShortest );
+				rotateFacingAngleTarget = _MathHelper.degree_between_180( rotate.facingAngle + rotateFacingAngleDelta );
+				rotateFacingAngleDeltaShortest = _MathHelper.shortest_rotation_between_angles( rotate.facingAngle, rotateFacingAngleTarget );
+				rotateDelta.setFromAxisAngle( rotateAxis, rotateFacingAngleDeltaShortest );
 				
 				this.quaternion.multiplySelf( rotateDelta );
 				
 				// copy new direction angle
 				
-				rotateDelta.multiplyVector3( rotateDirectionLast );
-				rotate.directionAngle = rotateDirectionAngleTarget;
+				rotate.facing.multiplySelf( rotateDelta );
+				rotateDelta.multiplyVector3( rotateFacingDirectionLast );
+				rotate.facingAngle = rotateFacingAngleTarget;
 				
 			}
 			

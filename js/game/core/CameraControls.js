@@ -134,11 +134,14 @@
 		this.boundRadiusPctMax = this.boundRadiusPct = 1;
 		
 		this.rotating = false;
+		this.rotateTarget = false;
 		this.rotationOffset = new THREE.Quaternion();
 		this.rotationOffsetTarget = new THREE.Quaternion();
 		this.rotationConstrained = new THREE.Vector3();
 		this.rotationBase = new THREE.Vector3( -Math.PI * 0.2, Math.PI, 0 );
 		this.rotationRotated = new THREE.Vector3();
+		this.rotationRotatedLast = new THREE.Vector3();
+		this.rotationRotatedDelta = new THREE.Vector3();
 		this.rotationTotal = new THREE.Vector3();
 		this.rotationDelta = new THREE.Vector3();
 		this.rotationDeltaTotal = new THREE.Vector3();
@@ -231,25 +234,67 @@
 	
 	function rotate_update () {
 		
-		var target = this._target;
+		var target = this._target,
+			targetRotateAxis;
+		
+		this.rotationConstrained.copy( this.rotationBase );
 		
 		// while moving, return to 0 rotation offset
 		
-		if ( this.targetNew === true || ( target && target.moving === true && this.rotating !== true ) ) {
+		if ( this.targetNew === true || ( target && target.moving === true && this.rotating !== true && this.rotateTarget !== true ) ) {
 			
 			this.rotationRotated.multiplyScalar( this.rotationReturnDecay );
+			this.rotationConstrained.addSelf( this.rotationRotated );
 			
 		}
 		else {
 			
+			this.rotationRotatedLast.copy( this.rotationRotated );
+			
 			this.rotationRotated.x = _MathHelper.clamp( _MathHelper.rad_between_PI( this.rotationRotated.x + this.rotationDeltaTotal.x ), this.rotationMinX, this.rotationMaxX );
 			this.rotationRotated.y = _MathHelper.clamp( _MathHelper.rad_between_PI( this.rotationRotated.y + this.rotationDeltaTotal.y ), this.rotationMinY, this.rotationMaxY );
 			
+			// if controls should also rotate target around y axis
+			
+			if ( this.rotateTarget === true ) {
+				
+				this.rotationRotatedDelta.sub( this.rotationRotated, this.rotationRotatedLast );
+				
+				// rotation axis
+				
+				if ( target.movement && target.movement.rotate ) {
+					
+					targetRotateAxis = target.movement.rotate.axis;
+					
+				}
+				else if ( target.rigidBody ) {
+					
+					targetRotateAxis = target.rigidBody.axes.up;
+					
+				}
+				else {
+					
+					targetRotateAxis = this.up;
+					
+				}
+				
+				target.quaternion.multiplySelf( new THREE.Quaternion().setFromAxisAngle( targetRotateAxis, this.rotationRotatedDelta.y ) );
+				
+				// since we add the rotation delta y to the target, we only add the rotation delta x to the constrained / offset
+				
+				this.rotationConstrained.x += this.rotationRotated.x;
+				
+			}
+			else {
+				
+				this.rotationConstrained.addSelf( this.rotationRotated );
+				
+			}
+		
 		}
 		
-		this.rotationConstrained.add( this.rotationBase, this.rotationRotated );
-		this.rotationConstrained.x = _MathHelper.clamp( this.rotationConstrained.x, this.rotationMinX, this.rotationMaxX );
-		this.rotationConstrained.y = _MathHelper.clamp( this.rotationConstrained.y, this.rotationMinY, this.rotationMaxY );
+		this.rotationConstrained.x = _MathHelper.clamp( _MathHelper.rad_between_PI( this.rotationConstrained.x ), this.rotationMinX, this.rotationMaxX );
+		this.rotationConstrained.y = _MathHelper.clamp( _MathHelper.rad_between_PI( this.rotationConstrained.y ), this.rotationMinY, this.rotationMaxY );
 		
 		this.rotationOffsetTarget.setFromEuler( this.rotationConstrained, "YXZ" );
 		this.rotationOffset.slerpSelf( this.rotationOffsetTarget, this.rotationSpeed );
@@ -456,7 +501,18 @@
 			
 			// rotate quaternion and up/forward
 			
-			qToNew = _PhysicsHelper.rotate_relative_to_source ( this.quaternion, this.position, upReferencePosition, this.up, this.forward, 1, true );
+			//qToNew = _PhysicsHelper.rotate_relative_to_source ( this.quaternion, this.position, upReferencePosition, this.up, this.forward, 1, true );
+			
+		}
+		
+		// get camera target rotation
+		
+		rotationTargetNew.copy( target.quaternion );
+		
+		if ( target && target.facing instanceof THREE.Quaternion ) {
+			
+			var antiFacing= new THREE.Quaternion().copy( target.facing ).inverse();
+			rotationTargetNew.multiplySelf( antiFacing );
 			
 		}
 		
@@ -464,16 +520,6 @@
 		
 		rotate_update.call( this );
 		zoom_update.call( this );
-		
-		// get camera target rotation
-		
-		rotationTargetNew.copy( this.quaternion );
-		
-		if ( target && target.turn instanceof THREE.Quaternion ) {
-			
-			rotationTargetNew.multiplySelf( target.turn );
-			
-		}
 		
 		// lerp camera rotation to target
 		
@@ -484,7 +530,8 @@
 			
 		}
 		
-		_VectorHelper.lerp_normalized( this.rotationTarget, rotationTargetNew, cameraLerpDelta );
+		//_VectorHelper.lerp_normalized( this.rotationTarget, rotationTargetNew, cameraLerpDelta );
+		this.rotationTarget.slerpSelf( rotationTargetNew, cameraLerpDelta );
 		
 		this.rotationCamera.copy( this.rotationTarget ).multiplySelf( this.rotationOffset );
 		
