@@ -162,11 +162,6 @@
 		temp5.position.set( 420, 1350, 600 );
 		this.add( temp5 );
 		
-		
-		
-		
-		// TODO: fix gravity source swapping causing camera controls to get misaligned
-		
 		var temp6 = new _Model.Instance( {
 			geometry: new THREE.SphereGeometry( 200, 10, 10 ),
 			material: new THREE.MeshLambertMaterial( { color: 0xAAAAAA, ambient: 0xEEEEEE } ),
@@ -177,9 +172,6 @@
 		} );
 		temp6.position.set( 620, 1900, 820 );
 		this.add( temp6 );
-		
-		
-		
 		
 		main.scene.add( this );
 		

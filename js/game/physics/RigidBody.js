@@ -48,9 +48,10 @@
 		// properties
 		
 		_RigidBody.damping = 0.97;
+		_RigidBody.dampingDecay = 0.95;
 		_RigidBody.offsetPct = 0.4;
 		_RigidBody.collisionAngleThresholdMax = Math.PI * 0.5;
-		_RigidBody.gravityCollisionAngleThreshold = Math.PI * 0.25;
+		_RigidBody.gravityCollisionAngleThreshold = Math.PI * 0.35;
 		_RigidBody.lerpDelta = 0.1;
 		_RigidBody.lerpDeltaGravityChange = 0;
 		_RigidBody.gravityBodyRadiusAdditionPct = 1;
@@ -80,6 +81,10 @@
 		
 		Object.defineProperty( _RigidBody.Instance.prototype, 'grounded', { 
 			get : function () { return Boolean( this.velocityGravity.collision ) && !this.velocityGravity.moving }
+		});
+		
+		Object.defineProperty( _RigidBody.Instance.prototype, 'sliding', { 
+			get : function () { return this.velocityGravity.sliding || this.velocityMovement.sliding }
 		});
 		
 		Object.defineProperty( _RigidBody.Instance.prototype, 'radiusGravity', { 
@@ -339,6 +344,7 @@
 		this.velocityMovement = new VelocityTracker( { 
 			rigidBody: this,
 			damping: parameters.movementDamping,
+			dampingDecay: parameters.movementDampingDecay,
 			collisionAngleThreshold: parameters.movementCollisionAngleThreshold,
 			relativeTo: this.mesh,
 			offsets: parameters.movementOffsets || [ 
@@ -351,6 +357,7 @@
 		this.velocityGravity = new VelocityTracker( { 
 			rigidBody: this,
 			damping: parameters.gravityDamping,
+			dampingDecay: parameters.gravityDampingDecay,
 			collisionAngleThreshold: parameters.gravityCollisionAngleThreshold || _RigidBody.gravityCollisionAngleThreshold,
 			offsets: parameters.gravityOffsets || [ 
 				new THREE.Vector3( -width * offsetPct, 0, -depth * offsetPct ),
@@ -432,7 +439,10 @@
 		this.rigidBody = parameters.rigidBody;
 		this.force = new THREE.Vector3();
 		this.forceRotated = new THREE.Vector3();
+		this.forceRotatedLast = new THREE.Vector3();
 		this.damping = new THREE.Vector3( 1, 1, 1 );
+		this.dampingPre = new THREE.Vector3( 1, 1, 1 );
+		this.dampingDecay = parameters.dampingDecay || _RigidBody.dampingDecay;
 		this.offsets = [];
 		this.offsetsRotated = [];
 		this.collisionAngleThreshold = Math.min( parameters.collisionAngleThreshold || _RigidBody.collisionAngleThresholdMax, _RigidBody.collisionAngleThresholdMax );
@@ -440,8 +450,7 @@
 		this.relativeToQ = new THREE.Quaternion();
 		this.rotatedRelativeTo = [];
 		this.up = shared.cardinalAxes.up.clone();
-		this.moving = false;
-		this.intersection = false;
+		this.moving = this.intersection = this.collision = this.sliding = false;
 		this.timeWithoutIntersection = 0;
 		
 		if ( parameters.damping instanceof THREE.Vector3 ) {
@@ -537,6 +546,26 @@
 			if ( scaleMax !== 1 ) {
 				
 				offsetRotated.multiplyScalar( scaleMax );
+				
+			}
+			
+		}
+		
+	};
+	
+	VelocityTracker.prototype.rotate = function ( rotation ) {
+		
+		var i, l;
+			
+		if ( rotation instanceof THREE.Quaternion || rotation instanceof THREE.Matrix4 ) {
+			
+			// rotate force and offsets
+			
+			rotation.multiplyVector3( this.forceRotated );
+			
+			for ( i = 0, l = this.offsetsRotated.length; i < l; i++ ) {
+				
+				rotation.multiplyVector3( this.offsetsRotated[ i ] );
 				
 			}
 			

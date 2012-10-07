@@ -118,6 +118,8 @@
 		_RayHelper.MeshCollider = MeshCollider;
 		_RayHelper.ObjectColliderOBB = ObjectColliderOBB;
 		
+		_RayHelper.localize_ray = localize_ray;
+		
 		_RayHelper.raycast = raycast;
 		
 	}
@@ -151,7 +153,7 @@
 			// matrix with scale does not seem to invert correctly
 			
 			matrixObjCopy.extractPosition( matrixObj );
-			matrixObjCopy.extractRotation( matrixObj, scale );
+			matrixObjCopy.extractRotation( matrixObj );
 			
 			// invert copy
 			
@@ -368,6 +370,8 @@
 			offsetNone = utilVec32Casting,
 			offsets,
 			offset,
+			offsetColliders,
+			offsetObjects,
 			ignore,
 			objects,
 			object,
@@ -447,20 +451,13 @@
 			// offset ray
 			
 			offset = offsets[ i ];
-			
 			ray.origin.copy( origin ).addSelf( offset );
-		
-			// if using octree search for potential colliders
-			
-			if ( typeof octree !== 'undefined' ) {
-				
-				colliders = colliders.concat( octree.search( ray.origin, ray.far, true, ray.direction ) );
-				
-			}
 			
 			// objects
 			
-			if ( objects.length > 0 ) {
+			offsetObjects = objects.slice( 0 );
+			
+			if ( offsetObjects.length > 0 ) {
 			
 				// account for hierarchy
 				
@@ -470,15 +467,15 @@
 					
 					if ( hierarchyIntersect === true ) {
 						
-						objects = _SceneHelper.extract_children_from_objects( objects, objects );
+						offsetObjects = _SceneHelper.extract_children_from_objects( offsetObjects, offsetObjects );
 					
 					}
 					// else raycast children and add reference to ancestor
 					else {
 						
-						for ( i = 0, l = objects.length; i < l; i++ ) {
+						for ( i = 0, l = offsetObjects.length; i < l; i++ ) {
 							
-							object = objects[ i ];
+							object = offsetObjects[ i ];
 							
 							children = _SceneHelper.extract_children_from_objects( object );
 							
@@ -500,18 +497,26 @@
 				
 				// raycast objects
 				
-				intersections = intersections.concat( raycast_objects( ray, objects ) );
+				intersections = intersections.concat( raycast_objects( ray, offsetObjects ) );
 				
 			}
 			
 			// colliders
 			
-			if ( colliders.length > 0 ) {
+			offsetColliders = colliders.slice( 0 );
+			
+			if ( typeof octree !== 'undefined' ) {
+				
+				offsetColliders = offsetColliders.concat( octree.search( ray.origin, ray.far, true, ray.direction ) );
+				
+			}
+			
+			if ( offsetColliders.length > 0 ) {
 				
 				// raycast_colliders is about 25% slower but supports casting non-planar quads
 				
-				intersections = intersections.concat( raycast_colliders( ray, colliders ) );
-				//intersections = intersections.concat( ray.intersectOctreeObjects( colliders ) );
+				intersections = intersections.concat( raycast_colliders( ray, offsetColliders ) );
+				//intersections = intersections.concat( ray.intersectOctreeObjects( offsetColliders ) );
 				
 			}
 			
@@ -921,7 +926,7 @@
 			
 		}
 		
-		if ( faces.length === 0 ) {
+		if ( typeof faces === 'undefined' || faces.length === 0 ) {
 			
 			faces = geometry.faces;
 			

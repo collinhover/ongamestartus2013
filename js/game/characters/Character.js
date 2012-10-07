@@ -64,6 +64,25 @@
 		
 		_Character.Instance.prototype.update = update;
 		
+		Object.defineProperty( _Character.Instance.prototype, 'scene', { 
+			get : function () { return this._scene; },
+			set : function ( newScene ) {
+				
+				if ( typeof newScene !== 'undefined' ) {
+					
+					// remove from previous
+					
+					this.hide();
+					
+					// add to new
+					
+					this.show( newScene );
+					
+				}
+				
+			}
+		});
+		
 		Object.defineProperty( _Character.Instance.prototype, 'moving', { 
 			get : function () { return this.movement.state.moving; }
 		});
@@ -399,6 +418,7 @@
 			jumpTimeAfterNotGroundedMax,
 			jumpStartDelay,
 			grounded,
+			sliding,
 			velocityGravity,
 			velocityGravityForce,
 			velocityMovement,
@@ -527,6 +547,7 @@
 			// handle jumping
 			
 			grounded = rigidBody.grounded;
+			sliding = rigidBody.sliding;
 			
 			jump.timeAfterNotGrounded += timeDelta;
 			
@@ -540,7 +561,7 @@
 				
 			}
 			// do jump
-			else if ( state.up !== 0 && ( grounded === true || jump.timeAfterNotGrounded < jumpTimeAfterNotGroundedMax ) && jump.ready === true ) {
+			else if ( state.up !== 0 && ( ( grounded === true && sliding === false ) || jump.timeAfterNotGrounded < jumpTimeAfterNotGroundedMax ) && jump.ready === true ) {
 				
 				jump.timeTotal = 0;
 				
@@ -617,7 +638,7 @@
 					
 				}
 				
-				if ( grounded === true && state.up === 0 ) {
+				if ( grounded === true && sliding === false && state.up === 0 ) {
 					
 					jump.timeAfterNotGrounded = 0;
 					
@@ -654,7 +675,7 @@
 				
 				// walk / run cycles
 				
-				if ( velocityMovementForceLength > 0 ) {
+				if ( velocityMovementForceLength > 0 || sliding === true ) {
 					
 					// get approximate terminal velocity based on acceleration (moveVec) and damping
 					// helps morphs play faster if character is moving faster, or slower if moving slower
