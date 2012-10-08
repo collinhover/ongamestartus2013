@@ -424,7 +424,7 @@ var OGSUS = (function (main) {
 		// universe gravity
 		
 		shared.universeGravitySource = new THREE.Vector3( 0, 0, 0 );
-		shared.universeGravityMagnitude = new THREE.Vector3( 0, -1, 0 );
+		shared.universeGravityMagnitude = new THREE.Vector3( 0, -0.4, 0 );
 		
 		// cardinal axes
 		

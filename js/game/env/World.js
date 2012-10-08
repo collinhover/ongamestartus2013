@@ -105,64 +105,39 @@
 		// skybox
 		
 		this.skybox = parameters.skybox instanceof _Skybox.Instance ? parameters.skybox : new _Skybox.Instance( shared.pathToTextures + ( typeof parameters.skybox === 'string' ? parameters.skybox : "skybox_world" ) );
-    	
-    }
-	
-	function show () {
 		
-		// temp
 		
-		var temp1 = new _Model.Instance( {
-			geometry: new THREE.CubeGeometry( 200, 50, 200 ),
-			material: new THREE.MeshLambertMaterial( { color: 0x555555, ambient: 0xAAAAAA } ),
-			physics: {
-				bodyType: 'mesh'
-			}
-		} );
-		temp1.position.set( 100, 1450, 200 );
-		this.add( temp1 );
 		
-		var temp2 = new _Model.Instance( {
-			geometry: new THREE.CubeGeometry( 200, 100, 200 ),
-			material: new THREE.MeshLambertMaterial( { color: 0x555555, ambient: 0xAAAAAA } ),
-			physics: {
-				bodyType: 'mesh'
-			}
-		} );
-		temp2.position.set( 150, 1450, 250 );
-		this.add( temp2 );
 		
-		var temp3 = new _Model.Instance( {
-			geometry: new THREE.CubeGeometry( 200, 150, 200 ),
-			material: new THREE.MeshLambertMaterial( { color: 0x555555, ambient: 0xAAAAAA } ),
-			physics: {
-				bodyType: 'mesh'
-			}
-		} );
-		temp3.position.set( 200, 1450, 300 );
-		this.add( temp3 );
 		
-		var temp4 = new _Model.Instance( {
-			geometry: new THREE.CubeGeometry( 200, 150, 200 ),
-			material: new THREE.MeshLambertMaterial( { color: 0x555555, ambient: 0xAAAAAA } ),
-			physics: {
-				bodyType: 'mesh'
-			}
-		} );
-		temp4.position.set( 420, 1450, 300 );
-		this.add( temp4 );
+		// random shapes
 		
-		var temp5 = new _Model.Instance( {
-			geometry: new THREE.CubeGeometry( 200, 300, 200 ),
-			material: new THREE.MeshLambertMaterial( { color: 0x555555, ambient: 0xAAAAAA } ),
-			physics: {
-				bodyType: 'mesh'
-			}
-		} );
-		temp5.position.set( 420, 1350, 600 );
-		this.add( temp5 );
+		var numShapes = 60,
+			points = THREE.GeometryUtils.randomPointsInGeometry( this.geometry, numShapes ),
+			shapeSizeMin = 50,
+			shapeSize = 600,
+			shape;
 		
-		var temp6 = new _Model.Instance( {
+		for ( i = 0, l = 30; i < l; i++ ) {
+			
+			shape = new _Model.Instance( {
+				geometry: new THREE.CubeGeometry( shapeSizeMin + Math.random() * shapeSize, shapeSizeMin + Math.random() * shapeSize, shapeSizeMin + Math.random() * shapeSize ),
+				material: new THREE.MeshLambertMaterial( { color: 0x555555, ambient: 0xAAAAAA } ),
+				physics: {
+					bodyType: 'mesh'
+				}
+			} );
+			
+			this.add( shape );
+			
+			shape.position.set( points[ i ].x, points[ i ].y, points[ i ].z );
+			shape.quaternion.setFromEuler( new THREE.Vector3( Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI ) );
+				
+		}
+		
+		// secondary gravity source
+		
+		var moon = new _Model.Instance( {
 			geometry: new THREE.SphereGeometry( 200, 10, 10 ),
 			material: new THREE.MeshLambertMaterial( { color: 0xAAAAAA, ambient: 0xEEEEEE } ),
 			physics: {
@@ -170,8 +145,28 @@
 				gravitySource: true
 			}
 		} );
-		temp6.position.set( 620, 1900, 820 );
-		this.add( temp6 );
+		moon.position.set( 1000, 2000, 1000 );
+		this.add( moon );
+		
+		var moonRock = new _Model.Instance( {
+			geometry: new THREE.CubeGeometry( 150, 150, 150 ),
+			material: new THREE.MeshLambertMaterial( { color: 0xAAAAAA, ambient: 0xEEEEEE } ),
+			physics: {
+				bodyType: 'mesh'
+			}
+		} );
+		moonRock.position.set( 0, 150, 0 );
+		moonRock.quaternion.setFromEuler( new THREE.Vector3( 45, 0, 45 ) );
+		moon.add( moonRock );
+		
+		
+		
+		
+		
+    	
+    }
+	
+	function show () {
 		
 		main.scene.add( this );
 		
