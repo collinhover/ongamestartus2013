@@ -164,26 +164,28 @@
 		
 		angle = angle_between_vectors( axisFrom, axisTo );
 		
-		if ( angle !== 0 ) {
+		if ( angle === 0 ) {
 			
-			// axis
-			
-			axis = axis_between_vectors( axisFrom, axisTo );
-			
-			// if new axis is exactly opposite of current
-			// replace new axis with orthonormal axis
-			
-			if ( axis.lengthSq() === 0 ) {
-				
-				axis.copy( axisOrthonormal && axisOrthonormal.lengthSq() > 0 ? axisOrthonormal : get_orthonormal_vectors( axisFrom, true ) );
-				
-			}
-			
-			// rotation change
-			
-			return qToA.setFromAxisAngle( axis, angle );
+			return false;
 		
 		}
+		
+		// axis
+		
+		axis = axis_between_vectors( axisFrom, axisTo );
+		
+		// if new axis is exactly opposite of current
+		// replace new axis with orthonormal axis
+		
+		if ( axis.lengthSq() === 0 ) {
+			
+			axis.copy( axisOrthonormal && axisOrthonormal.lengthSq() > 0 ? axisOrthonormal : get_orthonormal_vectors( axisFrom, true ) );
+			
+		}
+		
+		// rotation change
+		
+		return qToA.setFromAxisAngle( axis, angle );
 		
 	}
 	

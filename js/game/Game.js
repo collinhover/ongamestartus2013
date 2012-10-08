@@ -169,7 +169,21 @@ var OGSUS = (function (main) {
             onLoadListCompleted : new signals.Signal(),
             onLoadAllCompleted : new signals.Signal(),
 			
-			onAssetReady : new signals.Signal()
+			onAssetReady : new signals.Signal(),
+			
+			onGamePaused : new signals.Signal(),
+			onGameResumed : new signals.Signal(),
+			onGameUpdated : new signals.Signal(),
+			onGameUpdated : new signals.Signal(),
+			onGameStarted : new signals.Signal(),
+			
+			onGamePointerTapped : new signals.Signal(),
+			onGamePointerDoubleTapped : new signals.Signal(),
+			onGamePointerHeld : new signals.Signal(),
+			onGamePointerDragStarted : new signals.Signal(),
+			onGamePointerDragged : new signals.Signal(),
+			onGamePointerDragEnded : new signals.Signal(),
+			onGamePointerWheel : new signals.Signal()
             
         };
         
@@ -410,7 +424,7 @@ var OGSUS = (function (main) {
 		// universe gravity
 		
 		shared.universeGravitySource = new THREE.Vector3( 0, 0, 0 );
-		shared.universeGravityMagnitude = new THREE.Vector3( 0, -1, 0 );
+		shared.universeGravityMagnitude = new THREE.Vector3( 0, -0.4, 0 );
 		
 		// cardinal axes
 		
@@ -451,23 +465,6 @@ var OGSUS = (function (main) {
 		_UIQueue = uiq;
 		_MathHelper = mh;
 		
-		// game signals
-		
-        shared.signals = shared.signals || {};
-		
-        shared.signals.onGamePaused = new signals.Signal();
-        shared.signals.onGameResumed = new signals.Signal();
-        shared.signals.onGameUpdated = new signals.Signal();
-		shared.signals.onGameStarted = new signals.Signal();
-		
-		shared.signals.onGamePointerTapped = new signals.Signal();
-		shared.signals.onGamePointerDoubleTapped = new signals.Signal();
-		shared.signals.onGamePointerHeld = new signals.Signal();
-		shared.signals.onGamePointerDragStarted = new signals.Signal();
-		shared.signals.onGamePointerDragged = new signals.Signal();
-		shared.signals.onGamePointerDragEnded = new signals.Signal();
-		shared.signals.onGamePointerWheel = new signals.Signal();
-		
 		// scenes
 		
 		main.scene = new _Scene.Instance();
@@ -495,7 +492,8 @@ var OGSUS = (function (main) {
 		// camera controls
 		
 		main.cameraControls = new _CameraControls.Instance( main.camera, main.world );
-		main.cameraControls.enable();
+		main.cameraControls.enabled = true;
+		main.cameraControls.controllable = true;
 		
 		// passes
         
@@ -1269,15 +1267,19 @@ var OGSUS = (function (main) {
     
 	function render() {
 		
-		main.cameraControls.update();
-		
-		main.cameraBG.quaternion.copy( main.camera.quaternion );
-		
-		renderer.setViewport( 0, 0, shared.gameWidth, shared.gameHeight );
-		
-        renderer.clear();
-        
-		renderComposer.render();
+		if ( setup === true ) {
+			
+			main.cameraControls.update();
+			
+			main.cameraBG.quaternion.copy( main.camera.quaternion );
+			
+			renderer.setViewport( 0, 0, shared.gameWidth, shared.gameHeight );
+			
+			renderer.clear();
+			
+			renderComposer.render();
+			
+		}
 		
 	}
 	

@@ -64,6 +64,25 @@
 		
 		_Character.Instance.prototype.update = update;
 		
+		Object.defineProperty( _Character.Instance.prototype, 'scene', { 
+			get : function () { return this._scene; },
+			set : function ( newScene ) {
+				
+				if ( typeof newScene !== 'undefined' ) {
+					
+					// remove from previous
+					
+					this.hide();
+					
+					// add to new
+					
+					this.show( newScene );
+					
+				}
+				
+			}
+		});
+		
 		Object.defineProperty( _Character.Instance.prototype, 'moving', { 
 			get : function () { return this.movement.state.moving; }
 		});
@@ -164,7 +183,9 @@
 		jump = this.movement.jump = {};
 		jump.speedStart = parametersMovement.jumpSpeedStart || move.speed * ( 4 / 3 );
 		jump.speedEnd = parametersMovement.jumpSpeedEnd || 0;
+		jump.moveSpeedMod = parametersMovement.jumpMoveSpeedMod || 0.5;
 		jump.timeTotal = 0;
+		jump.timeMin = parametersMovement.jumpTimeMin || 100;
 		jump.timeMax = parametersMovement.jumpTimeMax || 100;
 		jump.timeAfterNotGrounded = 0;
 		jump.timeAfterNotGroundedMax = 125;
@@ -175,6 +196,7 @@
 		jump.endAnimationTime = parametersMovement.jumpEndAnimationTime || move.morphClearTime;
 		jump.ready = true;
 		jump.active = false;
+		jump.holding = false;
 		
 		// state
 		state = this.movement.state = {};
@@ -245,7 +267,7 @@
 		
 		if ( state.left === 1 || state.right === 1 ) {
 			
-			rotateFacingDirection.x = state.left - state.right;
+			rotateFacingDirection.x = state.right === 1 ? -state.right : state.left;
 			
 			if ( forwardBack !== true ) {
 				
@@ -322,6 +344,7 @@
 	function stop_jumping () {
 		
 		this.movement.jump.active = false;
+		this.movement.jump.holding = false;
 		
 	}
 	
@@ -399,6 +422,7 @@
 			jumpTimeAfterNotGroundedMax,
 			jumpStartDelay,
 			grounded,
+			sliding,
 			velocityGravity,
 			velocityGravityForce,
 			velocityMovement,
@@ -439,7 +463,7 @@
 		
 		// update rotation angles
 		
-		rotateTurnAngleDelta = ( state.left - state.right ) * rotate.turnSpeed;
+		rotateTurnAngleDelta = ( state.right === 1 ? -state.right : state.left ) * rotate.turnSpeed;
 		rotateFacingAngleDelta = _VectorHelper.signed_angle_between_coplanar_vectors( rotateFacingDirectionLast, rotateFacingDirection, rotateAxis ) * rotateLerpDelta;
 		
 		// if moving
@@ -515,7 +539,7 @@
 			}
 			else if ( jump.active === true ) {
 				
-				moveVec.z *= ( moveSpeed + jumpSpeedStart ) * 0.5;
+				moveVec.z *= moveSpeed + jumpSpeedStart * jump.moveSpeedMod;
 				
 			}
 			else {
@@ -527,6 +551,7 @@
 			// handle jumping
 			
 			grounded = rigidBody.grounded;
+			sliding = rigidBody.sliding;
 			
 			jump.timeAfterNotGrounded += timeDelta;
 			
@@ -540,7 +565,7 @@
 				
 			}
 			// do jump
-			else if ( state.up !== 0 && ( grounded === true || jump.timeAfterNotGrounded < jumpTimeAfterNotGroundedMax ) && jump.ready === true ) {
+			else if ( state.up !== 0 && ( ( grounded === true && sliding === false ) || jump.timeAfterNotGrounded < jumpTimeAfterNotGroundedMax ) && jump.ready === true ) {
 				
 				jump.timeTotal = 0;
 				
@@ -552,12 +577,20 @@
 				
 				jump.starting = true;
 				
+				jump.holding = true;
+				
 			}
-			else if ( jump.active === true && jump.timeTotal < jumpTimeMax ) {
+			else if ( jump.holding === true && jump.active === true && jump.timeTotal < jumpTimeMax ) {
 				
 				// count delay
 				
 				jump.startDelayTime += timeDelta;
+				
+				if ( state.up === 0 && jump.timeTotal >= jump.timeMin ) {
+					
+					jump.holding = false;
+					
+				}
 				
 				// do jump after delay
 				
@@ -617,7 +650,7 @@
 					
 				}
 				
-				if ( grounded === true && state.up === 0 ) {
+				if ( grounded === true && sliding === false && state.up === 0 ) {
 					
 					jump.timeAfterNotGrounded = 0;
 					
@@ -654,7 +687,7 @@
 				
 				// walk / run cycles
 				
-				if ( velocityMovementForceLength > 0 ) {
+				if ( velocityMovementForceLength > 0 || sliding === true ) {
 					
 					// get approximate terminal velocity based on acceleration (moveVec) and damping
 					// helps morphs play faster if character is moving faster, or slower if moving slower
