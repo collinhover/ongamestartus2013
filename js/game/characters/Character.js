@@ -15,6 +15,7 @@
 		_Actions,
 		_MathHelper,
 		_VectorHelper,
+		_ObjectHelper,
 		characterName = 'Character';
 	
 	/*===================================================
@@ -29,7 +30,8 @@
 			"js/game/core/Model.js",
 			"js/game/core/Actions.js",
 			"js/game/utils/MathHelper.js",
-			"js/game/utils/VectorHelper.js"
+			"js/game/utils/VectorHelper.js",
+			"js/game/utils/ObjectHelper.js"
 		],
 		callbacksOnReqs: init_internal,
 		wait: true
@@ -41,7 +43,7 @@
     
     =====================================================*/
 	
-	function init_internal ( m, ac, mh, vh ) {
+	function init_internal ( m, ac, mh, vh, oh ) {
 		console.log('internal Character', _Character);
 		// modules
 		
@@ -49,6 +51,7 @@
 		_Actions = ac;
 		_MathHelper = mh;
 		_VectorHelper = vh;
+		_ObjectHelper = oh;
 		
 		// character instance
 		
@@ -127,26 +130,11 @@
 		
 		parameters = parameters || {};
 		
-		// model
-		
 		parametersModel = parameters.model || {};
 		
-		// physics
-		
-		if ( typeof parametersModel.physics !== 'undefined' ) {
-			
-			parametersModel.physics.dynamic = true;
-			parametersModel.physics.movementDamping = parametersModel.physics.movementDamping || 0.5;
-			
-		}
-		
-		// prototype constructor
-		
-		_Model.Instance.call( this, parametersModel );
+		parametersMovement = parameters.movement || {};
 		
 		// movement
-		
-		parametersMovement = parameters.movement || {};
 		
 		movement = this.movement = {};
 		
@@ -154,7 +142,6 @@
 		
 		move = movement.move = {};
 		move.speed = parametersMovement.moveSpeed || 3;
-		move.speedBack = parametersMovement.moveSpeedBack || move.speed;
 		move.runThreshold = parametersMovement.moveRunThreshold || 0;
 		move.walkAnimationTime = parametersMovement.moveWalkAnimationTime || 750;
 		move.runAnimationTime = parametersMovement.moveRunAnimationTime || 500;
@@ -163,7 +150,6 @@
 		move.animationChangeTimeThreshold = parametersMovement.animationChangeTimeThreshold || 0;
 		move.animationChangeTimeTotal = move.animationChangeTimeThreshold;
 		move.direction = new THREE.Vector3();
-		move.vector = new THREE.Vector3();
 		
 		// rotate
 		rotate = this.movement.rotate = {};
@@ -183,6 +169,8 @@
 		jump = this.movement.jump = {};
 		jump.speedStart = parametersMovement.jumpSpeedStart || move.speed * ( 4 / 3 );
 		jump.speedEnd = parametersMovement.jumpSpeedEnd || 0;
+		jump.airControl = parametersMovement.jumpAirControl || 0.1;
+		jump.moveDamping = parametersMovement.jumpMoveDamping || 0.99;
 		jump.moveSpeedMod = parametersMovement.jumpMoveSpeedMod || 0.5;
 		jump.timeTotal = 0;
 		jump.timeMin = parametersMovement.jumpTimeMin || 100;
@@ -210,6 +198,20 @@
 		state.movingHorizontal = false;
 		state.movingBack = false;
 		state.moveType = '';
+		
+		// physics
+		
+		if ( typeof parametersModel.physics !== 'undefined' ) {
+			
+			parametersModel.physics.dynamic = true;
+			parametersModel.physics.movementDamping = parametersModel.physics.movementDamping || 0.5;
+			parametersModel.physics.movementForceLengthMax = parametersModel.physics.movementForceLengthMax || shared.universeGravityMagnitude.length() * 20;
+			
+		}
+		
+		// prototype constructor
+		
+		_Model.Instance.call( this, parametersModel );
 		
 		// properties
 		
@@ -400,11 +402,7 @@
 			jump = movement.jump,
 			state = movement.state,
 			moveDir = move.direction,
-			moveVec = move.vector,
 			moveSpeed = move.speed * timeDeltaMod,
-			moveSpeedBack = move.speedBack * timeDeltaMod,
-			moveSpeedRatio = Math.min( 1, ( moveSpeedBack / moveSpeed ) * 2 ),
-			moveSpeedPct = Math.min( 1, ( moveVec.length() / moveSpeed ) ),
 			rotateTurnAngleDelta,
 			rotateAxis = rotate.axis,
 			rotateFacingAngleDelta,
@@ -416,6 +414,8 @@
 			rotateLerpDelta = rotate.lerpDelta * timeDeltaMod,
 			jumpSpeedStart,
 			jumpSpeedEnd,
+			jumpAirControl,
+			jumpMoveDamping,
 			jumpTimeTotal,
 			jumpTimeMax,
 			jumpTimeRatio,
@@ -424,10 +424,10 @@
 			grounded,
 			sliding,
 			velocityGravity,
-			velocityGravityForce,
+			velocityGravityForceDelta,
 			velocityMovement,
-			velocityMovementForce,
-			velocityMovementForceLength,
+			velocityMovementForceDelta,
+			velocityMovementForceDeltaLength,
 			velocityMovementDamping,
 			dragCoefficient,
 			terminalVelocity,
@@ -511,44 +511,22 @@
 			
 			// properties
 			
-			velocityMovement = rigidBody.velocityMovement;
-			velocityMovementForce = velocityMovement.force;
-			velocityGravity = rigidBody.velocityGravity;
-			velocityGravityForce = velocityGravity.force;
-			
 			jumpTimeTotal = jump.timeTotal;
 			jumpTimeMax = jump.timeMax;
 			jumpTimeAfterNotGroundedMax = jump.timeAfterNotGroundedMax;
 			jumpStartDelay = jump.startDelay;
 			jumpSpeedStart = jump.speedStart * timeDeltaMod;
 			jumpSpeedEnd = jump.speedEnd * timeDeltaMod;
+			jumpAirControl = jump.airControl;
+			jumpMoveDamping = jump.moveDamping;
 			
-			// movement basics
+			velocityMovement = rigidBody.velocityMovement;
+			velocityMovementForce = velocityMovement.force;
+			velocityMovementForceDelta = velocityMovement.forceDelta;
+			velocityGravity = rigidBody.velocityGravity;
+			velocityGravityForceDelta = velocityGravity.forceDelta;
 			
-			moveVec.copy( moveDir );
-			moveVec.x *= moveSpeed;
-			moveVec.y *= moveSpeed;
-			
-			if ( moveDir.z < 0 ) {
-				
-				moveVec.z *= moveSpeedBack;
-				
-				jumpSpeedStart *= moveSpeedRatio;
-				jumpSpeedEnd *= moveSpeedRatio;
-				
-			}
-			else if ( jump.active === true ) {
-				
-				moveVec.z *= moveSpeed + jumpSpeedStart * jump.moveSpeedMod;
-				
-			}
-			else {
-				
-				moveVec.z *= moveSpeed;
-				
-			}
-			
-			// handle jumping
+			// jumping
 			
 			grounded = rigidBody.grounded;
 			sliding = rigidBody.sliding;
@@ -604,7 +582,12 @@
 					
 						// reset velocity
 						
-						velocityGravityForce.y  = 0;
+						velocityGravity.reset();
+						
+						jump.movementChangeLayer = _ObjectHelper.temporary_change( velocityMovement, {
+							damping: new THREE.Vector3(  jumpMoveDamping, jumpMoveDamping, jumpMoveDamping ),
+							speedDelta: new THREE.Vector3(  jumpAirControl, jumpAirControl, jumpAirControl )
+						} );
 						
 					}
 					
@@ -620,9 +603,9 @@
 					
 					jump.timeTotal += timeDelta;
 					
-					// add speed to gravity velocity
+					// add speed to gravity velocity delta
 					
-					velocityGravityForce.y += jumpSpeedStart * ( 1 - jumpTimeRatio) + jumpSpeedEnd * jumpTimeRatio;
+					velocityGravityForceDelta.y += jumpSpeedStart * ( 1 - jumpTimeRatio) + jumpSpeedEnd * jumpTimeRatio;
 					
 				}
 				else {
@@ -637,6 +620,8 @@
 			else {
 				
 				if ( grounded === true && jump.active !== false ) {
+					
+					_ObjectHelper.revert_change( velocityMovement, jump.movementChangeLayer );
 					
 					this.stop_jumping();
 					
@@ -660,18 +645,26 @@
 				
 			}
 			
-			// add move vec to rigidBody movement
+			// movement
 			
-			velocityMovementForce.addSelf( moveVec );
+			velocityMovementForceDelta.copy( moveDir );
+			
+			if ( state.movingHorizontal && jump.active === true ) {
+				
+				velocityMovementForceDelta.z += jumpSpeedStart * jump.moveSpeedMod;
+				
+			}
+			
+			velocityMovementForceDelta.multiplyScalar( moveSpeed );
 			
 			// moving backwards?
 			
-			if ( velocityMovementForce.z < 0 ) {
+			if ( velocityMovementForceDelta.z < 0 ) {
 				
 				state.movingBack = true;
 				
 			}
-			else if ( velocityMovementForce.z > 0 ) {
+			else if ( velocityMovementForceDelta.z > 0 ) {
 				
 				state.movingBack = false;
 				
@@ -679,7 +672,7 @@
 			
 			// get movement force
 			
-			velocityMovementForceLength = velocityMovementForce.length() / timeDeltaMod;
+			velocityMovementForceDeltaLength = velocityMovementForceDelta.length() / timeDeltaMod;
 			
 			// walk/run/idle
 			
@@ -687,7 +680,7 @@
 				
 				// walk / run cycles
 				
-				if ( velocityMovementForceLength > 0 || sliding === true ) {
+				if ( velocityMovementForceDeltaLength > 0 || sliding === true ) {
 					
 					// get approximate terminal velocity based on acceleration (moveVec) and damping
 					// helps morphs play faster if character is moving faster, or slower if moving slower
@@ -695,10 +688,10 @@
 					
 					velocityMovementDamping = velocityMovement.damping.z;
 					dragCoefficient = ( 0.33758 * Math.pow( velocityMovementDamping, 2 ) ) + ( -0.67116 * velocityMovementDamping ) + 0.33419;
-					terminalVelocity = Math.round( Math.sqrt( ( 2 * Math.abs( moveVec.z * 0.5 ) ) / dragCoefficient ) );
-					playSpeedModifier = terminalVelocity / Math.round( velocityMovementForceLength );
+					terminalVelocity = Math.round( Math.sqrt( ( 2 * Math.abs( velocityMovementForceDelta.z * 0.5 ) ) / dragCoefficient ) );
+					playSpeedModifier = terminalVelocity / Math.round( velocityMovementForceDeltaLength );
 					
-					if ( velocityMovementForceLength > move.runThreshold ) {
+					if ( velocityMovementForceDeltaLength > move.runThreshold ) {
 						
 						this.morph_cycle ( timeDelta, 'run', move.runAnimationTime * playSpeedModifier, true, state.movingBack );
 						
