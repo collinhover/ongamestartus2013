@@ -123,8 +123,6 @@
 	
 	function RigidBody ( mesh, parameters ) {
 		
-		bodyCount++;
-		
 		var i, l,
 			geometry,
 			vertices,
@@ -162,7 +160,7 @@
 		
 		parameters = parameters || {};
 		
-		this.id = bodyCount;
+		this.id = bodyCount++;
 		
 		this.mesh = mesh;
 		

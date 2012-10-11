@@ -67,10 +67,10 @@
 		
 		parameters.model.physics = parameters.model.physics || {};
 		parameters.model.physics.bodyType = 'capsule';
-		parameters.model.physics.movementDamping = 0.5;//0.97;//
+		parameters.model.physics.movementDamping = 0.5;
 		
 		parameters.movement = parameters.movement || {};
-		parameters.movement.moveSpeed = 3;//0.5;//
+		parameters.movement.moveSpeed = 3;
 		parameters.movement.jumpSpeedStart = 2;
 		parameters.movement.jumpTimeMax = 300;
 		parameters.movement.jumpStartDelay = 0;
