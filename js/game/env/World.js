@@ -12,6 +12,7 @@
 		assetPath = "js/game/env/World.js",
 		_World = {},
 		_Model,
+		_Obstacle,
 		_Skybox;
 	
 	/*===================================================
@@ -24,7 +25,8 @@
 		data: _World,
 		requirements: [
 			"js/game/core/Model.js",
-			"js/game/env/Skybox.js"
+			"js/game/env/Skybox.js",
+			"js/game/physics/Obstacle.js"
 		],
 		callbacksOnReqs: init_internal,
 		wait: true
@@ -36,13 +38,14 @@
     
     =====================================================*/
 	
-	function init_internal ( m, sb ) {
+	function init_internal ( m, sb, ob ) {
 		console.log('internal world');
 		
 		// utils
 		
 		_Model = m;
 		_Skybox = sb;
+		_Obstacle = ob;
 		
 		// instance
 		
@@ -118,13 +121,31 @@
 			shapeSize = 600,
 			shape;
 		
+		/*
+			// tester shape
+			
+			shape = new _Model.Instance( {
+				geometry: new THREE.CubeGeometry( 500, 800, 500 ),
+				material: new THREE.MeshLambertMaterial( { color: 0x555555, ambient: 0xAAAAAA } ),
+				physics: {
+					bodyType: 'box'
+				}
+			} );
+			
+			this.add( shape );
+			
+			shape.position.set( 0, 1500, 0 );
+			shape.quaternion.setFromEuler( new THREE.Vector3( 45, 45, 45 ) );
+			
+		*/
+		
 		for ( i = 0, l = 30; i < l; i++ ) {
 			
 			shape = new _Model.Instance( {
 				geometry: new THREE.CubeGeometry( shapeSizeMin + Math.random() * shapeSize, shapeSizeMin + Math.random() * shapeSize, shapeSizeMin + Math.random() * shapeSize ),
 				material: new THREE.MeshLambertMaterial( { color: 0x555555, ambient: 0xAAAAAA } ),
 				physics: {
-					bodyType: 'mesh'
+					bodyType: 'box'
 				}
 			} );
 			
@@ -161,6 +182,17 @@
 		
 		
 		
+		// obstacle tests
+		
+		var ice = new _Obstacle.Instance( {
+			geometry: new THREE.CubeGeometry( 500, 300, 500 ),
+			material: new THREE.MeshLambertMaterial( { color: 0xBAFEFF, ambient: 0xE3FFFF } ),
+			physics: {
+				bodyType: 'box'
+			}
+		} );
+		ice.position.set( 0, 1400, 0 );
+		this.add( ice );
 		
 		
     	
