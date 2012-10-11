@@ -1480,7 +1480,8 @@ var OGSUS = (function (main) {
 		
 		var i, l,
 			element,
-			index;
+			index,
+			added = false;
 		
 		target = ensure_array( target );
 		elements = ensure_array( elements );
@@ -1497,11 +1498,13 @@ var OGSUS = (function (main) {
 				
 				target.push( element );
 				
+				added = true;
+				
 			}
 			
 		}
 		
-		return target;
+		return added;
 		
 	}
 	
@@ -1509,7 +1512,8 @@ var OGSUS = (function (main) {
 		
 		var i, l,
 			element,
-			index;
+			index,
+			removed = false;
 		
 		target = ensure_array( target );
 		elements = ensure_array( elements );
@@ -1526,11 +1530,13 @@ var OGSUS = (function (main) {
 				
 				target.splice( index, 1 );
 				
+				removed = true;
+				
 			}
 			
 		}
 		
-		return target;
+		return removed;
 		
 	}
 	

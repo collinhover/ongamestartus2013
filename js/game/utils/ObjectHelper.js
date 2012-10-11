@@ -1332,14 +1332,14 @@
 		var stack = object.changeStack = object.changeStack || [],
 			changedProperties = object.changedProperties = object.changedProperties || {},
 			changedBy,
-			layer = {},
+			layer = {id: Math.random()},
 			property,
 			value,
 			changed;
 		
 		for ( property in parameters ) {
 			
-			if ( parameters.hasOwnProperty( property ) ) {
+			if ( parameters.hasOwnProperty( property ) && property !== 'id' ) {
 				
 				value = parameters[ property ];
 				
@@ -1376,13 +1376,8 @@
 			stack = object.changeStack,
 			changedProperties = object.changedProperties,
 			changedBy,
-			layer,
 			index = -1,
 			indexChangedBy,
-			indexChangedByNext,
-			indexChangedByPrev,
-			changedByNext,
-			changedByPrev,
 			property,
 			value;
 		
@@ -1423,7 +1418,7 @@
 					
 					for ( property in layer ) {
 						
-						if ( layer.hasOwnProperty( property ) ) {
+						if ( layer.hasOwnProperty( property ) && property !== 'id' ) {
 							
 							// find out where this layer is in terms of changing property
 							
@@ -1432,25 +1427,19 @@
 							
 							// revert value when layer is last that made a change
 							
-							if ( indexChangedBy === changedBy.length - 1 ) {
-								
-								object[ property ] = layer[ property ];
-								
-							}
-							// else change layer above's revert values to layer below this one
-							else {
-								
-								indexChangedByNext = indexChangedBy + 1;
-								indexChangedByPrev = Math.max( indexChangedBy - 1, 0 );
-								
-								changedByNext = changedBy[ indexChangedByNext ];
-								changedByPrev = changedBy[ indexChangedByPrev ];
-								
-								changedByNext[ property ] = changedByPrev[ property ];
-								
-							}
-							
 							if ( indexChangedBy !== -1 ) {
+								
+								if ( indexChangedBy === changedBy.length - 1 ) {
+									
+									object[ property ] = layer[ property ];
+									
+								}
+								// else change layer above's revert values to layer below this one
+								else {
+									
+									changedBy[ indexChangedBy + 1 ][ property ] = changedBy[ Math.max( indexChangedBy - 1, 0 ) ][ property ];
+									
+								}
 								
 								changedBy.splice( indexChangedBy, 1 );
 								

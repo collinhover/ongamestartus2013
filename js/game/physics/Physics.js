@@ -16,7 +16,6 @@
 		_RayHelper,
 		_MathHelper,
 		_VectorHelper,
-		_ObjectHelper,
 		_PhysicsHelper;
 	
 	/*===================================================
@@ -33,7 +32,6 @@
 			"js/game/utils/MathHelper.js",
 			"js/game/utils/VectorHelper.js",
 			"js/game/utils/RayHelper.js",
-			"js/game/utils/ObjectHelper.js",
 			"js/game/utils/PhysicsHelper.js",
 			"js/lib/three/ThreeOctree.min.js"
 		],
@@ -47,7 +45,7 @@
     
     =====================================================*/
 	
-	function init_internal ( rb, ob, mh, vh, rh, oh, ph ) {
+	function init_internal ( rb, ob, mh, vh, rh, ph ) {
 		console.log('internal physics');
 		
 		_RigidBody = rb;
@@ -55,7 +53,6 @@
 		_MathHelper = mh;
 		_VectorHelper = vh;
 		_RayHelper = rh;
-		_ObjectHelper = oh;
 		_PhysicsHelper = ph;
 		
 		// instance
@@ -393,7 +390,6 @@
 			axisDown = this.utilVec33Velocity,
 			angleFixCollisionQ,
 			moveForceRotated,
-			collision,
 			obstacle,
 			clear;
 		
@@ -563,36 +559,28 @@
 		
 		// obstacles
 		
-		collision = rigidBody.velocityMovement.collision || rigidBody.velocityGravity.collision;
-		
-		if ( collision ) {
-		
-			obstacle = collision.object;
+		if ( velocity.collision ) {
 			
-			if ( obstacle instanceof _Obstacle.Instance ) {
-				
-				if ( forGravity !== true ) {
-					
-					
-					if ( typeof rigidBody.movementChangeLayer === 'undefined' ) {
-						
-						rigidBody.movementChangeLayer = _ObjectHelper.temporary_change( rigidBody.velocityMovement, {
-							damping: new THREE.Vector3( 0.97, 0.97, 0.97 ),
-							speedDelta: new THREE.Vector3( 0.1, 0.1, 0.1 )
-						} );
-					}
-					
-				}
-				
-			}
-			else {
-				
-				if ( typeof rigidBody.movementChangeLayer !== 'undefined' ) {
-					_ObjectHelper.revert_change( rigidBody.velocityMovement, rigidBody.movementChangeLayer );
-					delete rigidBody.movementChangeLayer;
-				}
-				
-			}
+			obstacle = velocity.collision.object;
+			
+		}
+		
+		// if any collision object found or when not for gravity velocity
+		// gravity should retain obstacle until another collision found
+		// movement should shed obstacle as soon as not colliding with that obstacle
+		
+		if ( ( obstacle || forGravity !== true ) && velocity.obstacle instanceof _Obstacle.Instance && velocity.obstacle !== obstacle ) {
+			
+			velocity.obstacle.unaffect( mesh );
+			delete velocity.obstacle;
+			
+		}
+		
+		if ( obstacle instanceof _Obstacle.Instance ) {
+			
+			velocity.obstacle = obstacle;
+			
+			obstacle.affect( mesh );
 			
 		}
 		

@@ -12,7 +12,7 @@
 		assetPath = "js/game/env/World.js",
 		_World = {},
 		_Model,
-		_Obstacle,
+		_SlipperyObstacle,
 		_Skybox;
 	
 	/*===================================================
@@ -26,7 +26,7 @@
 		requirements: [
 			"js/game/core/Model.js",
 			"js/game/env/Skybox.js",
-			"js/game/physics/Obstacle.js"
+			"js/game/physics/SlipperyObstacle.js"
 		],
 		callbacksOnReqs: init_internal,
 		wait: true
@@ -38,14 +38,14 @@
     
     =====================================================*/
 	
-	function init_internal ( m, sb, ob ) {
+	function init_internal ( m, sb, sob ) {
 		console.log('internal world');
 		
 		// utils
 		
 		_Model = m;
 		_Skybox = sb;
-		_Obstacle = ob;
+		_SlipperyObstacle = sob;
 		
 		// instance
 		
@@ -184,7 +184,7 @@
 		
 		// obstacle tests
 		
-		var ice = new _Obstacle.Instance( {
+		var ice = new _SlipperyObstacle.Instance( {
 			geometry: new THREE.CubeGeometry( 500, 300, 500 ),
 			material: new THREE.MeshLambertMaterial( { color: 0xBAFEFF, ambient: 0xE3FFFF } ),
 			physics: {
