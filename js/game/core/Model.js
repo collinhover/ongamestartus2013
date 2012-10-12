@@ -16,11 +16,7 @@
 		_MathHelper,
 		_SceneHelper,
 		_ObjectHelper,
-		objectCount = 0,
-		morphDurationBase = 1000,
-		morphDurationPerFrameMinimum = shared.timeDeltaExpected || 1000 / 60,
-		morphsNumMin = 5,
-		stabilityMorphID = 'stability_morph';
+		objectCount = 0;
 	
 	/*===================================================
     
@@ -53,6 +49,16 @@
 		_MathHelper = mh;
 		_SceneHelper = sh;
 		_ObjectHelper = oh;
+		
+		// properties
+		
+		_Model.defaults = {
+			morphDuration: 1000,
+			morphChangeDuration: 125,
+			morphDurationPerFrameMinimum: shared.timeDeltaExpected || 1000 / 60,
+			morphsNumMin: 5,
+			morphStabilityID: 'morph_stability'
+		};
 		
 		// instance
 		
@@ -290,7 +296,8 @@
 		
 		// morph defaults
 		
-		this.morphDurationBase = parameters.morphDurationBase;
+		this.morphDuration = main.is_number( parameters.morphDuration ) ? parameters.morphDuration : _Model.defaults.morphDuration;
+		this.morphChangeDuration = main.is_number( parameters.morphChangeDuration ) ? parameters.morphChangeDuration : _Model.defaults.morphChangeDuration;
 		
 		// adjustments
 		
@@ -766,7 +773,7 @@
 			
 			// if morph is stability morph, register and skip
 			
-			if ( nameParsed.name === stabilityMorphID ) {
+			if ( nameParsed.name === _Model.defaults.morphStabilityID ) {
 				
 				hasStabilityMorph = true;
 				
@@ -820,7 +827,7 @@
 		// if geometry has morphs
 		// check stability
 		
-		if ( morphs.length > 0 && ( hasStabilityMorph === false || morphs.length < morphsNumMin ) ) {
+		if ( morphs.length > 0 && ( hasStabilityMorph === false || morphs.length < _Model.defaults.morphsNumMin ) ) {
 			
 			// adds stability morph to end of morphs list, identical to base geometry
 			// as required to make model + morphtargets work
@@ -829,7 +836,7 @@
 			
 			// ensure minimum number of morphs
 			
-			for ( i = morphs.length, l = morphsNumMin; i < l; i++ ) {
+			for ( i = morphs.length, l = _Model.defaults.morphsNumMin; i < l; i++ ) {
 				
 				add_stability_morph( mesh );
 				
@@ -894,7 +901,7 @@
 			vertex,
 			vertPos,
 			morphNumber = mesh.morphTargetInfluences.length,
-			morphInfo = { name: stabilityMorphID + '_' + morphNumber, vertices: [] },
+			morphInfo = { name: _Model.defaults.morphStabilityID + '_' + morphNumber, vertices: [] },
 			morphVertices = morphInfo.vertices;
 		
 		for ( i = 0, l = vertices.length; i < l; i++ ) {
@@ -939,6 +946,7 @@
 	=====================================================*/
 	
 	function make_morph_updater ( name ) {
+		
 		var updater = {},
 			info;
 		
@@ -953,17 +961,17 @@
 			
 			var startDelay;
 			
-			// if not already updating
+			parameters = parameters || {};
+			
+			// not already updating
 			
 			if ( info.updating !== true ) {
-				
-				parameters = parameters || {};
 				
 				info.mesh = mesh;
 				
 				info.morphsMap = morphsMap;
 				
-				info.duration = info.durationOriginal = parameters.duration || mesh.morphDurationBase || morphDurationBase;
+				info.duration = info.durationOriginal = parameters.duration || mesh.morphDuration;
 				
 				if ( parameters.hasOwnProperty('loop') === true ) {
 					
@@ -1072,7 +1080,7 @@
 			
 			// duration
 			
-			if ( main.is_number( parameters.duration ) && ( parameters.duration / info.morphsMap.length ) > morphDurationPerFrameMinimum && info.durationOriginal !== parameters.duration ) {
+			if ( main.is_number( parameters.duration ) && ( parameters.duration / info.morphsMap.length ) > _Model.defaults.morphDurationPerFrameMinimum && info.durationOriginal !== parameters.duration ) {
 				
 				durationNew = parameters.duration;
 				

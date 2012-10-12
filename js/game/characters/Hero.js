@@ -70,11 +70,15 @@
 		parameters.model.physics.movementDamping = 0.5;
 		
 		parameters.movement = parameters.movement || {};
-		parameters.movement.moveSpeed = 3;
-		parameters.movement.jumpSpeedStart = 2;
-		parameters.movement.jumpTimeMax = 300;
-		parameters.movement.jumpStartDelay = 0;
-		parameters.movement.jumpMoveSpeedMod = 0;
+		parameters.movement.move = {
+			speed: 3
+		};
+		parameters.movement.jump = {
+			speedStart: 2,
+			duration: 300,
+			startDelay: 0,
+			moveSpeedMod: 0
+		};
 		
 		// prototype constructor
 		
