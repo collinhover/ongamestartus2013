@@ -43,17 +43,19 @@
 		
 		// properties
 		
-		_MorphAnimator.defaults = {
+		_MorphAnimator.options = {
 			duration: 1000,
-			durationChange: 125,
-			durationPerFrameMinimum: shared.timeDeltaExpected || 1000 / 60,
-			durationShift: 0,
+			durationPerFrameMin: shared.timeDeltaExpected || 1000 / 60,
+			durationClear: 125,
+			direction: 1,
+			interpolationDirection: 1,
 			loop: false,
 			loopDelay: 0,
 			loopChance: 1,
 			reverseOnComplete: false,
 			startDelay: 0,
-			reset: true
+			solo: false,
+			prepare: true
 		};
 		
 		// instance
@@ -61,12 +63,16 @@
 		_MorphAnimator.Instance = MorphAnimator;
 		_MorphAnimator.Instance.prototype.constructor = _MorphAnimator.Instance;
 		
-		_MorphAnimator.Instance.prototype.reset = reset;
+		_MorphAnimator.Instance.prototype.prepare = prepare;
+		_MorphAnimator.Instance.prototype.recycle = recycle;
+		_MorphAnimator.Instance.prototype.change = change;
 		
 		_MorphAnimator.Instance.prototype.play = play;
 		_MorphAnimator.Instance.prototype.resume = resume;
+		_MorphAnimator.Instance.prototype.complete = complete;
 		_MorphAnimator.Instance.prototype.stop = stop;
 		_MorphAnimator.Instance.prototype.clear = clear;
+		_MorphAnimator.Instance.prototype.reset = reset;
 		
 		_MorphAnimator.Instance.prototype.update = update;
 		
@@ -81,23 +87,103 @@
     
     =====================================================*/
 	
-	function MorphAnimator ( morphs, library, name ) {
+	function MorphAnimator ( morphs, name, parameters ) {
 		
 		this.morphs = morphs;
-		this.library = library;
 		this.name = name;
+		this.map = this.morphs.maps[ this.name ];
 		
-		this.reset();
+		this.options = $.extend( true, this.options || {}, _MorphAnimator.options, parameters );
+		
+		this.prepare();
 		
 	}
 	
-	function reset () {
+	function prepare ( looping ) {
 		
-		this.animating = this.clearing = this.reverse = false;
-		this.cleared = true;
+		this.frameLast = main.is_number( this.frameLast ) ? this.frameLast : -1;
 		
-		this.direction = 1;
-		this.interpolationDirection = 1;
+		if ( this.options.direction === -1 ) {
+			
+			this.frame = this.map.length - 1;
+			
+		}
+		else {
+			
+			this.frame = 0;
+			
+		}
+		
+		if ( looping !== true ) {
+			
+			this.animating = this.clearing = false;
+			
+		}
+		
+		this.recycle();
+		
+		return this;
+		
+	}
+	
+	function recycle () {
+		
+		this.framesUpdated = 0;
+		this.frameTimeDelta = 0;
+		this.time = this.timeLast = this.timeStart = new Date().getTime();
+		
+		return this;
+		
+	}
+	
+	function change ( parameters ) {
+		
+		var changes = $.extend( {}, parameters ),
+			duration,
+			durationNew = changes.duration,
+			timeFromStart,
+			cyclePct,
+			frameCount,
+			frameDuration,
+			frameDurationNew,
+			framePct;
+		
+		// duration
+		
+		if ( main.is_number( durationNew ) && this.durationOriginal !== durationNew && ( changes.duration / this.map.length ) > _MorphAnimator.options.durationPerFrameMin ) {
+			
+			duration = this.options.duration;
+			timeFromStart = this.time - this.timeStart;
+			cyclePct = timeFromStart / duration;
+			frameCount = this.map.length;
+			
+			// fix time start to account for difference in durations
+			
+			this.timeStart += ( duration * cyclePct ) - ( durationNew * cyclePct );
+			
+			// fix frame time delta to account for new duration per frame
+			
+			frameDuration = duration / frameCount;
+			
+			frameDurationNew = durationNew / frameCount;
+			
+			framePct = this.frameTimeDelta / frameDuration;
+			
+			this.frameTimeDelta = frameDurationNew * framePct;
+			
+		}
+		
+		// direction
+		
+		if ( changes.reverse === true ) {
+			
+			this.reverse_direction();
+			
+		}
+		
+		// merge changes
+		
+		this.options = $.extend( this.options || {}, changes );
 		
 		return this;
 		
@@ -111,17 +197,33 @@
 	
 	function play ( parameters ) {
 		
-		this.options = $.extend( {}, _MorphAnimator.defaults, parameters );
+		this.change( parameters );
 		
-		if ( this.updating !== true ) {
+		this.clearing = false;
+		
+		// solo
+		
+		if ( this.options.solo === true ) {
+			
+			this.morphs.clear_all( { duration: this.options.durationClear }, this.name );
+			
+		}
+		
+		if ( this.animating !== true && typeof this.startTimeoutHandle === 'undefined' && typeof this.loopTimeoutHandle === 'undefined' ) {
 			
 			this.durationOriginal = this.options.duration;
 			
-			// reset
+			// prepare
 			
-			if ( this.cleared !== false && this.options.reset !== false ) {
+			if ( this.cleared !== false && this.options.prepare !== false ) {
 				
-				this.reset();
+				this.prepare();
+				
+			}
+			
+			if ( main.is_number( this.options.startDelay ) !== true ) {
+				
+				this.options.startDelay = Math.round( Math.random() * this.durationOriginal );
 				
 			}
 			
@@ -137,14 +239,94 @@
 	
 	function resume () {
 		
-		if ( this.updating !== true ) {
+		if ( this.animating !== true ) {
 			
 			clear_delays.call( this );
 			
-			this.updating = true;
+			this.animating = true;
 			this.cleared = false;
 			
 			shared.signals.onGameUpdated.add( this.update, this );
+			
+		}
+		
+		return this;
+		
+	}
+	
+	/*===================================================
+    
+    complete
+    
+    =====================================================*/
+	
+	function complete () {
+		
+		// clear
+		
+		if ( this.clearing === true ) {
+			
+			this.clear();
+			
+		}
+		else {
+			
+			// properties
+			
+			if ( this.options.reverseOnComplete === true ) {
+				
+				this.reverse_direction();
+				
+			}
+			
+			// loop or stop
+			
+			if ( this.options.loop === true ) {
+				
+				loop.call( this );
+				
+			}
+			else {
+				
+				this.stop().prepare();
+				
+			}
+			
+		}
+		
+	}
+	
+	function loop ( delay ) {
+		
+		var delay = this.options.loopDelay;
+		
+		clear_delays.call( this );
+		
+		this.prepare( true );
+		
+		// loop chance
+		
+		if ( this.options.loopChance < 1 && Math.random() > this.options.loopChance ) {
+			
+			delay += this.durationOriginal;
+			
+		}
+		
+		// if should resume after loop delay
+		
+		if ( delay > 0 ) {
+			
+			// pause updater
+			
+			this.stop();
+			
+			this.loopTimeoutHandle = window.requestTimeout( $.proxy( loop, this ), delay );
+			
+		}
+		// else resume
+		else {
+			
+			this.resume();
 			
 		}
 		
@@ -160,13 +342,11 @@
 	
 	function stop () {
 		
-		if ( this.updating === true ) {
+		clear_delays.call( this );
+		
+		this.animating = false;
 			
-			this.updating = false;
-				
-			shared.signals.onGameUpdated.remove( this.update, this );
-			
-		}
+		shared.signals.onGameUpdated.remove( this.update, this );
 		
 		return this;
 		
@@ -180,17 +360,9 @@
 	
 	function clear ( parameters ) {
 		
-		var i, l,
-			mesh,
-			influences,
-			map,
-			duration;
+		var duration;
 		
 		if ( this.cleared !== true ) {
-			
-			mesh = this.morphs.mesh;
-			influences = mesh.morphTargetInfluences;
-			map = this.library.maps[ this.name ];
 			
 			parameters = parameters || {};
 			duration = parameters.duration;
@@ -206,29 +378,181 @@
 					this.options.duration = duration;
 					this.clearing = true;
 					
-					this.reset( false ).resume();
+					this.recycle().resume();
 					
 				}
 				
 			}
 			else {
 				
-				this.stop().reset( false );
-					
-				for ( i = 0, l = map.length; i < l; i ++ ) {
-					
-					influences[ map[ i ].index ] = 0;
-					
-				}
-				
-				this.clearing = false;
-				this.cleared = true;
+				this.reset();
 				
 			}
 			
 		}
 		
 		return this;
+		
+	}
+	
+	function reset () {
+		
+		var i, l,
+			mesh = this.morphs.mesh,
+			influences = mesh.morphTargetInfluences,
+			map = this.map;
+		this.stop().prepare();
+			
+		for ( i = 0, l = map.length; i < l; i ++ ) {
+			
+			influences[ map[ i ].index ] = 0;
+			
+		}
+		
+		this.cleared = true;
+		
+		return this;
+		
+	}
+	
+	/*===================================================
+    
+    update
+    
+    =====================================================*/
+	
+	function update ( timeDelta ) {
+		
+		var i, l,
+			mesh = this.morphs.mesh,
+			influences = mesh.morphTargetInfluences,
+			map = this.map,
+			o = this.options,
+			scaleMax = Math.max( mesh.scale.x, mesh.scale.y, mesh.scale.z, 0.5 ),
+			duration = o.duration * scaleMax,
+			timeFromStart,
+			cyclePct,
+			direction,
+			interpolationDirection,
+			interpolationDelta,
+			frameCount = map.length,
+			frameDuration,
+			index,
+			indexLast;
+		
+		// update time
+		
+		this.timeLast = this.time;
+		this.time += timeDelta;
+		timeFromStart = this.time - this.timeStart;
+		cyclePct = timeFromStart / duration;
+		
+		// clearing
+		
+		if ( this.clearing === true ) {
+			
+			interpolationDelta = timeDelta / duration;
+			
+			// decrease all morphs by the same amount at the same time
+			
+			for ( i = 0, l = frameCount; i < l; i++ ) {
+				
+				index = map[ i ].index;
+				
+				influences[ index ] = _MathHelper.clamp( influences[ index ] - interpolationDelta, 0, 1 );
+				
+			}
+			
+		}
+		// frame to frame
+		else {
+			
+			direction = o.direction;
+			interpolationDirection = o.interpolationDirection;
+			
+			frameDuration = duration / frameCount;
+			interpolationDelta = ( timeDelta / frameDuration ) * interpolationDirection;
+			
+			index = map[ this.frame ].index;
+		
+			this.frameTimeDelta += timeDelta;
+			
+			// if frame should swap
+			
+			if ( this.frameTimeDelta >= frameDuration ) {
+				
+				this.framesUpdated++;
+				this.frameTimeDelta = Math.max( 0, this.frameTimeDelta - frameDuration );
+
+				// push influences to max / min
+				
+				influences[ index ] = 1;
+					
+				if ( this.frameLast > -1 ) {
+					
+					indexLast = map[ this.frameLast ].index;
+					
+					influences[ indexLast ] = 0;
+					
+				}
+				
+				this.frameLast = this.frame;
+				this.frame = this.frame + 1 * direction;
+				
+				// reset frame to start?
+				
+				if ( direction === -1 && this.frame < 0  ) {
+					
+					this.frame = frameCount - 1;
+					
+				}
+				else if ( direction === 1 && this.frame > frameCount - 1 ) {
+					
+					this.frame = 0;
+					
+				}
+				
+				// special case for looping single morphs
+					
+				if ( map.length === 1 ) {
+					
+					if ( interpolationDirection === -1 ) {
+						
+						influences[ index ] = 0;
+						
+					}
+					
+					this.frameLast = -1;
+					
+					this.reverse_interpolation();
+					
+				}
+				
+			}
+			// change influences by interpolation delta
+			else {
+				
+				influences[ index ] = _MathHelper.clamp( influences[ index ] + interpolationDelta, 0, 1 );
+				
+				if ( this.frameLast > -1 ) {
+					
+					indexLast = map[ this.frameLast ].index;
+					
+					influences[ indexLast ] = _MathHelper.clamp( influences[ indexLast ] - interpolationDelta, 0, 1 );
+					
+				}
+				
+			}
+			
+		}
+		
+		// completion
+		
+		if ( cyclePct >= 1 || this.framesUpdated >= frameCount ) {
+			
+			this.complete();
+			
+		}
 		
 	}
 	
@@ -240,7 +564,25 @@
 	
 	function reverse_direction () {
 		
-		this.direction = -this.direction;
+		this.options.direction = -this.options.direction;
+		
+		// special case for single morph
+		
+		if ( this.map.length === 1 ) {
+			
+			// if morph is not already in zero state
+			
+			if ( this.options.direction === -1 && this.morphs.mesh.morphTargetInfluences[ this.map[ 0 ] ] > 0 ) {
+				
+				this.options.interpolationDirection = -1;
+				
+			}
+			
+			// direction cannot be in reverse
+			
+			this.options.direction = 1;
+			
+		}
 		
 		return this;
 		
@@ -248,7 +590,7 @@
 	
 	function reverse_interpolation () {
 		
-		this.interpolationDirection = -this.interpolationDirection;
+		this.options.interpolationDirection = -this.options.interpolationDirection;
 		
 		return this;
 		
@@ -277,363 +619,5 @@
 		return this;
 		
 	}
-	
-	function change () {
 		
-		
-		
-	}
-	
-	updater.changeParameters = function ( parameters ) {
-			
-			var durationNew,
-				durationPrev,
-				durationFramePrev,
-				durationFrameNew,
-				timeFromStart,
-				framePct;
-			
-			parameters = parameters || {};
-			
-			// stop clearing
-			
-			if ( this.clearing === true ) {
-				
-				this.clearing = false;
-				
-			}
-			
-			// duration
-			
-			if ( main.is_number( parameters.duration ) && ( parameters.duration / this.morphsMap.length ) > this.defaults.durationPerFrameMinimum && this.durationOriginal !== parameters.duration ) {
-				
-				durationNew = parameters.duration;
-				
-				durationPrev = this.duration;
-				
-				timeFromStart = this.time - this.timeStart;
-				
-				cyclePct = timeFromStart / durationPrev;
-				
-				// fix time start to account for difference in durations
-				
-				this.timeStart += ( durationPrev * cyclePct ) - ( durationNew * cyclePct );
-				
-				// fix frame time delta to account for new duration per frame
-				
-				durationFramePrev = durationPrev / this.morphsMap.length;
-				
-				durationFrameNew = durationNew / this.morphsMap.length;
-				
-				framePct = this.frameTimeDelta / durationFramePrev;
-				
-				this.frameTimeDelta = durationFrameNew * framePct;
-				
-				// store new duration
-				
-				this.duration = this.durationOriginal = durationNew;
-				
-			}
-			
-			// direction
-			
-			if ( typeof parameters.reverse === 'boolean' && this.reverse !== parameters.reverse ) {
-				
-				this.reverse = parameters.reverse;
-				
-				this.direction = ( this.reverse === true ) ? -1 : 1;
-				
-				// special case for single morph
-				
-				if ( this.morphsMap.length === 1 ) {
-					
-					// if morph is not already in zero state
-					
-					if ( this.direction === -1 && mesh.morphTargetInfluences[ this.morphsMap[0] ] > 0 ) {
-						this.interpolationDirection = -1;
-					}
-					
-					// direction cannot be in reverse
-					
-					this.direction = 1;
-					
-				}
-				
-			}
-			
-			return this;
-			
-		};
-		
-		updater.reset = function ( isLooping ) {
-			
-			var loopDelay;
-			
-			this.timeStart = new Date().getTime();
-			
-			this.numFramesUpdated = 0;
-			
-			this.duration = this.durationOriginal + ( Math.random() * this.durationShift );
-			
-			if ( this.reverseOnComplete === true ) {
-				
-				this.direction = -this.direction;
-				
-				if ( this.direction === -1 ) {
-					this.frame = this.morphsMap.length - 1;
-				}
-				else {
-					this.frame = 0;
-				}
-				
-			}
-			
-			// if first reset, or not looping
-			
-			if ( isLooping !== true ) {
-				
-				this.time = this.timeLast = this.timeStart;
-				
-				this.frameTimeDelta = 0;
-				
-				if ( this.direction === -1 ) {
-					this.frame = this.morphsMap.length - 1;
-				}
-				else {
-					this.frame = 0;
-				}
-				
-				this.frameLast = this.frameLast || -1;
-				
-			}
-			// handle looping
-			else {
-				
-				updater.handleLooping( this.loopDelay );
-				
-			}
-			
-			return this;
-			
-		};
-	
-	function make_morph_updater ( name ) {
-		
-		
-		updater.handleLooping = function ( delay ) {
-			
-			// delay
-			
-			delay = delay || 0;
-			
-			if ( Math.random() > this.loopChance ) {
-				
-				delay += this.durationOriginal;
-				
-			}
-			
-			// if should resume after loop delay
-			
-			if ( delay > 0 ) {
-				
-				updater.clearDelays();
-				
-				// pause updater
-				
-				updater.stop();
-				
-				this.loopTimeoutHandle = requestTimeout( updater.handleLooping, delay );
-				
-			}
-			// else resume
-			else {
-				
-				updater.resume();
-				
-			}
-			
-		};
-		
-		updater.update = function ( timeDelta ) {
-			
-			var i, l,
-				loop = this.loop,
-				morphsMap = this.morphsMap,
-				mesh = this.mesh,
-				scale = mesh.scale,
-				influences = mesh.morphTargetInfluences,
-				numFrames = morphsMap.length,
-				time = this.time,
-				timeStart = this.timeStart,
-				timeLast = this.timeLast,
-				timeFromStart = time - timeStart,
-				duration = this.duration * Math.max( scale.x, scale.y, scale.z ),
-				cyclePct = timeFromStart / duration,
-				frameTimeDelta,
-				frame,
-				frameLast,
-				morphIndex,
-				morphIndexLast,
-				direction,
-				durationFrame,
-				interpolationDirection,
-				interpolationDelta;
-			
-			// if clearing
-			
-			if ( this.clearing === true ) {
-				
-				// properties
-				
-				interpolationDelta = (timeDelta / duration);
-				
-				// decrease all morphs by the same amount at the same time
-				
-				for ( i = 0, l = numFrames; i < l; i++ ) {
-					
-					morphIndex = morphsMap[ i ].index;
-					
-					influences[ morphIndex ] = Math.min( 1, Math.max( 0, influences[ morphIndex ] - interpolationDelta ) );
-					
-				}
-				
-			}
-			// else default frame to frame interpolation
-			else {
-				
-				// properties
-				
-				frame = this.frame;
-				frameLast = this.frameLast;
-				morphIndex = morphsMap[ frame ].index;
-				direction = this.direction;
-				durationFrame = duration / numFrames;
-				interpolationDirection = this.interpolationDirection;
-				interpolationDelta = (timeDelta / durationFrame) * interpolationDirection;
-				
-				// update frameTimeDelta
-			
-				frameTimeDelta = this.frameTimeDelta += timeDelta;
-				
-				// if frame should swap
-				
-				if ( frameTimeDelta >= durationFrame ) {
-					
-					// reset frame time delta
-					// account for large time delta
-					this.frameTimeDelta = Math.max( 0, frameTimeDelta - durationFrame );
-					
-					// record new frames for next cycle
-					
-					this.frameLast = this.frame;
-					
-					this.frame = frame + 1 * direction;
-					
-					this.numFramesUpdated++;
-					
-					// reset frame to start?
-					
-					if ( direction === -1 && this.frame < 0  ) {
-						
-						this.frame = numFrames - 1;
-						
-					}
-					else if ( direction === 1 && this.frame > numFrames - 1 ) {
-						
-						this.frame = 0;
-						
-					}
-
-					// push influences to max / min
-						
-					if ( frameLast > -1 ) {
-						
-						morphIndexLast = morphsMap[ frameLast ].index;
-						
-						influences[ morphIndexLast ] = 0;
-						
-					}
-					
-					influences[ morphIndex ] = 1;
-					
-					// special case for looping single morphs
-						
-					if ( morphsMap.length === 1 ) {
-						
-						if ( interpolationDirection === -1 ) {
-							
-							influences[ morphIndex ] = 0;
-							
-						}
-						
-						this.frameLast = -1;
-						
-						updater.reverse_interpolation();
-						
-					}
-					
-				}
-				// change influences by interpolation delta
-				else {
-					
-					// current frame
-					
-					influences[ morphIndex ] = Math.max( 0, Math.min ( 1, influences[ morphIndex ] + interpolationDelta ) );
-					
-					// last frame
-					
-					if ( frameLast > -1 ) {
-						
-						morphIndexLast = morphsMap[ frameLast ].index;
-						
-						influences[ morphIndexLast ] = Math.min( 1, Math.max( 0, influences[ morphIndexLast ] - interpolationDelta ) );
-						
-					}
-					
-				}
-				
-			}
-			
-			// update time
-			
-			this.timeLast = this.time;
-			this.time += timeDelta;
-			
-			// reset, looping and callback
-			
-			if ( cyclePct >= 1 || this.numFramesUpdated >= numFrames ) {
-				
-				// if clearing, finish
-				if ( this.clearing === true ) {
-					
-					updater.clear();
-					
-				}
-				// if looping, do looping cycle reset
-				else if ( loop === true ) {
-					
-					updater.reset( loop );
-					
-				}
-				// else stop
-				else {
-					
-					updater.stop();
-					
-				}
-				
-				if ( typeof this.callback === 'function' ) {
-					
-					this.callback();
-					
-				}
-				
-			}
-			
-		};
-		
-		
-		return updater;
-	}
-	
 } (OGSUS) );

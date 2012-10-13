@@ -49,7 +49,11 @@
 		
 		// properties
 		
-		_Model.defaults = {};
+		_Model.options = {
+			morphs: {
+				duration: 1000
+			}
+		};
 		
 		// instance
 		
@@ -116,8 +120,8 @@
 					
 					// re-create morphs handler
 					
-					this.morphs = new _Morphs.Instance( { mesh: this } );
-
+					this.morphs = new _Morphs.Instance( this, this.options.morphs );
+					
 				}
 				
 			}
@@ -149,6 +153,8 @@
 		// id
 		
 		this.id = objectCount++;
+		
+		this.options = $.extend( true, this.options || {}, _Model.options, parameters.options );
 		
 		// geometry
 		

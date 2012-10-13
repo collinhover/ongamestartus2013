@@ -55,27 +55,17 @@
 		
 		// properties
 		
-		_Character.defaults = {
-			state: {
-				invulnerabilityDuration: 500,
-				deathAnimationDuration: 1000,
-				decayDelay: 500,
-				decayDuration: 500,
-				respawnOnDeath: false,
-				respawnDelay: 0,
-				animationChangeTimeThreshold: 0,
-				morphClearDuration: 125
-			},
+		_Character.options = {
 			stats: {
-				healthMax: 100
+				healthMax: 100,
+				invulnerabilityDuration: 500,
+				respawnOnDeath: false,
+				respawnDelay: 0
 			},
 			movement: {
 				move: {
 					speed: 3,
-					runThreshold: 0,
-					walkAnimationDuration: 750,
-					runAnimationDuration: 500,
-					idleAnimationDuration: 3000
+					runThreshold: 0
 				},
 				rotate: {
 					lerpDelta: 1,
@@ -89,10 +79,22 @@
 					moveSpeedMod: 0.5,
 					durationMin: 100,
 					duration: 100,
-					startDelay: 125,
-					AnimationDuration: 1000,
-					startAnimationDuration: 125,
-					endAnimationDuration: 125
+					startDelay: 125
+				}
+			},
+			animation: {
+				durations: {
+					walk: 750,
+					run: 500,
+					idle: 3000,
+					jump: 1000,
+					jumpStart: 125,
+					jumpEnd: 125,
+					death: 1000,
+					decay: 500,
+					decayDelay: 500,
+					clear: 125,
+					clearSolo: 125
 				}
 			}
 		};
@@ -106,42 +108,24 @@
 		_Character.Instance.prototype.hurt = hurt;
 		_Character.Instance.prototype.die = die;
 		_Character.Instance.prototype.decay = decay;
+		
+		_Character.Instance.prototype.set_spawn = set_spawn;
 		_Character.Instance.prototype.respawn = respawn;
 		
 		_Character.Instance.prototype.move_state_change = move_state_change;
 		_Character.Instance.prototype.rotate_by_direction = rotate_by_direction;
 		_Character.Instance.prototype.rotate_by_angle = rotate_by_angle;
 		_Character.Instance.prototype.stop_jumping = stop_jumping;
-		_Character.Instance.prototype.morph_cycle = morph_cycle;
 		
 		_Character.Instance.prototype.update = update;
 		
-		Object.defineProperty( _Character.Instance.prototype, 'scene', { 
-			get : function () { return this._scene; },
-			set : function ( newScene ) {
-				
-				if ( typeof newScene !== 'undefined' ) {
-					
-					// remove from previous
-					
-					this.hide();
-					
-					// add to new
-					
-					this.show( newScene );
-					
-				}
-				
-			}
-		});
-		
 		Object.defineProperty( _Character.Instance.prototype, 'health', { 
-			get : function () { return this.stats.health; },
+			get : function () { return this.state.health; },
 			set: function ( health ) {
 				
 				if ( main.is_number( health ) ) {
 					
-					this.stats.health = _MathHelper.clamp( health, 0, this.stats.healthMax );
+					this.state.health = _MathHelper.clamp( health, 0, this.options.stats.healthMax );
 					
 				}
 				
@@ -157,15 +141,15 @@
 		});
 		
 		Object.defineProperty( _Character.Instance.prototype, 'jumping', { 
-			get : function () { return this.movement.jump.active; }
+			get : function () { return this.options.movement.jump.active; }
 		});
 		
 		Object.defineProperty( _Character.Instance.prototype, 'turn', { 
-			get : function () { return this.movement.rotate.turn; }
+			get : function () { return this.options.movement.rotate.turn; }
 		});
 		
 		Object.defineProperty( _Character.Instance.prototype, 'facing', { 
-			get : function () { return this.movement.rotate.facing; }
+			get : function () { return this.options.movement.rotate.facing; }
 		});
 		
 	}
@@ -180,29 +164,55 @@
 	
 	function Character ( parameters ) {
 		
-		var pModel,
-			pMovement,
-			pMove,
-			pRotate,
-			pJump,
-			movement,
+		var movement,
 			move,
 			rotate,
 			jump,
-			state;
+			state,
+			animation,
+			durations;
 		
 		// handle parameters
 		
 		parameters = parameters || {};
 		
-		pModel = parameters.model || {};
-		pMovement = parameters.movement || {};
-		pMove = pMovement.move || {};
-		pRotate = pMovement.rotate || {};
-		pJump = pMovement.jump || {};
+		// options
+		
+		this.options = $.extend( true, this.options || {}, _Character.options, parameters.options );
+		
+		stats = this.options.stats;
+		movement = this.options.movement;
+		
+		// move
+		
+		move = movement.move;
+		move.direction = new THREE.Vector3();
+		
+		// rotate
+		rotate = movement.rotate;
+		rotate.facingDirection = new THREE.Vector3( 0, 0, 1 );
+		rotate.facingDirectionLast = rotate.facingDirection.clone();
+		rotate.facing = new THREE.Quaternion();
+		rotate.facingAngle = 0;
+		rotate.turn = new THREE.Quaternion();
+		rotate.turnAngle = 0;
+		rotate.axis = new THREE.Vector3( 0, 1, 0 );
+		rotate.delta = new THREE.Quaternion();
+		rotate.vector = new THREE.Quaternion();
+		
+		// jump
+		jump = movement.jump;
+		jump.time = 0;
+		jump.timeAfterNotGrounded = 0;
+		jump.timeAfterNotGroundedMax = 125;
+		jump.startDelayTime = 0;
+		jump.ready = true;
+		jump.active = false;
+		jump.holding = false;
 		
 		// state
-		state = this.state = $.extend( {}, _Character.defaults.state, parameters.state );
+		
+		state = this.state = {};
 		state.up = 0;
 		state.down = 0;
 		state.left = 0;
@@ -216,58 +226,21 @@
 		state.invulnerableTime = 0;
 		state.dead = false;
 		state.decaying = false;
-		state.animationChangeTime = state.animationChangeTimeThreshold;
-		state.morphName = '';
-		
-		// stats
-		
-		stats = this.stats = $.extend( {}, _Character.defaults.stats, parameters.stats );
-		stats.health = stats.healthMax;
-		
-		// movement
-		
-		movement = this.movement = {};
-		
-		// move
-		
-		move = movement.move = $.extend( {}, _Character.defaults.movement.move, pMovement.move );
-		move.direction = new THREE.Vector3();
-		
-		// rotate
-		rotate = movement.rotate = $.extend( {}, _Character.defaults.movement.rotate, pMovement.rotate );
-		rotate.facingDirection = new THREE.Vector3( 0, 0, 1 );
-		rotate.facingDirectionLast = rotate.facingDirection.clone();
-		rotate.facing = new THREE.Quaternion();
-		rotate.facingAngle = 0;
-		rotate.turn = new THREE.Quaternion();
-		rotate.turnAngle = 0;
-		rotate.axis = new THREE.Vector3( 0, 1, 0 );
-		rotate.delta = new THREE.Quaternion();
-		rotate.vector = new THREE.Quaternion();
-		
-		// jump
-		jump = movement.jump = $.extend( {}, _Character.defaults.movement.jump, pMovement.jump );
-		jump.time = 0;
-		jump.timeAfterNotGrounded = 0;
-		jump.timeAfterNotGroundedMax = 125;
-		jump.startDelayTime = 0;
-		jump.ready = true;
-		jump.active = false;
-		jump.holding = false;
+		state.health = stats.healthMax;
 		
 		// physics
 		
-		if ( typeof pModel.physics !== 'undefined' ) {
+		if ( typeof parameters.physics !== 'undefined' ) {
 			
-			pModel.physics.dynamic = true;
-			pModel.physics.movementDamping = main.is_number( pModel.physics.movementDamping ) ? pModel.physics.movementDamping : 0.5;
-			pModel.physics.movementForceLengthMax = main.is_number( pModel.physics.movementForceLengthMax ) ? pModel.physics.movementForceLengthMax : shared.universeGravityMagnitude.length() * 20;
+			parameters.physics.dynamic = true;
+			parameters.physics.movementDamping = main.is_number( parameters.physics.movementDamping ) ? parameters.physics.movementDamping : 0.5;
+			parameters.physics.movementForceLengthMax = main.is_number( parameters.physics.movementForceLengthMax ) ? parameters.physics.movementForceLengthMax : shared.universeGravityMagnitude.length() * 20;
 			
 		}
 		
 		// prototype constructor
 		
-		_Model.Instance.call( this, pModel );
+		_Model.Instance.call( this, parameters );
 		
 		// properties
 		
@@ -282,6 +255,10 @@
 		
 		this.actions = new _Actions.Instance();
 		
+		this.onHurt = new signals.Signal();
+		this.onDead = new signals.Signal();
+		this.onRespawned = new signals.Signal();
+		
 	}
 	
 	/*===================================================
@@ -293,11 +270,13 @@
 	function hurt ( damage ) {
 		
 		var state = this.state,
-			stats = this.stats;
+			stats = this.options.stats;
 		
 		if ( state.invulnerable !== true ) {
 			
 			this.health -= damage;
+			
+			this.onHurt.dispatch();
 			
 			if ( stats.health === 0 ) {
 				
@@ -318,7 +297,9 @@
 	
 	function die () {
 		
-		var state = this.state;
+		var state = this.state,
+			animation = this.options.animation,
+			durations = animation.durations;
 		
 		if ( state.invulnerable !== true ) {
 			
@@ -326,33 +307,36 @@
 			
 			state.dead = true;
 			
-			// TODO: better morph cycling
-			// this.morph_cycle( timeDelta, 'die', state.deathAnimationDuration, true, false );
-			/*
 			this.morphs.play( 'die', {
-				duration: state.deathAnimationDuration,
+				duration: durations.death,
 				solo: true,
+				durationClear: durations.clearSolo,
 				callback: $.proxy( this.decay, this )
 			} );
-			*/
+			
+			this.onDead.dispatch();
+			
 		}
 		
 	}
 	
 	function decay () {
 		
-		var state = this.state;
+		var state = this.state,
+			stats = this.options.stats,
+			animation = this.options.animation,
+			durations = animation.durations;
 		
 		if ( state.dead === true ) {
 			
 			state.decaying = true;
-			/*
+			
 			this.morphs.play( 'decay', {
-				duration: state.decayDuration,
-				delay: state.decayDelay,
-				solo: true
+				duration: durations.decay,
+				delay: durations.decayDelay,
+				solo: true,
+				durationClear: durations.clearSolo
 			} );
-			*/
 			
 			
 			
@@ -362,7 +346,7 @@
 			
 			// TODO: respawn callback from opacity tween
 			
-			if ( state.respawnOnDeath === true ) {
+			if ( stats.respawnOnDeath === true ) {
 				
 				//pDecay.callback = $.proxy( this.respawn, this );
 				
@@ -372,19 +356,52 @@
 		
 	}
 	
+	/*===================================================
+	
+	spawning
+	
+	=====================================================*/
+	
+	function set_spawn ( parent, location ) {
+		
+		var state = this.state;
+		
+		state.spawnParent = parent;
+		state.spawnLocation = location;
+		
+	}
+	
 	function respawn ( parent, location ) {
+		
+		var state = this.state;
 		
 		state.dead = state.decaying = false;
 		state.invulnerable = true;
 		
+		if ( parent instanceof THREE.Object3D ) {
+			
+			this.set_spawn( parent, location );
+			
+		}
 		
-		
-		// TODO: add to parent, use default if not provided
-		
-		
-		// TODO: send to location, use default if not provided
-		
-		
+		if ( state.spawnParent instanceof THREE.Object3D ) {
+			
+			state.spawnParent.add( this );
+			
+			if ( state.spawnLocation instanceof THREE.Vector3 ) {
+				
+				this.position.copy( state.spawnLocation );
+				
+			}
+			
+			
+			
+			// TOOD: instant opacity to 0 and tween opacity to 1
+			
+			
+			this.onRespawned.dispatch();
+			
+		}
 		
 	}
 	
@@ -396,7 +413,7 @@
 	
 	function move_state_change ( propertyName, stop ) {
 		
-		var movement = this.movement,
+		var movement = this.options.movement,
 			state = this.state,
 			rotate = movement.rotate,
 			rotateFacingDirection = rotate.facingDirection,
@@ -454,7 +471,7 @@
 	
 	function rotate_by_direction ( dx, dy, dz ) {
 		
-		var rotate = this.movement.rotate;
+		var rotate = this.options.movement.rotate;
 		
 		// update direction
 		
@@ -480,7 +497,7 @@
 	
 	function rotate_by_angle ( rotateAngleDelta ) {
 		
-		var rotate = this.movement.rotate,
+		var rotate = this.options.movement.rotate,
 			rotateAxis = rotate.axis,
 			rotateDelta = rotate.delta,
 			rotateAngleTarget = _MathHelper.degree_between_180( rotate.facingAngle + rotateAngleDelta ),
@@ -505,44 +522,8 @@
 	
 	function stop_jumping () {
 		
-		this.movement.jump.active = false;
-		this.movement.jump.holding = false;
-		
-	}
-	
-	/*===================================================
-	
-	morph cycling
-	
-	=====================================================*/
-	
-	function morph_cycle ( timeDelta, morphName, duration, loop, reverse ) {
-		
-		var morphs = this.morphs,
-			state = this.state,
-			movement = this.movement,
-			move = movement.move;
-		
-		if ( state.morphName !== morphName ) {
-			
-			if ( state.animationChangeTime < state.animationChangeTimeThreshold ) {
-				
-				state.animationChangeTime += timeDelta;
-				
-			}
-			else {
-				
-				state.animationChangeTime = 0;
-				
-				morphs.clear( state.morphName, state.morphClearDuration );
-				
-				state.morphName = morphName;
-				
-			}
-			
-		}
-		
-		morphs.play( state.morphName, { duration: duration, loop: loop, reverse: reverse } );
+		this.options.movement.jump.active = false;
+		this.options.movement.jump.holding = false;
 		
 	}
 	
@@ -556,12 +537,15 @@
 		
 		var rigidBody = this.rigidBody,
 			morphs = this.morphs,
-			stats = this.stats,
 			state = this.state,
-			movement = this.movement,
+			options = this.options,
+			stats = options.stats,
+			movement = options.movement,
 			move = movement.move,
 			rotate = movement.rotate,
 			jump = movement.jump,
+			animation = options.animation,
+			durations = animation.durations,
 			moveDir = move.direction,
 			moveSpeed = move.speed * timeDeltaMod,
 			rotateTurnAngleDelta,
@@ -600,7 +584,7 @@
 			
 			state.invulnerableTime += timeDelta;
 			
-			if ( state.invulnerableTime >= state.invulnerableDuration ) {
+			if ( state.invulnerableTime >= stats.invulnerabilityDuration ) {
 				
 				state.invulnerableTime = 0;
 				state.invulnerable = false;
@@ -715,7 +699,7 @@
 				
 				jump.ready = false;
 				
-				this.morph_cycle( timeDelta, 'jump', jump.AnimationDuration, true );
+				morphs.play( 'jump', { duration: durations.jump, loop: true, solo: true, durationClear: durations.clearSolo } );
 				
 			}
 			// do jump
@@ -769,7 +753,7 @@
 					
 					// play jump
 					
-					this.morph_cycle ( timeDelta, 'jump', jump.AnimationDuration, true );
+					morphs.play( 'jump', { duration: durations.jump, loop: true, solo: true, durationClear: durations.clearSolo } );
 					
 					// properties
 					
@@ -788,7 +772,7 @@
 					
 					// play jump start
 					
-					morphs.play( 'jump_start', { duration: jump.startAnimationDuration, loop: false, callback: function () { morphs.clear( 'jump_start' ); } } );
+					morphs.play( 'jump_start', { duration: durations.jumpStart, loop: false, solo: true, durationClear: durations.clearSolo, callback: function () { morphs.clear( 'jump_start' ); } } );
 					
 				}
 				
@@ -803,10 +787,10 @@
 					
 					if ( jump.timeAfterNotGrounded >= jumpTimeAfterNotGroundedMax ) {
 						
-						morphs.clear( 'jump', state.morphClearTime );
-					
-						morphs.play( 'jump_end', { duration: jump.endAnimationDuration, loop: false, callback: function () { morphs.clear( 'jump_end', state.morphClearTime ); } } );
-					
+						morphs.clear( 'jump', durations.clear );
+						
+						morphs.play( 'jump_end', { duration: durations.jumpEnd, loop: false, callback: function () { morphs.clear( 'jump_end', durations.clear ); } } );
+						
 					}
 					
 				}
@@ -876,12 +860,12 @@
 					
 					if ( velocityMovementForceLength >= move.runThreshold ) {
 						
-						this.morph_cycle( timeDelta, 'run', move.runAnimationDuration * playSpeedModifier, true, state.movingBack );
+						this.morphs.play( 'run', { duration: durations.run * playSpeedModifier, loop: true, solo: true, durationClear: durations.clearSolo, reverse: state.movingBack } );
 						
 					}
 					else {
 						
-						this.morph_cycle( timeDelta, 'walk', move.walkAnimationDuration * playSpeedModifier, true, state.movingBack );
+						this.morphs.play( 'walk', { duration: durations.walk * playSpeedModifier, loop: true, solo: true, durationClear: durations.clearSolo, reverse: state.movingBack } );
 						
 					}
 					
@@ -889,7 +873,7 @@
 				// idle cycle
 				else {
 					
-					this.morph_cycle( timeDelta, 'idle', move.idleAnimationDuration, true, false );
+					this.morphs.play( 'idle', { duration: durations.idle, loop: true, solo: true, durationClear: durations.clearSolo, reverse: false } );
 					
 				}
 				

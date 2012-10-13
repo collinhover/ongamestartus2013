@@ -65,7 +65,7 @@
 	});
 	
 	Object.defineProperty(_Player, 'moving', { 
-		get : function () { return character.movement.state.moving; }
+		get : function () { return character.state.moving; }
 	});
 	
 	main.asset_register( assetPath, { 
@@ -762,15 +762,16 @@
 		
 	}
 	
-	function show () {
+	function show ( parent, location ) {
 		
 		if ( showing === false ) {
 			
-			main.scene.add( character );
+			character.onDead.add( remove_control );
+			character.onRespawned.add( allow_control );
+			
+			character.respawn( parent, location );
 			
 			showing = true;
-			
-			allow_control();
 			
 		}
 		
@@ -783,6 +784,9 @@
 			remove_control();
 			
 			disable();
+			
+			character.onDead.remove( remove_control );
+			character.onRespawned.remove( allow_control );
 			
 			main.scene.remove( character );
 			

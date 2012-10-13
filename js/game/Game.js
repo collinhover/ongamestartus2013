@@ -253,7 +253,7 @@ var OGSUS = (function (main) {
 		main.extend = extend;
 		main.time_test = time_test;
 		
-		main.ensure_array = ensure_array;
+		main.to_array = to_array;
 		main.ensure_not_array = ensure_not_array;
 		main.array_cautious_add = array_cautious_add;
 		main.array_cautious_remove = array_cautious_remove;
@@ -493,7 +493,7 @@ var OGSUS = (function (main) {
 		
 		// camera controls
 		
-		main.cameraControls = new _CameraControls.Instance( main.camera, main.world );
+		main.cameraControls = new _CameraControls.Instance( { camera: main.camera, target: main.world } );
 		main.cameraControls.enabled = true;
 		main.cameraControls.controllable = true;
 		
@@ -1049,13 +1049,12 @@ var OGSUS = (function (main) {
 			
 			// player
 			
-			_Player.character.position.set( 0, 2000, 0 );
-			_Player.show();
+			_Player.show( main.scene, new THREE.Vector3( 0, 2000, 0 ) );
 			_Player.enable();
 			
 			main.cameraControls.target = _Player.character;
-			main.cameraControls.rotationMaxX = Math.PI * 0.25;
 			main.cameraControls.rotateTarget = true;
+			main.cameraControls.options.rotationMaxX = Math.PI * 0.25;
 			
 			// signal
 			
@@ -1300,7 +1299,7 @@ var OGSUS = (function (main) {
 	}
 	
 	function is_number ( n ) {
-		return !isNaN( n ) && isFinite( n );
+		return !isNaN( n ) && isFinite( n ) && typeof n !== 'boolean';
 	}
 	
 	function is_image ( target ) {
@@ -1464,7 +1463,7 @@ var OGSUS = (function (main) {
     
     =====================================================*/
 	
-	function ensure_array ( target ) {
+	function to_array ( target ) {
 		
 		return target ? ( is_array ( target ) !== true ? [ target ] : target ) : [];
 		
@@ -1483,8 +1482,8 @@ var OGSUS = (function (main) {
 			index,
 			added = false;
 		
-		target = ensure_array( target );
-		elements = ensure_array( elements );
+		target = to_array( target );
+		elements = to_array( elements );
 		
 		// for each element
 		
@@ -1515,8 +1514,8 @@ var OGSUS = (function (main) {
 			index,
 			removed = false;
 		
-		target = ensure_array( target );
-		elements = ensure_array( elements );
+		target = to_array( target );
+		elements = to_array( elements );
 		
 		// for each element
 		
@@ -2846,7 +2845,7 @@ var OGSUS = (function (main) {
 			indexLoading,
 			locationAdded = false;
 		
-		locationsList = ensure_array( locationsList );
+		locationsList = to_array( locationsList );
 		
 		// for each location
 		
@@ -3272,9 +3271,9 @@ var OGSUS = (function (main) {
 		
 		// get if arguments are not array
 		
-		requirements = ensure_array( requirements );
+		requirements = to_array( requirements );
 		
-		callbackList = ensure_array( callbackList );
+		callbackList = to_array( callbackList );
 		
 		// modify original callback to wrap in new function
 		// that parses requirements and applies each asset as argument to callback
@@ -3525,17 +3524,17 @@ var OGSUS = (function (main) {
 				
 			}
 			
-			this.requirements = ensure_array( this.requirements );
+			this.requirements = to_array( this.requirements );
 			
-			this.callbacksOnReqs = ensure_array( this.callbacksOnReqs );
+			this.callbacksOnReqs = to_array( this.callbacksOnReqs );
 			
 			// if should also copy requirements
 			
 			if ( includeRequirements === true ) {
 			
-				this.requirements = this.requirements.concat( ensure_array( asset.requirements ) );
+				this.requirements = this.requirements.concat( to_array( asset.requirements ) );
 				
-				this.callbacksOnReqs = this.callbacksOnReqs.concat( ensure_array( asset.callbacksOnReqs ) );
+				this.callbacksOnReqs = this.callbacksOnReqs.concat( to_array( asset.callbacksOnReqs ) );
 				
 			}
 			

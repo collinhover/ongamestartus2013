@@ -11,7 +11,9 @@
     var shared = main.shared = main.shared || {},
 		assetPath = "js/game/core/Morphs.js",
 		_Morphs = {},
-		_MorphAnimator;
+		_MorphAnimator,
+		numMorphsMin = 5,
+		stabilityID = 'morph_stability';
     
     /*===================================================
     
@@ -43,9 +45,8 @@
 		
 		// properties
 		
-		_Morphs.defaults = {
-			numMin: 5,
-			stabilityID: 'morph_stability'
+		_Morphs.options = {
+			duration: 1000
 		};
 		
 		// instance
@@ -61,7 +62,9 @@
 		
 		_Morphs.Instance.prototype.stabilize = stabilize;
 		
-		_Morphs.Instance.prototype.get_morph_name_data = get_morph_name_data;
+		// functions
+		
+		_Morphs.get_morph_name_data = get_morph_name_data;
 		
 	}
 	
@@ -71,30 +74,72 @@
     
     =====================================================*/
 	
-	function Morphs ( parameters ) {
+	function Morphs ( mesh, parameters ) {
 		
-		var property;
+		var i, l,
+			morphs,
+			morph,
+			morphName,
+			nameData,
+			name,
+			number,
+			map;
 		
 		// handle parameters
 		
 		parameters = parameters || {};
 		
-		this.defaults = $.extend( {}, _Morphs.defaults, parameters.defaults );
+		this.mesh = mesh;
 		
-		this.mesh = parameters.mesh;
+		this.names = [];
+		this.maps = {};
 		
-		// libraries
+		this.options = $.extend( true, this.options || {}, _Morphs.options, parameters );
 		
-		this.libraries = {
-			morphTargets: new MorphsLibrary( this.mesh.geometry.morphTargets, this.defaults.stabilityID )
+		// get mapped data for each morph
+		
+		morphs = main.to_array( this.mesh.geometry.morphTargets );
+		
+		for ( i = 0, l = morphs.length; i < l; i ++ ) {
+			
+			morph = morphs[ i ];
+			morphName = morph.name;
+			
+			nameData = get_morph_name_data( morphName );
+			name = nameData.name;
+			number = nameData.number;
+			
+			if ( name !== stabilityID ) {
+				
+				if ( this.maps.hasOwnProperty( name ) !== true ) {
+					
+					this.maps[ name ] = [];
+					this.names.push( name );
+					
+				}
+				
+				map = this.maps[ name ];
+				map.push( { index: i, number: number } );
+				
+			}
+			
 		}
 		
-		this.libraryNames = [];
-		for ( property in this.libraries ) {
+		// sort maps
+		
+		for ( i = 0, l = this.names.length; i < l; i ++ ) {
 			
-			this.libraryNames.push( this.libraries[ property ] );
+			name = this.names[i];
+			map = this.maps[ name ];
+				
+			map.sort( sort_map );
 			
 		}
+		
+		// animators
+		
+		this.animators = {};
+		this.animatorNames = [];
 		
 		this.stabilize();
 		
@@ -108,14 +153,8 @@
 	
 	function play ( name, parameters ) {
 		
-		return for_each_library.call( this, play_from_library, name, parameters );
-		
-	}
-	
-	function play_from_library ( library, name, parameters ) {
-		
 		var i, l,
-			names = library.names,
+			names = this.names,
 			name,
 			maps,
 			map,
@@ -126,18 +165,18 @@
 		
 		if ( index !== -1 ) {
 			
-			maps = library.maps;
-			animators = library.animators;
-			animatorNames = library.animatorNames;
+			maps = this.maps;
+			animators = this.animators;
+			animatorNames = this.animatorNames;
 			
 			name = names[ index ];
 			map = maps[ name ];
 			
 			if ( animators.hasOwnProperty( name ) !== true ) {
 				
-				animator = animators[ name ] = new _MorphAnimator.Instance( this, library, name );
+				animator = animators[ name ] = new _MorphAnimator.Instance( this, name, this.options );
 				
-				animatorNames.push( animator );
+				animatorNames.push( name );
 				
 			}
 			
@@ -145,12 +184,15 @@
 			
 			animator.play( parameters );
 			
+			
 		}
-		else if ( typeof parameters.callback === 'function' ) {
+		else if ( parameters && typeof parameters.callback === 'function' ) {
 			
 			parameters.callback();
 			
 		}
+		
+		return this;
 		
 	}
 	
@@ -162,13 +204,7 @@
 	
 	function stop ( name, parameters ) {
 		
-		return for_each_library.call( this, stop_from_library, name, parameters );
-		
-	}
-	
-	function stop_from_library ( library, name, parameters ) {
-		
-		var animators = library.animators,
+		var animators = this.animators,
 			animator = animators[ name ];
 		
 		if ( animator instanceof _MorphAnimator.Instance ) {
@@ -177,28 +213,31 @@
 			
 		}
 		
-	}
-	
-	function stop_all ( parameters ) {
-		
-		return for_each_library.call( this, stop_all_from_library, parameters );
+		return this;
 		
 	}
 	
-	function stop_all_from_library ( library, parameters ) {
+	function stop_all ( parameters, except ) {
 		
 		var i, l,
-			animators = library.animators,
-			animatorNames = library.animatorNames,
-			animator;
+			animatorNames = this.animatorNames,
+			name;
+			
+		except = main.to_array( except );
 		
 		for ( i = 0, l = animatorNames.length; i < l; i++ ) {
 			
-			animator = animators[ animatorNames[ i ] ];
+			name = animatorNames[ i ];
 			
-			animator.stop( parameters );
+			if ( main.index_of_value( except, name ) === -1 ) {
+				
+				this.stop( name, parameters );
+				
+			}
 			
 		}
+		
+		return this;
 		
 	}
 	
@@ -210,13 +249,7 @@
 	
 	function clear ( name, parameters ) {
 		
-		return for_each_library.call( this, clear_from_library, name, parameters );
-		
-	}
-	
-	function clear_from_library ( library, name, parameters ) {
-		
-		var animators = library.animators,
+		var animators = this.animators,
 			animator = animators[ name ];
 		
 		if ( animator instanceof _MorphAnimator.Instance ) {
@@ -225,28 +258,31 @@
 			
 		}
 		
-	}
-	
-	function clear_all ( parameters ) {
-		
-		return for_each_library.call( this, clear_all_from_library, parameters );
+		return this;
 		
 	}
 	
-	function clear_all_from_library ( library, parameters ) {
+	function clear_all ( parameters, except ) {
 		
 		var i, l,
-			animators = library.animators,
-			animatorNames = library.animatorNames,
-			animator;
+			animatorNames = this.animatorNames,
+			name;
+			
+		except = main.to_array( except );
 		
 		for ( i = 0, l = animatorNames.length; i < l; i++ ) {
 			
-			animator = animators[ animatorNames[ i ] ];
+			name = animatorNames[ i ];
 			
-			animator.clear( parameters );
+			if ( main.index_of_value( except, name ) === -1 ) {
+				
+				this.clear( name, parameters );
+				
+			}
 			
 		}
+		
+		return this;
 		
 	}
 	
@@ -275,11 +311,11 @@
 			
 			for ( i = 0, l = morphs.length; i < l; i ++ ) {
 				
-				morph = morphs[i];
+				morph = morphs[ i ];
 				
 				nameData = get_morph_name_data( morph.name );
 				
-				if ( nameData.name === this.defaults.stabilityID ) {
+				if ( nameData.name === stabilityID ) {
 					
 					needsStability = false;
 					break;
@@ -288,7 +324,7 @@
 			
 			}
 			
-			if ( morphs.length > 0 && ( needsStability === true || morphs.length < this.defaults.numMin ) ) {
+			if ( morphs.length > 0 && ( needsStability === true || morphs.length < numMorphsMin ) ) {
 				
 				// have to add at least one stability morph
 				
@@ -296,7 +332,7 @@
 				
 				// ensure minimum number of morphs
 				
-				for ( i = morphs.length, l = this.defaults.numMin; i < l; i++ ) {
+				for ( i = morphs.length, l = numMorphsMin; i < l; i++ ) {
 					
 					add_stability_morph.call( this );
 					
@@ -320,7 +356,7 @@
 			vertPos,
 			morphNumber = mesh.morphTargetInfluences.length,
 			morphInfo = {
-				name: this.defaults.stabilityID + '_' + morphNumber,
+				name: stabilityID + '_' + morphNumber,
 				vertices: []
 			},
 			morphVertices = morphInfo.vertices;
@@ -350,38 +386,9 @@
     
     =====================================================*/
 	
-	function for_each_library ( callback ) {
+	function sort_map ( a, b ) {
 		
-		var i, l,
-			args = arguments.slice( 1 ),
-			libraries = this.libraries,
-			libraryNames = this.libraryNames,
-			library;
-		
-		parameters = parameters || {};
-		library = parameters.library || '';
-		
-		// specific morph library
-		
-		if ( libraries.hasOwnProperty( library ) ) {
-			
-			args = arguments.slice( 1 ).unshift( libraries[ library ] );
-			callback.apply( this, args );
-			
-		}
-		// all libraries
-		else {
-			
-			for ( i = 0, l = libraryNames.length; i < l; i++ ) {
-				
-				args = arguments.slice( 1 ).unshift( libraries[ libraryNames[ i ] ] );
-				callback.apply( this, args );
-				
-			}
-			
-		}
-		
-		return this;
+		return a.number - b.number;
 		
 	}
 	
@@ -433,84 +440,6 @@
 
 		}
 
-	}
-	
-	/*===================================================
-	
-	library
-	
-	=====================================================*/
-	
-	function MorphsLibrary ( morphTargets, stabilityID ) {
-		
-		var i, l,
-			morph,
-			morphName,
-			nameData,
-			name,
-			number,
-			map;
-		
-		this.names = [];
-		this.maps = {};
-		
-		morphs = main.ensure_array( morphs );
-		
-		if ( typeof stabilityID !== 'string' ) {
-			
-			stabilityID = _Morphs.defaults.stabilityID;
-			
-		}
-		
-		// get mapped data for each morph
-		
-		for ( i = 0, l = morphs.length; i < l; i ++ ) {
-			
-			morph = morphs[ i ];
-			morphName = morph.name;
-			
-			nameData = get_morph_name_data( morphName );
-			name = nameData.name;
-			number = nameData.number;
-			
-			if ( name !== stabilityID ) {
-				
-				if ( this.maps.hasOwnProperty( name ) !== true ) {
-					
-					this.maps[ name ] = [];
-					this.names.push( name );
-					
-				}
-				
-				map = maps[ name ];
-				map.push( { index: i, number: number } );
-				
-			}
-			
-		}
-		
-		// sort maps
-		
-		for ( i = 0, l = this.names.length; i < l; i ++ ) {
-			
-			name = this.names[i];
-			map = this.maps[ name ];
-				
-			map.sort( sort_map );
-			
-		}
-		
-		// animators
-		
-		this.animators = {};
-		this.animatorNames = [];
-		
-	}
-	
-	function sort_map ( a, b ) {
-		
-		return a.number - b.number;
-		
 	}
 	
 } (OGSUS) );

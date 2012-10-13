@@ -447,22 +447,20 @@
 		
 		parameters = parameters || {};
 		
-		stop = typeof parameters.stop === 'boolean' ? parameters.stop : false;
-		
 		// clouds
 		
 		for ( i = 0, l = this.clouds.length; i < l; i++ ) {
 			
 			cloud = this.clouds[ i ];
 			
-			if ( stop === true ) {
+			if ( parameters.stop === true ) {
 				
-				cloud.morphs.stopAll();
+				cloud.morphs.stop_all();
 				
 			}
 			else {
 				
-				cloud.morphs.play( 'idle', { loop: true, startDelay: true } );
+				cloud.morphs.play( 'idle', { duration: this.cloudAnimationDuration, loop: true, startDelay: true } );
 				
 			}
 			

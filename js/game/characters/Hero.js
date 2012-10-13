@@ -37,7 +37,27 @@
 	function init_internal( c ) {
 		console.log('internal hero', _Hero);
 		
+		// utility
+		
 		_Character = c;
+		
+		// properties
+		
+		_Hero.options = {
+			movement: {
+				move: {
+					speed: 3
+				},
+				jump: {
+					speed: 2,
+					duration: 200,
+					startDelay: 0,
+					moveSpeedMod: 0
+				}
+			}
+		};
+		
+		// instance
 		
 		_Hero.Instance = Hero;
 		_Hero.Instance.prototype = new _Character.Instance();
@@ -61,24 +81,14 @@
 		
 		parameters.name = 'Hero';
 		
-		parameters.model = parameters.model || {};
-		parameters.model.geometry = parameters.model.geometry instanceof THREE.Geometry ? parameters.model.geometry : new THREE.CubeGeometry( 50, 100, 50 );
-		parameters.model.material = parameters.model.material instanceof THREE.Material ? parameters.model.material : new THREE.MeshLambertMaterial( { color: 0xFFF7E0, ambient: 0xFFF7E0 } );
+		parameters.geometry = parameters.geometry instanceof THREE.Geometry ? parameters.geometry : new THREE.CubeGeometry( 50, 100, 50 );
+		parameters.material = parameters.material instanceof THREE.Material ? parameters.material : new THREE.MeshLambertMaterial( { color: 0xFFF7E0, ambient: 0xFFF7E0 } );
 		
-		parameters.model.physics = parameters.model.physics || {};
-		parameters.model.physics.bodyType = 'capsule';
-		parameters.model.physics.movementDamping = 0.5;
+		parameters.physics = parameters.physics || {};
+		parameters.physics.bodyType = 'capsule';
+		parameters.physics.movementDamping = 0.5;
 		
-		parameters.movement = parameters.movement || {};
-		parameters.movement.move = {
-			speed: 3
-		};
-		parameters.movement.jump = {
-			speedStart: 2,
-			duration: 300,
-			startDelay: 0,
-			moveSpeedMod: 0
-		};
+		parameters.options = $.extend( true, {}, _Hero.options, parameters.options );
 		
 		// prototype constructor
 		
