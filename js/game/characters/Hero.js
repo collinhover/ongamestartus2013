@@ -44,6 +44,9 @@
 		// properties
 		
 		_Hero.options = {
+			stats: {
+				respawnOnDeath: true
+			},
 			movement: {
 				move: {
 					speed: 3

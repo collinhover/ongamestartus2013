@@ -59,7 +59,7 @@ var OGSUS = (function (main) {
         ],
         assetsGameFoundation = [
             "js/lib/three/three.min.js",
-			"js/lib/Tween.js",
+			"js/lib/Tween.custom.min.js"
         ],
 		assetsGameFoundationExtras = [
 			"js/lib/three/ThreeOctree.min.js",
@@ -259,8 +259,10 @@ var OGSUS = (function (main) {
 		main.array_cautious_remove = array_cautious_remove;
 		main.index_of_value = index_of_value;
 		main.last_index_of_value = last_index_of_value;
+		main.indices_of_value = indices_of_value;
 		main.index_of_values = index_of_values;
 		main.index_of_property = index_of_property;
+		main.indices_of_property = indices_of_property;
 		main.index_of_properties = index_of_properties;
 		
 		main.css_property_supported = css_property_supported;
@@ -1052,7 +1054,6 @@ var OGSUS = (function (main) {
 			_Player.show( main.scene, new THREE.Vector3( 0, 2000, 0 ) );
 			_Player.enable();
 			
-			main.cameraControls.target = _Player.character;
 			main.cameraControls.rotateTarget = true;
 			main.cameraControls.options.rotationMaxX = Math.PI * 0.25;
 			
@@ -1571,11 +1572,29 @@ var OGSUS = (function (main) {
 		
 	}
 	
+	function indices_of_value( array, value ) {
+		
+		var indices = [];
+		
+		for ( var i = 0, l = array.length; i < l; i++ ) {
+			
+			if ( value === array[ i ] ) {
+				
+				indices.push( i );
+				
+			}
+			
+		}
+		
+		return indices;
+		
+	}
+	
 	function index_of_values( array, values ) {
 		
 		for ( var i = 0, l = array.length; i < l; i++ ) {
 			
-			if ( index_of( values, array[ i ] ) !== -1 ) {
+			if ( index_of_value( values, array[ i ] ) !== -1 ) {
 				
 				return i;
 				
@@ -1600,6 +1619,24 @@ var OGSUS = (function (main) {
 		}
 		
 		return -1;
+		
+	}
+	
+	function indices_of_property( array, property, value ) {
+		
+		var indices = [];
+		
+		for ( var i = 0, l = array.length; i < l; i++ ) {
+			
+			if ( value === array[ i ][ property ] ) {
+				
+				indices.push( i );
+				
+			}
+			
+		}
+		
+		return indices;
 		
 	}
 	

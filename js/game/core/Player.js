@@ -149,6 +149,15 @@
 		
 	}
 	
+	function character_spawned () {
+		
+		main.cameraControls.target = undefined;
+		main.cameraControls.target = character;
+		
+		allow_control();
+		
+	}
+	
 	/*===================================================
     
     actions
@@ -767,7 +776,7 @@
 		if ( showing === false ) {
 			
 			character.onDead.add( remove_control );
-			character.onRespawned.add( allow_control );
+			character.onRespawned.add( character_spawned );
 			
 			character.respawn( parent, location );
 			
@@ -786,7 +795,7 @@
 			disable();
 			
 			character.onDead.remove( remove_control );
-			character.onRespawned.remove( allow_control );
+			character.onRespawned.remove( character_spawned );
 			
 			main.scene.remove( character );
 			
