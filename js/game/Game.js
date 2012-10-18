@@ -75,12 +75,12 @@ var OGSUS = (function (main) {
 			"js/game/env/World.js",
 			"js/game/ui/UIQueue.js",
 			"js/game/utils/MathHelper.js",
+			"js/game/utils/RayHelper.js",
 			"js/game/core/Model.js",
 			"js/game/physics/Physics.js",
 			"js/game/physics/RigidBody.js",
 			"js/game/utils/VectorHelper.js",
 			"js/game/utils/SceneHelper.js",
-			"js/game/utils/RayHelper.js",
 			"js/game/utils/ObjectHelper.js",
 			"js/game/utils/PhysicsHelper.js"
 		],
@@ -88,8 +88,6 @@ var OGSUS = (function (main) {
 			"js/game/core/Player.js",
 			"js/game/core/CameraControls.js",
 			"js/game/core/Actions.js",
-			"js/game/characters/Character.js",
-			"js/game/characters/Hero.js",
 			"js/game/env/Sky.js",
 			"js/game/env/Skybox.js",
 			"asset/texture/skybox_world_posx.jpg",
@@ -177,6 +175,7 @@ var OGSUS = (function (main) {
 			onGameUpdated : new signals.Signal(),
 			onGameStarted : new signals.Signal(),
 			
+			onGamePointerMoved : new signals.Signal(),
 			onGamePointerTapped : new signals.Signal(),
 			onGamePointerDoubleTapped : new signals.Signal(),
 			onGamePointerHeld : new signals.Signal(),
@@ -459,7 +458,7 @@ var OGSUS = (function (main) {
     
     =====================================================*/
     
-    function init_setup ( sc, cc, w, uiq, mh ) {
+    function init_setup ( sc, cc, w, uiq, mh, rh ) {
 		console.log('GAME: setup');
 		// utility
 		
@@ -468,6 +467,7 @@ var OGSUS = (function (main) {
 		_World = w;
 		_UIQueue = uiq;
 		_MathHelper = mh;
+		_RayHelper = rh;
 		
 		// scenes
 		
@@ -967,6 +967,7 @@ var OGSUS = (function (main) {
 		// events
 		
 		shared.domElements.$game
+			.on( 'mousemove', $.throttle( shared.throttleTimeShort, on_pointer_moved ) )
 			.on( 'tap', on_pointer_tapped )
 			.on( 'doubletap', on_pointer_doubletapped )
 			.on( 'hold', on_pointer_held )
@@ -1010,6 +1011,8 @@ var OGSUS = (function (main) {
 		
 		_Player = p;
 		
+		main.player = new _Player.Instance();
+		
 		// ui
 		
 		$( '#buttonStart' ).on( 'tap', start );
@@ -1051,10 +1054,9 @@ var OGSUS = (function (main) {
 			
 			// player
 			
-			_Player.show( main.scene, new THREE.Vector3( 0, 2000, 0 ) );
-			_Player.enable();
+			main.player.respawn( main.scene, new THREE.Vector3( 0, 2000, 0 )  );
+			main.player.enable();
 			
-			main.cameraControls.rotateTarget = true;
 			main.cameraControls.options.rotationMaxX = Math.PI * 0.25;
 			
 			// signal
@@ -1690,16 +1692,32 @@ var OGSUS = (function (main) {
 	
 	function reposition_pointer ( e ) {
 		
-		var pointer = main.get_pointer( e ),
-			position;
+		shared.timeSinceInteraction = 0;
 		
-		if ( e && e.position ) {
+		var pointer = main.get_pointer( e ),
+			position,
+			d,
+			b;
+		
+		if ( e ) {
 			
 			position = e.position;
 			
 			if ( is_array( position ) && position[ pointer.id ] ) {
 				
 				position = position[ pointer.id ];
+				
+			}
+			
+			if ( typeof position === 'undefined' || is_number( position.x ) !== true || is_number( position.y ) !== true ) {
+				
+				d = document;
+				b = d.body;
+				
+				position = {
+					x: e.pageX || e.clientX + ( d && d.scrollLeft || b && b.scrollLeft || 0 ) - ( d && d.clientLeft || b && b.clientLeft || 0 ),
+					y: e.pageY || e.clientY + ( d && d.scrollTop || b && b.scrollTop || 0 ) - ( d && d.clientTop || b && b.clientTop || 0 )
+				 };
 				
 			}
 			
@@ -1735,6 +1753,9 @@ var OGSUS = (function (main) {
 		parameters.pointer = parameters.pointer || main.get_pointer();
 		parameters.camera = parameters.camera || main.camera;
 		
+		parameters.objects = ( parameters.objects || [] ).concat( main.scene.dynamics );
+		parameters.octrees = ( parameters.octrees || [] ).concat( main.scene.octree );
+		
 		// intersection
 		
 		return _RayHelper.raycast( parameters );
@@ -1746,6 +1767,16 @@ var OGSUS = (function (main) {
     event functions
     
     =====================================================*/
+	
+	function on_pointer_moved ( e ) {
+		
+		var pointer;
+		
+		pointer = main.reposition_pointer( e );
+		
+		shared.signals.onGamePointerMoved.dispatch( e, pointer );
+		
+	}
 	
 	function on_pointer_tapped ( e ) {
 		

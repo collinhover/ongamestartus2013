@@ -9,8 +9,9 @@
 (function (main) {
     
     var shared = main.shared = main.shared || {},
-		assetPath = "js/game/characters/Character.js",
+		assetPath = "js/game/core/Character.js",
 		_Character = {},
+		_Game,
 		_Model,
 		_Actions,
 		_MathHelper,
@@ -56,6 +57,7 @@
 		// properties
 		
 		_Character.options = {
+			dynamic: true,
 			stats: {
 				healthMax: 100,
 				invulnerabilityDuration: 1000,
@@ -115,6 +117,8 @@
 		
 		_Character.Instance.prototype.set_spawn = set_spawn;
 		_Character.Instance.prototype.respawn = respawn;
+		
+		_Character.Instance.prototype.select = select;
 		
 		_Character.Instance.prototype.move_state_change = move_state_change;
 		_Character.Instance.prototype.rotate_by_direction = rotate_by_direction;
@@ -230,6 +234,20 @@
 		
 		parameters = parameters || {};
 		
+		// physics
+		
+		if ( typeof parameters.physics !== 'undefined' ) {
+			
+			parameters.physics.dynamic = true;
+			parameters.physics.movementDamping = main.is_number( parameters.physics.movementDamping ) ? parameters.physics.movementDamping : 0.5;
+			parameters.physics.movementForceLengthMax = main.is_number( parameters.physics.movementForceLengthMax ) ? parameters.physics.movementForceLengthMax : shared.universeGravityMagnitude.length() * 20;
+			
+		}
+		
+		// prototype constructor
+		
+		_Model.Instance.call( this, parameters );
+		
 		// options
 		
 		this.options = $.extend( true, this.options || {}, _Character.options, parameters.options );
@@ -264,31 +282,10 @@
 		jump.active = false;
 		jump.holding = false;
 		
-		// physics
-		
-		if ( typeof parameters.physics !== 'undefined' ) {
-			
-			parameters.physics.dynamic = true;
-			parameters.physics.movementDamping = main.is_number( parameters.physics.movementDamping ) ? parameters.physics.movementDamping : 0.5;
-			parameters.physics.movementForceLengthMax = main.is_number( parameters.physics.movementForceLengthMax ) ? parameters.physics.movementForceLengthMax : shared.universeGravityMagnitude.length() * 20;
-			
-		}
-		
-		// prototype constructor
-		
-		_Model.Instance.call( this, parameters );
-		
 		// properties
 		
 		this.name = parameters.name || characterName;
 		this.state = {};
-		this.targeting = {
-			
-			targets: [],
-			targetsToRemove: [],
-			targetCurrent: undefined
-			
-		};
 		
 		this.actions = new _Actions.Instance();
 		
@@ -483,6 +480,29 @@
 			this.onRespawned.dispatch();
 			
 			this.invulnerable = true;
+			
+		}
+		
+	}
+	
+	/*===================================================
+    
+    selection
+    
+    =====================================================*/
+	
+	function select ( target ) {
+		
+		// update target
+		
+		if ( target instanceof THREE.Object3D && target.interactive === true ) {
+			
+			this.target = target;
+			
+		}
+		else {
+			
+			this.target = undefined;
 			
 		}
 		

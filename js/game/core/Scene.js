@@ -11,8 +11,8 @@
     var shared = main.shared = main.shared || {},
 		assetPath = "js/game/core/Scene.js",
 		_Scene = {},
-		_SceneHelper,
 		_Model,
+		_Morphs,
 		_Physics,
 		_RigidBody;
     
@@ -25,8 +25,8 @@
 	main.asset_register( assetPath, {
 		data: _Scene,
 		requirements: [
-			"js/game/utils/SceneHelper.js",
 			"js/game/core/Model.js",
+			'js/game/core/Morphs.js',
 			'js/game/physics/Physics.js',
 			'js/game/physics/RigidBody.js'
 		], 
@@ -40,13 +40,13 @@
     
     =====================================================*/
 	
-	function init_internal ( sh, mdl, physx, rb ) {
+	function init_internal ( mdl, mph, physx, rb ) {
 		console.log('internal scene', _Scene);
 		
 		// utility
 		
-		_SceneHelper = sh;
 		_Model = mdl;
+		_Morphs = mph;
 		_Physics = physx;
 		_RigidBody = rb;
 		
@@ -78,8 +78,10 @@
 		
 		THREE.Scene.call( this );
 		
-		// physics
+		// properties
 		
+		this.dynamics = [];
+		this.octree = new THREE.Octree();
 		this.physics = new _Physics.Instance();
 		
 	}
@@ -92,15 +94,20 @@
 	
 	function __addObject ( object ) {
 		
-		// proto
-		
 		_Scene.Instance.prototype.supr.__addObject.call( this, object );
-		
-		// if object is model
 		
 		if ( object instanceof _Model.Instance ) {
 			
-			// physics
+			if ( object.dynamic !== true ) {
+				
+				this.octree.add( object, true );
+				
+			}
+			else {
+				
+				main.array_cautious_add( this.dynamics, object );
+				
+			}
 			
 			if ( object.rigidBody instanceof _RigidBody.Instance ) {
 				
@@ -120,30 +127,33 @@
 	
 	function __removeObject ( object ) {
 		
-		// proto
-		
 		_Scene.Instance.prototype.supr.__removeObject.call( this, object );
-		
-		// if object is model
 		
 		if ( object instanceof _Model.Instance ) {
 			
-			// stop morphs
-			
-			if ( typeof object.morphs !== 'undefined' ) {
+			if ( object.morphs instanceof _Morphs.Instance ) {
 				
 				object.morphs.stop_all();
 				
 			}
 			
-			// physics
+			if ( object.dynamic !== true ) {
+				
+				this.octree.remove( object );
+				
+			}
+			else {
+				
+				main.array_cautious_remove( this.dynamics, object );
+				
+			}
 			
 			if ( object.rigidBody instanceof _RigidBody.Instance ) {
 				
 				this.physics.remove( object );
 				
 			}
-			
+		
 		}
 		
 	}

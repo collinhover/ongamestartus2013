@@ -49,6 +49,8 @@
 		// properties
 		
 		_Model.options = {
+			interactive: false,
+			dynamic: false,
 			morphs: {
 				duration: 1000
 			}
@@ -61,7 +63,13 @@
 		_Model.Instance.prototype.constructor = _Model.Instance;
 		_Model.Instance.prototype.clone = clone;
 		
-		// catch geometry changes
+		Object.defineProperty( _Model.Instance.prototype, 'interactive', { 
+			get : function () { return this.options.interactive; }
+		} );
+		
+		Object.defineProperty( _Model.Instance.prototype, 'dynamic', { 
+			get : function () { return this.options.dynamic || ( this.rigidBody && this.rigidBody.dynamic ); }
+		} );
 		
 		Object.defineProperty( _Model.Instance.prototype, 'gravityBody', { 
 			get : function () { return this.rigidBody ? this.rigidBody.gravityBody : false; }
@@ -282,9 +290,6 @@
 		this.castShadow = typeof parameters.castShadow === 'boolean' ? parameters.castShadow : false;
 		this.receiveShadow = typeof parameters.receiveShadow === 'boolean' ? parameters.receiveShadow : false;
 		
-		this.targetable = typeof parameters.targetable === 'boolean' ? parameters.targetable : false;
-		this.interactive = typeof parameters.interactive === 'boolean' ? parameters.interactive : false;
-		
 		// adjustments
 		
 		if ( parameters.center === true ) {
@@ -337,6 +342,8 @@
 		}
 		
 		if ( c instanceof _Model.Instance ) {
+			
+			c.options = $.extend( true, {}, this.options );
 			
 			// geometry
 			
@@ -392,6 +399,12 @@
 			
 			c.frustumCulled = this.frustumCulled;
 			
+			if ( this.hasOwnProperty( 'rigidBody' ) ) {
+				
+				c.rigidBody = this.rigidBody.clone( c );
+				
+			}
+			
 			// children
 			
 			for ( i = 0, l = children.length; i < l; i++ ) {
@@ -413,21 +426,10 @@
 				
 			}
 			
-			// model properties
-			
-			c.targetable = this.targetable;
-			c.interactive = this.interactive;
-			
-			if ( this.hasOwnProperty( 'rigidBody' ) ) {
-				
-				c.rigidBody = this.rigidBody.clone( c );
-				
-			}
-			
 		}
 		
 		return c;
 		
 	}
     
-} (OGSUS) );
+} ( OGSUS ) );
