@@ -51,7 +51,10 @@
 			pushback: {
 				speedStart: 4,
 				speedEnd: 0,
-				duration: 150
+				duration: 400
+			},
+			effects: {
+				speedDelta: 0
 			}
 		};
 		
@@ -89,6 +92,10 @@
 		this.utilVec31Update = new THREE.Vector3();
 		this.utilQ1Update = new THREE.Quaternion();
 		
+		this.effects = {
+			speedDelta: new THREE.Vector3( 1, 1, 1 ).multiplyScalar( this.options.effects.speedDelta )
+		};
+		
 	}
 	
 	/*===================================================
@@ -106,15 +113,15 @@
 		
 		if ( this.affecting.length !== numAffected ) {
 			
-			affected.timeCooldown = 0;
 			affected.cooldown = false;
+			affected.timeCooldown = 0;
+			affected.pushback = false;
+			affected.timePushback = 0;
 			
 		}
 		
 		// existing affected
 		
-		affected.timePushback = 0;
-		affected.pushback = true;
 		affected.damaging = true;
 		
 		if ( numAffected === 0 && this.affecting.length === 1 ) {
@@ -127,17 +134,11 @@
 		
 	}
 	
-	function unaffect ( object ) {
+	function unaffect () {
 		
-		var affected = _ObstacleDamaging.Instance.prototype.supr.unaffect.apply( this, arguments );
+		// unaffect handled by update
 		
-		if ( this.affecting.length === 0 ) {
-			
-			shared.signals.onGameUpdated.remove( this.update, this );
-			
-		}
-		
-		return affected;
+		return false;
 		
 	}
 	
@@ -154,10 +155,13 @@
 			pushback = options.pushback,
 			affected,
 			object,
+			hurt,
 			rigidBody,
 			collisions,
 			collisionMovement,
 			collisionGravity,
+			collisionNew,
+			collisionLast,
 			distance,
 			pushbackDelta = this.utilVec31Update,
 			relativeToQ = this.utilQ1Update;
@@ -167,15 +171,69 @@
 			affected = this.affecting[ i ];
 			object = affected.object;
 			
+			// find collision
+			
+			if ( typeof object.rigidBody !== 'undefined' ) {
+				
+				rigidBody = object.rigidBody;
+				
+				collisions = rigidBody.collisions;
+				collisionGravity = collisions.gravity;
+				collisionMovement = collisions.movement;
+				collisionLast = affected.collision;
+				
+				// get closest collision with this
+				
+				distance = Number.MAX_VALUE;
+				
+				if ( collisionMovement && collisionMovement.object === this && collisionMovement.distance < distance ) {
+					
+					affected.collision = collisionNew = collisionMovement;
+					distance = collisionMovement.distance;
+					
+				}
+				
+				if ( collisionGravity && collisionGravity.object === this && collisionGravity.distance < distance ) {
+					
+					affected.collision = collisionNew = collisionGravity;
+					distance = collisionGravity.distance;
+					
+				}
+				
+				if ( typeof collisionNew === 'undefined' ) {
+					
+					affected.damagable = false;
+					
+				}
+				else {
+					
+					affected.damagable = true;
+					
+				}
+				
+			}
+			
 			// damage
 			
 			if ( affected.damaging === true && typeof object.hurt === 'function' ) {
 				
 				if ( affected.cooldown !== true ) {
 					
-					object.hurt( options.damage );
-					
-					affected.cooldown = true;
+					if ( affected.damagable !== false ) {
+						
+						hurt = object.hurt( options.damage );
+						
+						// start cooldown and pushback when hurt
+						
+						if ( hurt === true ) {
+							
+							affected.cooldown = true;
+							affected.pushback = true;
+							affected.timePushback = 0;
+							
+						}
+						
+					}
 					
 				}
 				else {
@@ -187,6 +245,8 @@
 				if ( affected.timeCooldown >= options.cooldownDuration ) {
 					
 					affected.damaging = false;
+					affected.cooldown = false;
+					affected.timeCooldown = 0;
 					
 				}
 				
@@ -194,29 +254,24 @@
 			
 			// pushback
 			
-			if ( affected.pushback === true && typeof object.rigidBody !== 'undefined' ) {
+			if ( affected.pushback === true ) {
 				
-				rigidBody = object.rigidBody;
+				// effect change
 				
-				collisions = rigidBody.collisions;
-				collisionGravity = collisions.gravity;
-				collisionMovement = collisions.movement;
+				if ( affected.collision !== collisionLast ) {
 				
-				// get closest collision with this
-				
-				distance = Number.MAX_VALUE;
-				
-				if ( collisionMovement && collisionMovement.object === this && collisionMovement.distance < distance ) {
+					if ( typeof affected.change !== 'undefined' ) {
+						
+						_ObjectHelper.revert_change( object.rigidBody.velocityMovement, affected.change );
+						delete affected.change;
+						
+					}
 					
-					affected.collision = collisionMovement;
-					affected.velocity = rigidBody.velocityMovement;
-					
-				}
-				
-				if ( collisionGravity && collisionGravity.object === this && collisionGravity.distance < distance ) {
-					
-					affected.collision = collisionGravity;
-					affected.velocity = rigidBody.velocityGravity;
+					if ( typeof affected.collision !== 'undefined' ) {
+						
+						affected.change = _ObjectHelper.temporary_change( object.rigidBody.velocityMovement, this.effects );
+						
+					}
 					
 				}
 				
@@ -224,21 +279,19 @@
 				
 				if ( affected.collision ) {
 					
-					
-					
-					
-					// TODO: fix pushback sending object into world
-					
+					// collision normal is local to collision object, i.e. this
 					
 					pushbackDelta.copy( affected.collision.normal );
-					affected.collision.object.matrixWorld.rotateAxis( pushbackDelta );
+					this.matrixWorld.rotateAxis( pushbackDelta );
 					
-					relativeToQ.copy( affected.velocity.relativeToQ ).inverse().multiplyVector3( pushbackDelta );
+					// scale pushback direction to speed
 					
 					timePushbackRatio = affected.timePushback / pushback.duration;
+					pushbackDelta.multiplyScalar( ( pushback.speedStart * ( 1 - timePushbackRatio ) + pushback.speedEnd * timePushbackRatio ) );
 					
-					pushbackDelta.multiplyScalar( pushback.speedStart * ( 1 - timePushbackRatio ) + pushback.speedEnd * timePushbackRatio );
-					affected.velocity.forceDelta.addSelf( pushbackDelta );
+					// apply pushback to force rotated
+					
+					rigidBody.velocityMovement.forceRotated.addSelf( pushbackDelta );
 					
 				}
 				
@@ -252,11 +305,26 @@
 				
 			}
 			
-			// unaffect
+			// unaffect if not doing pushback
 			
-			if ( affected.pushback === false && affected.damaging === false ) {
+			if ( affected.pushback === false ) {
 				
-				this.unaffect( object );
+				var removed = _ObstacleDamaging.Instance.prototype.supr.unaffect.call( this, object );
+				
+				// revert effect change
+				
+				if ( typeof affected.change !== 'undefined' ) {
+					
+					_ObjectHelper.revert_change( object.rigidBody.velocityMovement, affected.change );
+					delete affected.change;
+					
+				}
+				
+				if ( this.affecting.length === 0 ) {
+					
+					shared.signals.onGameUpdated.remove( this.update, this );
+					
+				}
 				
 			}
 			

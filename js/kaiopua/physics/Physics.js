@@ -398,7 +398,7 @@
 		
 		// if moving / movable
 		
-		if ( rigidBody.dynamic !== true || force.isZero() === true ) {
+		if ( rigidBody.dynamic !== true || forceRotated.isZero() === true ) {
 			
 			velocity.reset();
 			
@@ -413,7 +413,7 @@
 		
 		// get length
 		
-		forceLength = force.length();
+		forceLength = forceRotated.length();
 		
 		// get bounding radius
 		//boundingRadius = rigidBody.radius;

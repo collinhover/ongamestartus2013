@@ -101,10 +101,7 @@
 		
 		if ( this.affecting.length !== numAffected ) {
 			
-			affected.layer = _ObjectHelper.temporary_change( object.rigidBody.velocityMovement, {
-				damping: this.effects.damping,
-				speedDelta: this.effects.speedDelta
-			} );
+			affected.change = _ObjectHelper.temporary_change( object.rigidBody.velocityMovement, this.effects );
 			
 		}
 		
@@ -118,7 +115,7 @@
 		
 		if ( typeof affected !== 'undefined' ) {
 			
-			_ObjectHelper.revert_change( object.rigidBody.velocityMovement, affected.layer );
+			_ObjectHelper.revert_change( object.rigidBody.velocityMovement, affected.change );
 			
 		}
 		

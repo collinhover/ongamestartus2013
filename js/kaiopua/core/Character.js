@@ -347,6 +347,8 @@
 				
 			}
 			
+			return true;
+			
 		}
 		
 	}
@@ -670,7 +672,7 @@
 			velocityGravityForceDelta,
 			velocityMovement,
 			velocityMovementForceDelta,
-			velocityMovementForceLength,
+			velocityMovementForceRotatedLength,
 			velocityMovementDamping,
 			dragCoefficient,
 			terminalVelocity,
@@ -778,7 +780,6 @@
 			jumpMoveDamping = jump.moveDamping;
 			
 			velocityMovement = rigidBody.velocityMovement;
-			velocityMovementForce = velocityMovement.force;
 			velocityMovementForceDelta = velocityMovement.forceDelta;
 			velocityGravity = rigidBody.velocityGravity;
 			velocityGravityForceDelta = velocityGravity.forceDelta;
@@ -919,24 +920,24 @@
 			
 			// movement
 			
-			velocityMovementForceDelta.copy( moveDir );
+			moveDir.multiplyScalar( moveSpeed );
 			
 			if ( state.movingHorizontal && jump.active === true ) {
 				
-				velocityMovementForceDelta.z += jumpSpeedStart * jump.moveSpeedMod;
+				moveDir.z += jumpSpeedStart * jump.moveSpeedMod;
 				
 			}
 			
-			velocityMovementForceDelta.multiplyScalar( moveSpeed );
+			velocityMovementForceDelta.addSelf( moveDir );
 			
 			// moving backwards?
 			
-			if ( velocityMovementForceDelta.z < 0 ) {
+			if ( moveDir.z < 0 ) {
 				
 				state.movingBack = true;
 				
 			}
-			else if ( velocityMovementForceDelta.z > 0 ) {
+			else if ( moveDir.z > 0 ) {
 				
 				state.movingBack = false;
 				
@@ -944,7 +945,7 @@
 			
 			// get movement force
 			
-			velocityMovementForceLength = velocityMovement.force.length() / timeDeltaMod;
+			velocityMovementForceRotatedLength = velocityMovement.forceRotated.length() / timeDeltaMod;
 			
 			// walk/run/idle
 			
@@ -952,17 +953,17 @@
 				
 				// walk / run cycles
 				
-				if ( velocityMovementForceLength > 0 || sliding === true ) {
+				if ( velocityMovementForceRotatedLength > 0 || sliding === true ) {
 					
 					// get approximate terminal velocity based on acceleration (moveVec) and damping
 					// helps morphs play faster if character is moving faster, or slower if moving slower
-					// TODO: move equation into physics module
+					// TODO: account for really low damping (0.95+)
 					
 					velocityMovementDamping = velocityMovement.damping.z;
 					dragCoefficient = ( 0.33758 * Math.pow( velocityMovementDamping, 2 ) ) + ( -0.67116 * velocityMovementDamping ) + 0.33419;
 					
 					terminalVelocity = Math.round( Math.sqrt( ( 2 * Math.abs( velocityMovement.force.z * 0.5 ) ) / dragCoefficient ) ) * 0.5;
-					playSpeedModifier = terminalVelocity / Math.round( velocityMovementForceLength );
+					playSpeedModifier = terminalVelocity / Math.round( velocityMovementForceRotatedLength );
 					
 					if ( main.is_number( playSpeedModifier ) !== true ) {
 						
@@ -970,7 +971,7 @@
 						
 					}
 					
-					if ( velocityMovementForceLength >= move.runThreshold ) {
+					if ( velocityMovementForceRotatedLength >= move.runThreshold ) {
 						
 						this.morphs.play( 'run', { duration: durations.run * playSpeedModifier, loop: true, solo: true, durationClear: durations.clearSolo, reverse: state.movingBack } );
 						

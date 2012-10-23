@@ -588,7 +588,7 @@
 		
 		this.forceDelta.set( 0, 0, 0 );
 		
-		// pre damp
+		// pre damp, physics will handle post damping
 		
 		this.force.multiplySelf( this.dampingPre );
 		this.forceRotated.multiplySelf( this.dampingPre );
