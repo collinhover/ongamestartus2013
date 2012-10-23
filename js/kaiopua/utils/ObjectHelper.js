@@ -1479,7 +1479,7 @@
 		tween_stop( object, to );
 		
 		tween = new TWEEN.Tween( object )
-			.to( to, parameters.time )
+			.to( to, parameters.duration )
 			.easing( parameters.easing || TWEEN.Easing.Quadratic.InOut )
 			.delay( parameters.delay || 0 )
 			.onStart( parameters.onStart )

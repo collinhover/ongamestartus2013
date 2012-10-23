@@ -161,12 +161,12 @@
 					
 					tweenShow = _ObjectHelper.tween( this.material, { opacity: 1 }, {
 						start: false,
-						time: durationPerTween
+						duration: durationPerTween
 					} );
 					
 					tweenHide = _ObjectHelper.tween( this.material, { opacity: stats.invulnerabilityOpacityMin }, {
 						start: false,
-						time: durationPerTween
+						duration: durationPerTween
 					} );
 					
 					tweenHide.chain( tweenShow.chain( tweenHide ) ).start();
@@ -176,7 +176,7 @@
 				else {
 					
 					_ObjectHelper.tween( this.material, { opacity: 1 }, {
-						time: durationPerTween,
+						duration: durationPerTween,
 						onComplete: function () {
 							
 							me.material.transparent = false;
@@ -402,7 +402,7 @@
 			this.material.transparent = true;
 			
 			_ObjectHelper.tween( this.material, { opacity: 0 }, { 
-				time: durations.decay,
+				duration: durations.decay,
 				delay: durations.decayDelay,
 				onComplete: function () {
 					

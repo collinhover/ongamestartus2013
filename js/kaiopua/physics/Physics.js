@@ -579,7 +579,7 @@
 			
 			velocity.obstacle = obstacle;
 			
-			obstacle.affect( mesh );
+			obstacle.affect( mesh, { velocity: velocity } );
 			
 		}
 		
