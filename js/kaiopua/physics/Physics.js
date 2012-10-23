@@ -89,12 +89,11 @@
 		this.utilVec31Update = new THREE.Vector3();
 		this.utilVec32Update = new THREE.Vector3();
 		this.utilVec33Update = new THREE.Vector3();
-		this.utilVec34Update = new THREE.Vector3();
-		this.utilVec35Update = new THREE.Vector3();
 		this.utilVec31Apply = new THREE.Vector3();
 		this.utilVec31Velocity = new THREE.Vector3();
 		this.utilVec32Velocity = new THREE.Vector3();
 		this.utilVec33Velocity = new THREE.Vector3();
+		this.utilVec34Velocity = new THREE.Vector3();
 		this.utilQ1Velocity = new THREE.Quaternion();
 		
 		// octree
@@ -382,12 +381,12 @@
 			intersectionAlt,
 			intersectionJump,
 			intersectionDouble,
-			angle,
-			angleInverted,
-			normalOfIntersected,
 			direction = this.utilVec31Velocity,
 			axisInitial = this.utilVec32Velocity,
 			axisDown = this.utilVec33Velocity,
+			angle,
+			angleInverted,
+			normalOfIntersected = this.utilVec34Velocity,
 			angleFixCollisionQ,
 			moveForceRotated,
 			obstacle,
@@ -475,7 +474,7 @@
 			
 			// normal is local to object intersected, so rotate normal accordingly
 			
-			normalOfIntersected = intersection.normal;
+			normalOfIntersected.copy( intersection.normal );
 			intersection.object.matrixWorld.rotateAxis( normalOfIntersected );
 			
 			// invert the angle between velocity direction and normal of intersected

@@ -14,8 +14,9 @@
 		_Model,
 		_World,
 		_Skybox,
-		_SlipperyObstacle,
-		_ObjectHelper;
+		_ObjectHelper,
+		_ObstacleSlippery,
+		_ObstacleDamaging;
     
     /*===================================================
     
@@ -29,8 +30,9 @@
 			"js/kaiopua/core/Model.js",
 			"js/kaiopua/env/World.js",
 			"js/kaiopua/env/Skybox.js",
-			"js/kaiopua/physics/SlipperyObstacle.js",
 			"js/kaiopua/utils/ObjectHelper.js",
+			"js/kaiopua/physics/ObstacleSlippery.js",
+			"js/kaiopua/physics/ObstacleDamaging.js",
 			shared.pathToTextures + "skybox_world_posx.jpg",
             shared.pathToTextures + "skybox_world_negx.jpg",
 			shared.pathToTextures + "skybox_world_posy.jpg",
@@ -48,7 +50,7 @@
     
     =====================================================*/
 	
-	function init_internal ( m, w, sb, so, oh ) {
+	function init_internal ( m, w, sb, oh, obs, obd ) {
 		console.log('internal Launcher', _Launcher);
 		
 		// assets
@@ -56,8 +58,9 @@
 		_Model = m;
 		_World = w;
 		_Skybox = sb;
-		_SlipperyObstacle = so;
 		_ObjectHelper = oh;
+		_ObstacleSlippery = obs;
+		_ObstacleDamaging = obd;
 		
 		// properties
 		
@@ -159,7 +162,7 @@
 		
 		// obstacle tests
 		
-		var ice = new _SlipperyObstacle.Instance( {
+		var ice = new _ObstacleSlippery.Instance( {
 			geometry: new THREE.CubeGeometry( 500, 300, 500 ),
 			material: new THREE.MeshLambertMaterial( { color: 0xBAFEFF, ambient: 0xE3FFFF } ),
 			physics: {
@@ -168,6 +171,16 @@
 		} );
 		ice.position.set( 0, 1400, 0 );
 		shared.world.add( ice );
+		
+		var lava = new _ObstacleDamaging.Instance( {
+			geometry: new THREE.CubeGeometry( 500, 300, 500 ),
+			material: new THREE.MeshLambertMaterial( { color: 0xE01B3C, ambient: 0xFF9742 } ),
+			physics: {
+				bodyType: 'box'
+			}
+		} );
+		lava.position.set( -600, 1300, 0 );
+		shared.world.add( lava );
 		
 	}
     

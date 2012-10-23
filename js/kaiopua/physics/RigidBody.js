@@ -66,6 +66,10 @@
 		_RigidBody.gravityBodyChangeForceMod = 0.5;
 		_RigidBody.gravityBodyChangeMagnitude = new THREE.Vector3( 0, -0.1, 0 );
 		
+		// functions
+		
+		_RigidBody.extract_parent_gravity_body = extract_parent_gravity_body;
+		
 		// instance
 		
 		_RigidBody.Instance = RigidBody;
@@ -77,6 +81,7 @@
 		_RigidBody.Instance.prototype.collider_dimensions_scaled = collider_dimensions_scaled;
 		_RigidBody.Instance.prototype.collider_radius = collider_radius;
 		
+		_RigidBody.Instance.prototype.retrieve_relative_to_q = retrieve_relative_to_q;
 		_RigidBody.Instance.prototype.bounds_in_direction = bounds_in_direction;
 		
 		_RigidBody.Instance.prototype.find_gravity_body = find_gravity_body;
@@ -88,6 +93,10 @@
 		
 		Object.defineProperty( _RigidBody.Instance.prototype, 'sliding', { 
 			get : function () { return this.velocityGravity.sliding }
+		});
+		
+		Object.defineProperty( _RigidBody.Instance.prototype, 'collisions', { 
+			get : function () { return { gravity: this.velocityGravity.collision, movement: this.velocityMovement.collision } }
 		});
 		
 		Object.defineProperty( _RigidBody.Instance.prototype, 'radiusGravity', { 

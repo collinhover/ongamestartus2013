@@ -328,7 +328,7 @@
 		var state = this.state,
 			stats = this.options.stats;
 		console.log( this, ' trying to hurt for ', damage, ', invulnerable? ', state.invulnerable );
-		if ( state.invulnerable !== true && state.dead !== true ) {
+		if ( state.invulnerable !== true && state.dead !== true && main.is_number( damage ) && damage > 0 ) {
 			
 			this.health -= damage;
 			
@@ -790,6 +790,28 @@
 			
 			jump.timeAfterNotGrounded += timeDelta;
 			
+			// air control
+			
+			if ( grounded === false && jump.timeAfterNotGrounded >= jumpTimeAfterNotGroundedMax ) {
+				
+				if ( typeof jump.movementChangeLayer === 'undefined' ) {
+					
+					jump.movementChangeLayer = _ObjectHelper.temporary_change( velocityMovement, {
+						damping: new THREE.Vector3(  jumpMoveDamping, jumpMoveDamping, jumpMoveDamping ),
+						speedDelta: new THREE.Vector3(  jumpAirControl, jumpAirControl, jumpAirControl )
+					} );
+					
+				}
+				
+			}
+			else if ( typeof jump.movementChangeLayer !== 'undefined' ) {
+				
+				_ObjectHelper.revert_change( velocityMovement, jump.movementChangeLayer );
+				
+				jump.movementChangeLayer = undefined;
+				
+			}
+			
 			// if falling but not jumping
 			
 			if ( jump.active === false && jump.timeAfterNotGrounded >= jumpTimeAfterNotGroundedMax && grounded === false ) {
@@ -841,11 +863,6 @@
 						
 						velocityGravity.reset();
 						
-						jump.movementChangeLayer = _ObjectHelper.temporary_change( velocityMovement, {
-							damping: new THREE.Vector3(  jumpMoveDamping, jumpMoveDamping, jumpMoveDamping ),
-							speedDelta: new THREE.Vector3(  jumpAirControl, jumpAirControl, jumpAirControl )
-						} );
-						
 					}
 					
 					// play jump
@@ -877,8 +894,6 @@
 			else {
 				
 				if ( grounded === true && jump.active !== false ) {
-					
-					_ObjectHelper.revert_change( velocityMovement, jump.movementChangeLayer );
 					
 					this.stop_jumping();
 					
