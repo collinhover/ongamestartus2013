@@ -177,6 +177,9 @@
 			material: new THREE.MeshLambertMaterial( { color: 0xE01B3C, ambient: 0xFF9742 } ),
 			physics: {
 				bodyType: 'box'
+			},
+			options: {
+				damage: 25
 			}
 		} );
 		lava.position.set( -600, 1300, 0 );
