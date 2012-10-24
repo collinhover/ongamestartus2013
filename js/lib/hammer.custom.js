@@ -45,6 +45,7 @@ var HAMMER = ( function ( main ) {
 		_event_name_move = _has_touch ? 'touchmove' : 'mousemove',
 		_event_name_end = _has_touch ? 'touchend' : 'mouseup',
 		_event_name_cancel = _has_touch ? 'touchcancel' : '',
+		_mousedown = false,
 		_hammer_count = 0,
 		_hammering = false,
 		_hammer_instances = [],
@@ -399,8 +400,8 @@ var HAMMER = ( function ( main ) {
 				body = doc.body;
 
 			return [{
-				x: event.pageX || event.clientX + ( doc && doc.scrollLeft || body && body.scrollLeft || 0 ) - ( doc && doc.clientLeft || body && doc.clientLeft || 0 ),
-				y: event.pageY || event.clientY + ( doc && doc.scrollTop || body && body.scrollTop || 0 ) - ( doc && doc.clientTop || body && doc.clientTop || 0 )
+				x: event.pageX || event.clientX + ( doc && doc.scrollLeft || body && body.scrollLeft || 0 ) - ( doc && doc.clientLeft || body && body.clientLeft || 0 ),
+				y: event.pageY || event.clientY + ( doc && doc.scrollTop || body && body.scrollTop || 0 ) - ( doc && doc.clientTop || body && body.clientTop || 0 )
 			}];
 		}
 		// multitouch, return array with positions
@@ -691,8 +692,7 @@ var HAMMER = ( function ( main ) {
 	 */
 	function on_step ( event ) {
 		
-		var i, il,
-			type = event.type,
+		var type = event.type,
 			index,
 			dragging;
 		
