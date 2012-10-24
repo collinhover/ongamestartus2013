@@ -117,7 +117,7 @@
 			
 		*/
 		
-		for ( i = 0, l = 30; i < l; i++ ) {
+		for ( var i = 0, l = 30; i < l; i++ ) {
 			
 			shape = new _Model.Instance( {
 				geometry: new THREE.CubeGeometry( shapeSizeMin + Math.random() * shapeSize, shapeSizeMin + Math.random() * shapeSize, shapeSizeMin + Math.random() * shapeSize ),

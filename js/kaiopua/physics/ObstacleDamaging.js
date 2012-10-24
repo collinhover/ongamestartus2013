@@ -50,7 +50,7 @@
 			pushback: {
 				speedStart: 4,
 				speedEnd: 0,
-				duration: 300
+				duration: 200
 			},
 			effects: {
 				speedDelta: 0
@@ -150,6 +150,11 @@
 				
 				affected.pushbackDelta = affected.collision.normal.clone();
 				this.matrixWorld.rotateAxis( affected.pushbackDelta );
+				
+				// reset movement velocity
+				
+				rigidBody.velocityMovement.clear();
+				rigidBody.velocityMovement.dampingPre.set( 1, 1, 1 );
 				
 				// tween pushback speed
 				

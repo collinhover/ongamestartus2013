@@ -155,8 +155,7 @@
 	
 	function play ( name, parameters ) {
 		
-		var i, l,
-			names = this.names,
+		var names = this.names,
 			name,
 			maps,
 			map,

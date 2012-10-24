@@ -920,36 +920,40 @@
 			
 			// movement
 			
-			moveDir.multiplyScalar( moveSpeed );
-			
-			if ( state.movingHorizontal && jump.active === true ) {
+			if ( sliding !== true ) {
 				
-				moveDir.z += jumpSpeedStart * jump.moveSpeedMod;
+				moveDir.multiplyScalar( moveSpeed );
+				
+				if ( state.movingHorizontal && jump.active === true ) {
+					
+					moveDir.z += jumpSpeedStart * jump.moveSpeedMod;
+					
+				}
+				
+				velocityMovementForceDelta.addSelf( moveDir );
+				
+				// moving backwards?
+				
+				if ( moveDir.z < 0 ) {
+					
+					state.movingBack = true;
+					
+				}
+				else if ( moveDir.z > 0 ) {
+					
+					state.movingBack = false;
+					
+				}
 				
 			}
-			
-			velocityMovementForceDelta.addSelf( moveDir );
-			
-			// moving backwards?
-			
-			if ( moveDir.z < 0 ) {
-				
-				state.movingBack = true;
-				
-			}
-			else if ( moveDir.z > 0 ) {
-				
-				state.movingBack = false;
-				
-			}
-			
-			// get movement force
-			
-			velocityMovementForceRotatedLength = velocityMovement.forceRotated.length() / timeDeltaMod;
 			
 			// walk/run/idle
 			
 			if ( jump.active === false && grounded === true ) {
+				
+				// get movement force
+				
+				velocityMovementForceRotatedLength = velocityMovement.forceRotated.length() / timeDeltaMod;
 				
 				// walk / run cycles
 				

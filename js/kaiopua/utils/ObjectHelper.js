@@ -25,6 +25,7 @@
 		utilVec31Dimensions,
 		utilVec31Offset,
 		utilVec31OffsetRot,
+		utilVec31NormalizeFaces,
 		utilVec32NormalizeFaces,
 		utilVec33NormalizeFaces,
 		utilVec34NormalizeFaces,
@@ -172,8 +173,7 @@
 	
 	function clone_material ( material ) {
 		
-		var i, l,
-			pMat,
+		var pMat,
 			cMaterial;
 		
 		// shallow copy material

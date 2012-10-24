@@ -2649,7 +2649,8 @@ var KAIOPUA = (function (main) {
 	
 	function asset_path_cascade( path ) {
 		
-		var cascade,
+		var i, l,
+			cascade,
 			part,
 			dotIndex;
 		

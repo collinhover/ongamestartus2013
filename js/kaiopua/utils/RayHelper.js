@@ -44,7 +44,8 @@
 		utilVec31Sphere,
 		utilVec31Triangle,
 		utilVec32Triangle,
-		utilVec33Triangle;
+		utilVec33Triangle,
+		utilVec34Triangle;
     
     /*===================================================
     
@@ -638,7 +639,6 @@
 		
 		for ( i = 0, l = colliders.length; i < l; i++ ) {
 			
-			//console.log( ' > raycast collider, ray ', ray.far, ' BEFORE: ', colliders[ i ],  ' + AFTER: ', extract_collider( colliders[ i ] ) );
 			collider = extract_collider( colliders[ i ] );
 			
 			// ray cast collider

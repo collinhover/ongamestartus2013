@@ -555,14 +555,12 @@
 		
 		if ( this.state.enabled === true || isAlwaysAvailable ) {
 			
-			parameters = {
-				event: e,
-				allowDefault: isAlwaysAvailable || main.paused
-			};
-			
 			// perform action
 			
-			this.actions.execute( keyNameActual, state, parameters );
+			this.actions.execute( keyNameActual, state, {
+				event: e,
+				allowDefault: isAlwaysAvailable || main.paused
+			} );
 			
 		}
 		
