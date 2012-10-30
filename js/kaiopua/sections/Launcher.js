@@ -101,75 +101,44 @@
 		shared.world.add( new THREE.AmbientLight( 0x555555 ) );
 		
 		
-		// random shapes
-		/*
-		var numShapes = 60,
-			points = THREE.GeometryUtils.randomPointsInGeometry( shared.world.geometry, numShapes ),
-			shapeSizeMin = 50,
-			shapeSize = 600,
-			shape;
 		
+		// secondary gravity sources
 		
-			// tester shape
-			
-			shape = new _Model.Instance( {
-				geometry: new THREE.CubeGeometry( 500, 800, 500 ),
-				material: new THREE.MeshLambertMaterial( { color: 0x555555, ambient: 0xAAAAAA } ),
-				physics: {
-					bodyType: 'box'
-				}
-			} );
-			
-			shared.world.add( shape );
-			
-			shape.position.set( 0, 1500, 0 );
-			shape.quaternion.setFromEuler( new THREE.Vector3( 45, 45, 45 ) );
-			
-		
-		
-		for ( var i = 0, l = 30; i < l; i++ ) {
-			
-			shape = new _Model.Instance( {
-				geometry: new THREE.CubeGeometry( shapeSizeMin + Math.random() * shapeSize, shapeSizeMin + Math.random() * shapeSize, shapeSizeMin + Math.random() * shapeSize ),
-				material: new THREE.MeshLambertMaterial( { color: 0x555555, ambient: 0xAAAAAA } ),
-				physics: {
-					bodyType: 'box'
-				}
-			} );
-			
-			shared.world.add( shape );
-			
-			shape.position.set( points[ i ].x, points[ i ].y, points[ i ].z );
-			shape.quaternion.setFromEuler( new THREE.Vector3( Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI ) );
-				
-		}
-		
-		// secondary gravity source
-		
-		var moon = new _Model.Instance( {
-			geometry: new THREE.SphereGeometry( 200, 10, 10 ),
-			material: new THREE.MeshLambertMaterial( { color: 0xAAAAAA, ambient: 0xEEEEEE } ),
+		var moon1 = new _Model.Instance( {
+			geometry: asteroidGeometry,
 			physics: {
 				bodyType: 'mesh',
 				gravitySource: true
 			}
 		} );
-		moon.position.set( 1000, 2000, 1000 );
-		shared.world.add( moon );
+		moon1.position.set( 1000, 1200, 1000 );
+		moon1.scale.set( 0.35, 0.35, 0.35 );
+		shared.world.add( moon1 );
 		
-		var moonRock = new _Model.Instance( {
-			geometry: new THREE.CubeGeometry( 150, 150, 150 ),
-			material: new THREE.MeshLambertMaterial( { color: 0xAAAAAA, ambient: 0xEEEEEE } ),
+		var moon2 = new _Model.Instance( {
+			geometry: asteroidGeometry,
 			physics: {
-				bodyType: 'mesh'
+				bodyType: 'mesh',
+				gravitySource: true
 			}
 		} );
-		moonRock.position.set( 0, 150, 0 );
-		moonRock.quaternion.setFromEuler( new THREE.Vector3( 45, 0, 45 ) );
-		moon.add( moonRock );
+		moon2.position.set( 1800, 1700, 1000 );
+		moon2.scale.set( 0.15, 0.15, 0.15 );
+		shared.world.add( moon2 );
+		
+		var moon3 = new _Model.Instance( {
+			geometry: asteroidGeometry,
+			physics: {
+				bodyType: 'mesh',
+				gravitySource: true
+			}
+		} );
+		moon3.position.set( 1800, 2200, 1200 );
+		moon3.scale.set( 0.1, 0.1, 0.1 );
+		shared.world.add( moon3 );
 		
 		
-		
+		/*
 		// obstacle tests
 		
 		var ice = new _ObstacleSlippery.Instance( {
