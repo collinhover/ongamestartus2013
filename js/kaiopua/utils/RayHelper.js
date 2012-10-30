@@ -136,8 +136,7 @@
 	
 	function localize_ray ( ray, object ) {
 		
-		var scale,
-			matrixObj,
+		var matrixObj,
 			matrixObjCopy = utilMat41Localize,
 			mt = utilMat42Localize,
 			rt = utilRay1Localize;
@@ -151,18 +150,16 @@
 		if ( object instanceof THREE.Mesh ) {
 			
 			matrixObj = object.matrixWorld;
-			/*
-			scale = object.scale;
 			
 			// get copy of object world matrix without scale applied
 			// matrix with scale does not seem to invert correctly
 			
 			matrixObjCopy.extractPosition( matrixObj );
 			matrixObjCopy.extractRotation( matrixObj );
-			*/
+			
 			// invert copy
 			
-			mt.getInverse( matrixObj );//matrixObjCopy );
+			mt.getInverse( matrixObjCopy );
 			
 			mt.multiplyVector3( rt.origin );
 			mt.rotateAxis( rt.direction );
