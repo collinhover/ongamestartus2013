@@ -17,8 +17,6 @@ var KAIOPUA = (function (main) {
 	
 	shared.pathToIcons = 'img/';
 	shared.pathToAssets = 'asset/';
-	shared.pathToModels = shared.pathToAssets + 'model/';
-	shared.pathToTextures = shared.pathToAssets + 'texture/';
 	
 	shared.frameRateMax = 60;
 	shared.frameRateMin = 20;
@@ -106,8 +104,7 @@ var KAIOPUA = (function (main) {
             "js/kaiopua/sections/Launcher.js"
         ],
         assetsGameExtras = [
-			"js/kaiopua/sections/Intro.js",
-			"js/kaiopua/core/Player.js"
+			"js/kaiopua/sections/Intro.js"
         ];
 	
 	/*===================================================
@@ -565,14 +562,10 @@ var KAIOPUA = (function (main) {
     
     =====================================================*/
     
-    function init_ready ( intro, p ) {
+    function init_ready ( intro ) {
 		console.log('GAME: ready');
 		
 		_Intro = intro;
-		_Player = p;
-		
-		shared.player = new _Player.Instance();
-		shared.player.controllable = true;
 		
 		$( '#buttonStart' ).on( 'tap', start );
 		$( '#buttonExitGame' ).on( 'tap', stop );
