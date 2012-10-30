@@ -12,6 +12,7 @@
 		assetPath = "js/kaiopua/sections/Launcher.js",
 		_Launcher = {},
 		_Model,
+		_Player,
 		_World,
 		_Skybox,
 		_ObjectHelper,
@@ -28,17 +29,20 @@
 		data: _Launcher,
 		requirements: [
 			"js/kaiopua/core/Model.js",
+			"js/kaiopua/core/Player.js",
 			"js/kaiopua/env/World.js",
 			"js/kaiopua/env/Skybox.js",
 			"js/kaiopua/utils/ObjectHelper.js",
 			"js/kaiopua/physics/ObstacleSlippery.js",
 			"js/kaiopua/physics/ObstacleDamaging.js",
-			shared.pathToTextures + "skybox_world_posx.jpg",
-            shared.pathToTextures + "skybox_world_negx.jpg",
-			shared.pathToTextures + "skybox_world_posy.jpg",
-            shared.pathToTextures + "skybox_world_negy.jpg",
-			shared.pathToTextures + "skybox_world_posz.jpg",
-            shared.pathToTextures + "skybox_world_negz.jpg"
+            { path: shared.pathToAssets + "hero.js", type: 'model' },
+            { path: shared.pathToAssets + "asteroid.js", type: 'model' },
+			shared.pathToAssets + "skybox_world_posx.jpg",
+            shared.pathToAssets + "skybox_world_negx.jpg",
+			shared.pathToAssets + "skybox_world_posy.jpg",
+            shared.pathToAssets + "skybox_world_negy.jpg",
+			shared.pathToAssets + "skybox_world_posz.jpg",
+            shared.pathToAssets + "skybox_world_negz.jpg"
 		],
 		callbacksOnReqs: init_internal,
 		wait: true
@@ -50,12 +54,13 @@
     
     =====================================================*/
 	
-	function init_internal ( m, w, sb, oh, obs, obd ) {
+	function init_internal ( m, pl, w, sb, oh, obs, obd, heroGeometry, asteroidGeometry ) {
 		console.log('internal Launcher', _Launcher);
 		
 		// assets
 		
 		_Model = m;
+		_Player = pl;
 		_World = w;
 		_Skybox = sb;
 		_ObjectHelper = oh;
@@ -69,13 +74,18 @@
 		_Launcher.remove = remove;
 		_Launcher.update = update;
 		
+		shared.player = new _Player.Instance( {
+			geometry: heroGeometry,
+			material: new THREE.MeshFaceMaterial()
+		} );
+		shared.player.controllable = true;
+		
 		// environment
 		
-		shared.skybox = new _Skybox.Instance( shared.pathToTextures + "skybox_world" );
+		shared.skybox = new _Skybox.Instance( shared.pathToAssets + "skybox_world" );
 		
 		shared.world = new _World.Instance( {
-			geometry: new THREE.SphereGeometry( 1500, 20, 20 ),
-			material: new THREE.MeshLambertMaterial( {color: 0x10C266, ambient: 0x4FFFA4 } ),
+			geometry: asteroidGeometry,
 			physics:  {
 				bodyType: 'mesh',
 				gravitySource: true
@@ -92,14 +102,14 @@
 		
 		
 		// random shapes
-		
+		/*
 		var numShapes = 60,
 			points = THREE.GeometryUtils.randomPointsInGeometry( shared.world.geometry, numShapes ),
 			shapeSizeMin = 50,
 			shapeSize = 600,
 			shape;
 		
-		/*
+		
 			// tester shape
 			
 			shape = new _Model.Instance( {
@@ -115,7 +125,7 @@
 			shape.position.set( 0, 1500, 0 );
 			shape.quaternion.setFromEuler( new THREE.Vector3( 45, 45, 45 ) );
 			
-		*/
+		
 		
 		for ( var i = 0, l = 30; i < l; i++ ) {
 			
@@ -184,7 +194,7 @@
 		} );
 		lava.position.set( -600, 1300, 0 );
 		shared.world.add( lava );
-		
+		*/
 	}
     
     /*===================================================

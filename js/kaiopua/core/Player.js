@@ -216,8 +216,8 @@
 		
 		parameters.name = 'Hero';
 		
-		parameters.geometry = parameters.geometry || main.get_asset_data( "asset/model/Hero.js" ) || new THREE.CubeGeometry( 50, 100, 50 );
-		parameters.material = parameters.material || new THREE.MeshLambertMaterial( { color: 0xFFF7E0, ambient: 0xFFF7E0, vertexColors: THREE.VertexColors } );
+		parameters.geometry = parameters.geometry || new THREE.CubeGeometry( 50, 100, 50 );
+		parameters.center = true;
 		
 		parameters.physics = parameters.physics || {};
 		parameters.physics.bodyType = 'capsule';

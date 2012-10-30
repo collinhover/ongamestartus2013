@@ -23,12 +23,12 @@
 		data: _Intro,
 		requirements: [
 			"js/kaiopua/utils/ObjectHelper.js",
-			shared.pathToTextures + "skybox_world_posx.jpg",
-            shared.pathToTextures + "skybox_world_negx.jpg",
-			shared.pathToTextures + "skybox_world_posy.jpg",
-            shared.pathToTextures + "skybox_world_negy.jpg",
-			shared.pathToTextures + "skybox_world_posz.jpg",
-            shared.pathToTextures + "skybox_world_negz.jpg"
+			shared.pathToAssets + "skybox_world_posx.jpg",
+            shared.pathToAssets + "skybox_world_negx.jpg",
+			shared.pathToAssets + "skybox_world_posy.jpg",
+            shared.pathToAssets + "skybox_world_negy.jpg",
+			shared.pathToAssets + "skybox_world_posz.jpg",
+            shared.pathToAssets + "skybox_world_negz.jpg"
 		],
 		callbacksOnReqs: init_internal,
 		wait: true
