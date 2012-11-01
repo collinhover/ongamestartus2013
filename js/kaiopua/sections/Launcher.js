@@ -89,9 +89,10 @@
 		
 		shared.skybox = new _Skybox.Instance( shared.pathToAssets + "skybox", { repeat: 2, oneForAll: true } );
 		
-		shared.world = new _Model.Instance( {//new _World.Instance( {
+		shared.world = new _World.Instance( {
 			geometry: gAsteroid,
-			material: new THREE.MeshLambertMaterial( { color: 0xffffff, ambient: 0xffffff } ),//, vertexColors: THREE.VertexColors } ),
+			// TODO: make asteroid colors/material brighter
+			material: new THREE.MeshLambertMaterial( { color: 0xffffff, ambient: 0xffffff, vertexColors: THREE.VertexColors } ),//new THREE.MeshFaceMaterial(),
 			physics:  {
 				bodyType: 'mesh',
 				gravitySource: true
@@ -101,7 +102,8 @@
 		main.asset_require( { path: shared.pathToAssets + "asteroid_colliders.js", type: 'model' }, function ( geometry ) {
 			var model = new _Model.Instance( {
 				geometry: geometry,
-				material: new THREE.MeshFaceMaterial(),
+				// TODO: normalize asteroid props to match asteroid
+				material: new THREE.MeshLambertMaterial( { color: 0xffffff, ambient: 0xffffff, vertexColors: THREE.VertexColors } ),//new THREE.MeshFaceMaterial(),
 				physics:  {
 					bodyType: 'mesh'
 				}
@@ -117,22 +119,23 @@
 			shared.world.add( model );
 		} );
 		
-		main.asset_require( { path: shared.pathToAssets + "moon.js", type: 'model' }, function ( geometry ) {
-			var moon = new _Model.Instance( {
-				geometry: geometry,
+		main.asset_require( { path: shared.pathToAssets + "moon.js", type: 'model' }, function ( gMoon ) {
+			shared.world.parts.moon = new _Model.Instance( {
+				geometry: gMoon,
 				material: new THREE.MeshFaceMaterial(),
 				center: true
 			} );
-			shared.world.add( moon );
 			
-			var light = new THREE.PointLight( 0xffffff, 1 );
-			light.position.set( 0, shared.world.boundRadius  + 4000, 0 );
-			shared.world.add( light );
+			shared.world.parts.moonLight.distance = shared.world.parts.moon.boundRadius * 10;
+			shared.world.parts.moon.add( shared.world.parts.moonLight );
+			
+			shared.world.add( shared.world.parts.moon );
 			
 		} );
 		main.asset_require( { path: shared.pathToAssets + "asteroid_ship.js", type: 'model' }, function ( geometry ) {
 			var ship = new _Model.Instance( {
 				geometry: geometry,
+				//material: new THREE.MeshFaceMaterial(),
 				physics:  {
 					bodyType: 'mesh'
 				},
@@ -141,11 +144,14 @@
 			shared.world.add( ship );
 		} );
 		
-		// lights
+		// lights, seems as if lights must be in world before world is added for the first time to scene
 		
-		shared.world.add( new THREE.AmbientLight( 0x333333 ) );
+		shared.world.parts.ambientLight = new THREE.AmbientLight( 0x555555 );
+		shared.world.add( shared.world.parts.ambientLight );
 		
-		
+		shared.world.parts.moonLight = new THREE.PointLight( 0xffffff, 1 );
+		shared.world.add( shared.world.parts.moonLight );
+	
 		
 		/*
 		// secondary gravity sources
@@ -219,9 +225,8 @@
     function show () {
 		
 		shared.sceneBG.add( shared.skybox );
-		
-		//shared.world.show();
-		shared.scene.add( shared.world );
+		console.log( 'adding world' );
+		shared.world.show();
 		
 		_ObjectHelper.revert_change( shared.cameraControls.options, true );
 		shared.cameraControls.target = shared.world;
@@ -240,8 +245,7 @@
     
     function remove () {
 		
-		//shared.world.hide();
-		shared.scene.remove( shared.world );
+		shared.world.hide();
 		
 		shared.sceneBG.remove( shared.skybox );
         

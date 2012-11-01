@@ -41,6 +41,15 @@ var KAIOPUA = (function (main) {
 	shared.domCollapseEasing = 'easeInOutCubic';
 	shared.domScrollEasing = 'easeInOutCubic';
 	
+	shared.screenWidth = 0;
+	shared.screenHeight = 0;
+	shared.screenViewableWidth = 0;
+	shared.screenViewableHeight = 0;
+	shared.screenOffsetTop = 0;
+	shared.screenOffsetBottom = 0;
+	shared.screenOffsetLeft = 0;
+	shared.screenOffsetRight = 0;
+	
 	var loader = {},
 		worker = {},
 		_ErrorHandler,
@@ -1452,39 +1461,35 @@ var KAIOPUA = (function (main) {
     function on_window_resized( e ) {
 		
 		var gameWidth,
-			gameHeight,
-			heightHeader,
-			uiBodyHeight;
+			gameHeight;
         
         shared.screenWidth = $(window).width();
         shared.screenHeight = $(window).height();
 		
-        shared.signals.onWindowResized.dispatch(shared.screenWidth, shared.screenHeight);
+		shared.screenViewableWidth = shared.domElements.$game.width();
+		shared.screenViewableHeight = shared.domElements.$game.height();
 		
 		if ( setup === true ) {
 			
-			heightHeader = shared.domElements.$uiHeader.height();
-			uiBodyHeight = shared.screenHeight - heightHeader;
+			// handle ui first
+			console.log( '_UI', _UI);
+			_UI.resize();
 			
-			shared.domElements.$uiBody.css( {
-				'height' : uiBodyHeight,
-				'top' : heightHeader
-			} );
-			
-			// because ui out game is scrollable, its grids are not aligned to main header grids
-			// so we need to pad left side of the individual containers to correct for this
-			
-			if ( shared.domElements.$uiOutGame[0].scrollHeight > uiBodyHeight ) {
-				
-				shared.domElements.$menusInner.css( 'padding-left', $.scrollbarWidth() );
-				
-			}
+			// remaining
+		
+			shared.signals.onWindowResized.dispatch( shared.screenWidth, shared.screenHeight );
 			
 			// renderer
 			
-			gameWidth = shared.gameWidth = shared.domElements.$game.width();
-			gameHeight = shared.gameHeight = shared.domElements.$game.height();
+			gameWidth = shared.gameWidth = shared.screenViewableWidth;
+			gameHeight = shared.gameHeight = shared.screenViewableHeight;
 			
+			$( shared.renderer.domElement ).css( {
+				'top': shared.screenOffsetTop,
+				'bottom': shared.screenOffsetBottom,
+				'left': shared.screenOffsetLeft,
+				'right': shared.screenOffsetRight,
+			} );
 			shared.renderer.setSize( gameWidth, gameHeight );
 			shared.renderTarget.width = gameWidth;
 			shared.renderTarget.height = gameHeight;
