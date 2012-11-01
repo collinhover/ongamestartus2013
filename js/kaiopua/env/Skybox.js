@@ -50,47 +50,77 @@
     
     =====================================================*/
     
-    function Skybox ( imagesAssetPath, mapping ) {
+    function Skybox ( imagesAssetPath, parameters ) {
 		
 		var ap = imagesAssetPath,
-			textureCube,
+			texture,
 			shader,
-			material;
+			material,
+			anisotropyMax = shared.renderer ? shared.renderer.getMaxAnisotropy() : 1;
+			
+		parameters = parameters || {};
 		
 		// cube texture
+		//texture = THREE.ImageUtils.loadTexture( ap + ".jpg" );
+		texture = new THREE.Texture( null, parameters.mapping );
+		texture.format = THREE.RGBFormat;
+		texture.flipY = false;
+		texture.anisotropy = Math.min( parameters.anisotropy, anisotropyMax );
 		
-		textureCube = new THREE.Texture( null, mapping );
-		textureCube.format = THREE.RGBFormat;
-		textureCube.flipY = false;
+		// use one image for all sides
+		// also allows for repeated texture
 		
-		main.asset_require( [ 
-			ap + "_posx.jpg",
-			ap + "_negx.jpg",
-			ap + "_posy.jpg",
-			ap + "_negy.jpg",
-			ap + "_posz.jpg",
-			ap + "_negz.jpg"
-		], function ( posx, negx, posy, negy, posz, negz ) {
+		if ( parameters.oneForAll === true ) {
 			
-			textureCube.image = [ posx, negx, posy, negy, posz, negz ];
-			textureCube.needsUpdate = true;
+			texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+			texture.repeat.set( parameters.repeat || 1, parameters.repeat || 1 );
 			
-		} );
+			main.asset_require( [ 
+				ap + ".jpg"
+			], function ( all ) {
+				
+				texture.image = all;
+				texture.needsUpdate = true;
+				
+			} );
+			
+			material = new THREE.MeshBasicMaterial( {
+				color: 0xffffff,
+				map: texture,
+				depthWrite: false,
+				side: THREE.BackSide
+			} );
+			
+		}
+		// traditional cube with 6 premade sides
+		else {
+			
+			main.asset_require( [ 
+				ap + "_posx.jpg",
+				ap + "_negx.jpg",
+				ap + "_posy.jpg",
+				ap + "_negy.jpg",
+				ap + "_posz.jpg",
+				ap + "_negz.jpg"
+			], function ( posx, negx, posy, negy, posz, negz ) {
+				
+				texture.image = [ posx, negx, posy, negy, posz, negz ];
+				texture.needsUpdate = true;
+				
+			} );
+			
+			shader = $.extend(true, {}, THREE.ShaderUtils.lib[ "cube" ]);
+			shader.uniforms[ "tCube" ].value = texture;
+			
+			material = new THREE.ShaderMaterial( {
+				fragmentShader: shader.fragmentShader,
+				vertexShader: shader.vertexShader,
+				uniforms: shader.uniforms,
+				depthWrite: false,
+				side: THREE.BackSide
+			} );
 		
-		// shader
-		
-		shader = $.extend(true, {}, THREE.ShaderUtils.lib[ "cube" ]);
-		shader.uniforms[ "tCube" ].value = textureCube;
-		
-		// material
-		
-		material = new THREE.ShaderMaterial( {
-			fragmentShader: shader.fragmentShader,
-			vertexShader: shader.vertexShader,
-			uniforms: shader.uniforms,
-			depthWrite: false,
-			side: THREE.BackSide
-		} );
+		}
 		
 		// proto
 		

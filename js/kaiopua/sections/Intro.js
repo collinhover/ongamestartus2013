@@ -22,13 +22,7 @@
 	main.asset_register( assetPath, { 
 		data: _Intro,
 		requirements: [
-			"js/kaiopua/utils/ObjectHelper.js",
-			shared.pathToAssets + "skybox_world_posx.jpg",
-            shared.pathToAssets + "skybox_world_negx.jpg",
-			shared.pathToAssets + "skybox_world_posy.jpg",
-            shared.pathToAssets + "skybox_world_negy.jpg",
-			shared.pathToAssets + "skybox_world_posz.jpg",
-            shared.pathToAssets + "skybox_world_negz.jpg"
+			"js/kaiopua/utils/ObjectHelper.js"
 		],
 		callbacksOnReqs: init_internal,
 		wait: true

@@ -37,12 +37,7 @@
 			"js/kaiopua/physics/ObstacleDamaging.js",
             { path: shared.pathToAssets + "hero.js", type: 'model' },
             { path: shared.pathToAssets + "asteroid.js", type: 'model' },
-			shared.pathToAssets + "skybox_world_posx.jpg",
-            shared.pathToAssets + "skybox_world_negx.jpg",
-			shared.pathToAssets + "skybox_world_posy.jpg",
-            shared.pathToAssets + "skybox_world_negy.jpg",
-			shared.pathToAssets + "skybox_world_posz.jpg",
-            shared.pathToAssets + "skybox_world_negz.jpg"
+			shared.pathToAssets + "skybox.jpg",
 		],
 		callbacksOnReqs: init_internal,
 		wait: true
@@ -54,7 +49,7 @@
     
     =====================================================*/
 	
-	function init_internal ( m, pl, w, sb, oh, obs, obd, heroGeometry, asteroidGeometry ) {
+	function init_internal ( m, pl, w, sb, oh, obs, obd, gHero, gAsteroid ) {
 		console.log('internal Launcher', _Launcher);
 		
 		// assets
@@ -75,33 +70,84 @@
 		_Launcher.update = update;
 		
 		shared.player = new _Player.Instance( {
-			geometry: heroGeometry,
-			material: new THREE.MeshFaceMaterial()
+			geometry: gHero,
+			material: new THREE.MeshFaceMaterial(),
+			options: {
+				animation: {
+					durations: {
+						idle: 600,
+						jump: 600,
+						jumpStart: 250,
+						jumpEnd: 250
+					}
+				}
+			}
 		} );
 		shared.player.controllable = true;
 		
 		// environment
 		
-		shared.skybox = new _Skybox.Instance( shared.pathToAssets + "skybox_world" );
+		shared.skybox = new _Skybox.Instance( shared.pathToAssets + "skybox", { repeat: 2, oneForAll: true } );
 		
-		shared.world = new _World.Instance( {
-			geometry: asteroidGeometry,
+		shared.world = new _Model.Instance( {//new _World.Instance( {
+			geometry: gAsteroid,
+			material: new THREE.MeshLambertMaterial( { color: 0xffffff, ambient: 0xffffff } ),//, vertexColors: THREE.VertexColors } ),
 			physics:  {
 				bodyType: 'mesh',
 				gravitySource: true
 			}
 		} );
+        
+		main.asset_require( { path: shared.pathToAssets + "asteroid_colliders.js", type: 'model' }, function ( geometry ) {
+			var model = new _Model.Instance( {
+				geometry: geometry,
+				material: new THREE.MeshFaceMaterial(),
+				physics:  {
+					bodyType: 'mesh'
+				}
+			} );
+			shared.world.add( model );
+		} );
+		
+		main.asset_require( { path: shared.pathToAssets + "asteroid_noncolliders.js", type: 'model' }, function ( geometry ) {
+			var model = new _Model.Instance( {
+				geometry: geometry,
+				material: new THREE.MeshFaceMaterial()
+			} );
+			shared.world.add( model );
+		} );
+		
+		main.asset_require( { path: shared.pathToAssets + "moon.js", type: 'model' }, function ( geometry ) {
+			var moon = new _Model.Instance( {
+				geometry: geometry,
+				material: new THREE.MeshFaceMaterial(),
+				center: true
+			} );
+			shared.world.add( moon );
+			
+			var light = new THREE.PointLight( 0xffffff, 1 );
+			light.position.set( 0, shared.world.boundRadius  + 4000, 0 );
+			shared.world.add( light );
+			
+		} );
+		main.asset_require( { path: shared.pathToAssets + "asteroid_ship.js", type: 'model' }, function ( geometry ) {
+			var ship = new _Model.Instance( {
+				geometry: geometry,
+				physics:  {
+					bodyType: 'mesh'
+				},
+				center: true
+			} );
+			shared.world.add( ship );
+		} );
 		
 		// lights
 		
-		var light = new THREE.PointLight( 0xffffff, 1 );
-		light.position.set( 0, 3000, 0 );
-		
-		shared.world.add( light );
-		shared.world.add( new THREE.AmbientLight( 0x555555 ) );
+		shared.world.add( new THREE.AmbientLight( 0x333333 ) );
 		
 		
 		
+		/*
 		// secondary gravity sources
 		
 		var moon1 = new _Model.Instance( {
@@ -137,8 +183,6 @@
 		moon3.scale.set( 0.1, 0.1, 0.1 );
 		shared.world.add( moon3 );
 		
-		
-		/*
 		// obstacle tests
 		
 		var ice = new _ObstacleSlippery.Instance( {
@@ -176,7 +220,8 @@
 		
 		shared.sceneBG.add( shared.skybox );
 		
-		shared.world.show();
+		//shared.world.show();
+		shared.scene.add( shared.world );
 		
 		_ObjectHelper.revert_change( shared.cameraControls.options, true );
 		shared.cameraControls.target = shared.world;
@@ -195,7 +240,8 @@
     
     function remove () {
 		
-		shared.world.hide();
+		//shared.world.hide();
+		shared.scene.remove( shared.world );
 		
 		shared.sceneBG.remove( shared.skybox );
         
