@@ -35,6 +35,7 @@
 			"js/kaiopua/utils/ObjectHelper.js",
 			"js/kaiopua/physics/ObstacleSlippery.js",
 			"js/kaiopua/physics/ObstacleDamaging.js",
+            { path: shared.pathToAssets + "spawn_main.js", type: 'model' },
             { path: shared.pathToAssets + "hero.js", type: 'model' },
             { path: shared.pathToAssets + "asteroid.js", type: 'model' },
 			shared.pathToAssets + "skybox.jpg",
@@ -49,7 +50,7 @@
     
     =====================================================*/
 	
-	function init_internal ( m, pl, w, sb, oh, obs, obd, gHero, gAsteroid ) {
+	function init_internal ( m, pl, w, sb, oh, obs, obd, gSpawnMain, gHero, gAsteroid ) {
 		console.log('internal Launcher', _Launcher);
 		
 		// assets
@@ -68,6 +69,12 @@
 		_Launcher.hide = hide;
 		_Launcher.remove = remove;
 		_Launcher.update = update;
+		
+		var spawnMain =  new _Model.Instance( {
+			geometry: gSpawnMain,
+			center: true
+		} );
+		shared.spawns.main.copy( spawnMain.position );
 		
 		shared.player = new _Player.Instance( {
 			geometry: gHero,
@@ -91,8 +98,7 @@
 		
 		shared.world = new _World.Instance( {
 			geometry: gAsteroid,
-			// TODO: make asteroid colors/material brighter
-			material: new THREE.MeshLambertMaterial( { color: 0xffffff, ambient: 0xffffff, vertexColors: THREE.VertexColors } ),//new THREE.MeshFaceMaterial(),
+			material: new THREE.MeshFaceMaterial(),
 			physics:  {
 				bodyType: 'mesh',
 				gravitySource: true
@@ -102,8 +108,7 @@
 		main.asset_require( { path: shared.pathToAssets + "asteroid_colliders.js", type: 'model' }, function ( geometry ) {
 			var model = new _Model.Instance( {
 				geometry: geometry,
-				// TODO: normalize asteroid props to match asteroid
-				material: new THREE.MeshLambertMaterial( { color: 0xffffff, ambient: 0xffffff, vertexColors: THREE.VertexColors } ),//new THREE.MeshFaceMaterial(),
+				material: new THREE.MeshFaceMaterial(),
 				physics:  {
 					bodyType: 'mesh'
 				}
@@ -132,10 +137,10 @@
 			shared.world.add( shared.world.parts.moon );
 			
 		} );
-		main.asset_require( { path: shared.pathToAssets + "asteroid_ship.js", type: 'model' }, function ( geometry ) {
+		main.asset_require( { path: shared.pathToAssets + "ship.js", type: 'model' }, function ( gShip ) {
 			var ship = new _Model.Instance( {
-				geometry: geometry,
-				//material: new THREE.MeshFaceMaterial(),
+				geometry: gShip,
+				material: new THREE.MeshFaceMaterial(),
 				physics:  {
 					bodyType: 'mesh'
 				},

@@ -484,6 +484,12 @@ var KAIOPUA = (function (main) {
 		_UI = ui;
 		_UIQueue = uiq;
 		
+		// spawns
+		
+		shared.spawns = {
+			main: new THREE.Vector3()
+		};
+		
 		// scenes
 		
 		shared.scene = new _Scene.Instance();
