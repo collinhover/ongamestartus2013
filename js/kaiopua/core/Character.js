@@ -80,7 +80,9 @@
 					moveDamping: 0.99,
 					moveSpeedMod: 0.5,
 					durationMin: 100,
-					duration: 100
+					duration: 100,
+					delayNotGrounded: 125,
+					delayFalling: 350
 				}
 			},
 			animation: {
@@ -288,8 +290,7 @@
 		// jump
 		jump = movement.jump;
 		jump.time = 0;
-		jump.timeAfterNotGrounded = 0;
-		jump.timeAfterNotGroundedMax = 125;
+		jump.timeNotGrounded = 0;
 		jump.startDelay = animation.durations.jumpStart;
 		jump.startDelayTime = 0;
 		jump.ready = true;
@@ -325,6 +326,7 @@
 		state.moving = false;
 		state.movingHorizontal = false;
 		state.movingBack = false;
+		state.grounded = false;
 		state.invulnerable = false;
 		state.invulnerableTime = 0;
 		state.dead = false;
@@ -704,7 +706,9 @@
 			jumpTime,
 			jumpDuration,
 			jumpTimeRatio,
-			jumpTimeAfterNotGroundedMax,
+			jumpTimeNotGrounded,
+			jumpDelayNotGrounded,
+			jumpDelayFalling,
 			jumpStartDelay,
 			grounded,
 			sliding,
@@ -811,7 +815,8 @@
 			
 			jumpTime = jump.time;
 			jumpDuration = jump.duration;
-			jumpTimeAfterNotGroundedMax = jump.timeAfterNotGroundedMax;
+			jumpDelayNotGrounded = jump.delayNotGrounded;
+			jumpDelayFalling = jump.delayFalling;
 			jumpStartDelay = jump.startDelay;
 			jumpSpeedStart = jump.speedStart * timeDeltaMod;
 			jumpSpeedEnd = jump.speedEnd * timeDeltaMod;
@@ -828,11 +833,11 @@
 			grounded = rigidBody.grounded;
 			sliding = rigidBody.sliding;
 			
-			jump.timeAfterNotGrounded += timeDelta;
+			jumpTimeNotGrounded = jump.timeNotGrounded += timeDelta;
 			
 			// air control
 			
-			if ( grounded === false && jump.timeAfterNotGrounded >= jumpTimeAfterNotGroundedMax ) {
+			if ( grounded === false && jumpTimeNotGrounded >= jumpDelayNotGrounded ) {
 				
 				if ( typeof jump.movementChangeLayer === 'undefined' ) {
 					
@@ -854,15 +859,22 @@
 			
 			// if falling but not jumping
 			
-			if ( jump.active === false && jump.timeAfterNotGrounded >= jumpTimeAfterNotGroundedMax && grounded === false ) {
+			if ( jump.active === false && grounded === false && jumpTimeNotGrounded >= jumpDelayFalling ) {
 				
 				jump.ready = false;
 				
-				morphs.play( animationNames.jump, { duration: animationDurations.jump, loop: true, solo: true, durationClear: animationDurations.clearSolo } );
+				morphs.play( animationNames.jump, {
+					duration: animationDurations.jump,
+					loop: true,
+					solo: true, 
+					durationClear: animationDurations.clearSolo,
+					startAt: 0,
+					startAtMax: false,
+				} );
 				
 			}
 			// do jump
-			else if ( state.up !== 0 && ( ( grounded === true && sliding === false ) || jump.timeAfterNotGrounded < jumpTimeAfterNotGroundedMax ) && jump.ready === true ) {
+			else if ( state.up !== 0 && ( ( grounded === true && sliding === false ) || jumpTimeNotGrounded < jumpDelayNotGrounded ) && jump.ready === true ) {
 				
 				jump.time = 0;
 				
@@ -913,9 +925,9 @@
 						duration: animationDurations.jump,
 						loop: true,
 						solo: true, 
+						durationClear: animationDurations.clearSolo,
 						startAt: 0,
-						startAtMax: true,
-						durationClear: animationDurations.clearSolo
+						startAtMax: true
 					} );
 					
 					// properties
@@ -952,7 +964,7 @@
 					
 					this.stop_jumping();
 					
-					if ( jump.timeAfterNotGrounded >= jumpTimeAfterNotGroundedMax ) {
+					if ( jumpTimeNotGrounded >= jumpDelayNotGrounded ) {
 						
 						morphs.clear( animationNames.jump );
 						
@@ -973,7 +985,7 @@
 				
 				if ( grounded === true && sliding === false && state.up === 0 ) {
 					
-					jump.timeAfterNotGrounded = 0;
+					jump.timeNotGrounded = 0;
 					
 					jump.ready = true;
 					
@@ -1012,7 +1024,7 @@
 			
 			// walk/run/idle
 			
-			if ( jump.active === false && grounded === true ) {
+			if ( jump.active === false && state.grounded === true ) {
 				
 				// get movement force
 				
@@ -1067,6 +1079,11 @@
 				}
 				
 			}
+			
+			// record grounded state
+			// this helps avoid minor issues when grounded on a slope and suddenly running the other direction, becoming ungrounded
+			
+			state.grounded = grounded;
 			
 		}
 		
