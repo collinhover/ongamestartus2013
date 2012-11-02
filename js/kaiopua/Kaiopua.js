@@ -1289,13 +1289,14 @@ var KAIOPUA = (function (main) {
 		
 		shared.timeSinceInteraction = 0;
 		
-		var pointer = main.get_pointer( e ),
+		var pointer,
 			position,
 			d,
 			b;
 		
 		if ( e ) {
 			
+			pointer = main.get_pointer( e );
 			position = e.position;
 			
 			if ( is_array( position ) && position[ pointer.id ] ) {
@@ -1304,7 +1305,7 @@ var KAIOPUA = (function (main) {
 				
 			}
 			
-			if ( typeof position === 'undefined' || is_number( position.x ) !== true || is_number( position.y ) !== true ) {
+			if ( typeof position === 'undefined' ) {
 				
 				d = document;
 				b = d.body;
@@ -1316,20 +1317,21 @@ var KAIOPUA = (function (main) {
 				
 			}
 			
-			pointer.lx = pointer.x;
-			pointer.ly = pointer.y;
-			
-			pointer.x = position.x;
-			pointer.y = position.y;
-			
-			pointer.deltaX = pointer.x - pointer.lx;
-			pointer.deltaY = pointer.y - pointer.ly;
-			
-			pointer.angle = e.angle || 0;
-			pointer.distance = e.distance || 0;
-			pointer.distanceX = e.distanceX || 0;
-			pointer.distanceY = e.distanceY || 0;
-			pointer.direction = e.direction || 'none';
+			if ( pointer.x !== position.x || pointer.y !== position.y ) {
+				
+				pointer.x = position.x || pointer.x;
+				pointer.y = position.y || pointer.y;
+				
+				pointer.deltaX = pointer.x - pointer.lx;
+				pointer.deltaY = pointer.y - pointer.ly;
+				
+				pointer.lx = pointer.x;
+				pointer.ly = pointer.y;
+				
+				pointer.angle = e.angle || 0;
+				pointer.direction = e.direction || 'none';
+				
+			}
 			
 		}
 		
@@ -1385,31 +1387,21 @@ var KAIOPUA = (function (main) {
 	
 	function on_pointer_dragstarted ( e ) {
 		
-		var pointer;
-		
-		pointer = reposition_pointer( e );
-		
-		shared.signals.onGamePointerDragStarted.dispatch( e, pointer );
+		shared.signals.onGamePointerDragStarted.dispatch( e, main.get_pointer( e ) );
 		
 	}
     
     function on_pointer_dragged( e ) {
 		
-		var pointer;
+		// no reposition because pointer move takes care of it
 		
-		pointer = reposition_pointer( e );
-		
-		shared.signals.onGamePointerDragged.dispatch( e, pointer );
+		shared.signals.onGamePointerDragged.dispatch( e, main.get_pointer( e ) );
 		
     }
 	
 	function on_pointer_dragended ( e ) {
 		
-		var pointer;
-		
-		pointer = reposition_pointer( e );
-		
-		shared.signals.onGamePointerDragEnded.dispatch( e, pointer );
+		shared.signals.onGamePointerDragEnded.dispatch( e, main.get_pointer( e ) );
 		
 	}
 	
