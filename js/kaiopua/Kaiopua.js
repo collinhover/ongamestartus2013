@@ -566,7 +566,7 @@ var KAIOPUA = (function (main) {
 	function init_launcher ( launcher ) {
 		
 		_Launcher = launcher;
-		console.log( '_Launcher', _Launcher );
+		
 		set_section( _Launcher );
 		
 	}
@@ -1478,7 +1478,7 @@ var KAIOPUA = (function (main) {
 		if ( setup === true ) {
 			
 			// handle ui first
-			console.log( '_UI', _UI);
+			
 			_UI.resize();
 			
 			// remaining

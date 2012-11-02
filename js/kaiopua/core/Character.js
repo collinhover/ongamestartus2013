@@ -80,24 +80,41 @@
 					moveDamping: 0.99,
 					moveSpeedMod: 0.5,
 					durationMin: 100,
-					duration: 100,
-					startDelay: 125
+					duration: 100
 				}
 			},
 			animation: {
+				names: {
+					walk: 'walk',
+					run: 'run',
+					idle: 'idle',
+					idleAlt: false,
+					jump: 'jump',
+					jumpStart: 'jump_start',
+					jumpEnd: 'jump_end',
+					hurt: 'hurt',
+					die: 'die',
+					decay: 'decay',
+					respawn: 'respawn'
+				},
 				durations: {
 					walk: 750,
 					run: 500,
 					idle: 3000,
+					idleAlt: 3000,
 					jump: 1000,
 					jumpStart: 125,
 					jumpEnd: 125,
-					death: 1000,
+					hurt: 250,
+					die: 1000,
 					decay: 500,
-					decayDelay: 500,
-					spawn: 1000,
+					respawn: 1000,
 					clear: 125,
 					clearSolo: 125
+				},
+				delays: {
+					decay: 500,
+					idleAlt: 5000
 				}
 			}
 		};
@@ -226,8 +243,7 @@
 			rotate,
 			jump,
 			state,
-			animation,
-			durations;
+			animation;
 		
 		// handle parameters
 		
@@ -250,6 +266,7 @@
 		
 		stats = this.options.stats;
 		movement = this.options.movement;
+		animation = this.options.animation;
 		
 		// move
 		
@@ -273,6 +290,7 @@
 		jump.time = 0;
 		jump.timeAfterNotGrounded = 0;
 		jump.timeAfterNotGroundedMax = 125;
+		jump.startDelay = animation.durations.jumpStart;
 		jump.startDelayTime = 0;
 		jump.ready = true;
 		jump.active = false;
@@ -326,13 +344,22 @@
 	function hurt ( damage ) {
 		
 		var state = this.state,
-			stats = this.options.stats;
+			animation = this.options.animation,
+			animationDurations = animation.durations,
+			animationNames = animation.names;
 		console.log( this, ' trying to hurt for ', damage, ', invulnerable? ', state.invulnerable );
 		if ( state.invulnerable !== true && state.dead !== true && main.is_number( damage ) && damage > 0 ) {
 			
 			this.health -= damage;
 			
 			this.onHurt.dispatch();
+			
+			this.morphs.play( animationNames.hurt, {
+				duration: animationDurations.hurt,
+				solo: true,
+				durationClear: animationDurations.clearSolo
+			} );
+			
 			console.log( ' > hurt for ', damage, ' new hp = ', this.health );
 			if ( state.health === 0 ) {
 				
@@ -357,7 +384,8 @@
 		
 		var state = this.state,
 			animation = this.options.animation,
-			durations = animation.durations;
+			animationDurations = animation.durations,
+			animationNames = animation.names;
 		
 		if ( state.invulnerable !== true ) {
 			
@@ -365,10 +393,10 @@
 			
 			state.dead = true;
 			console.log( this, ' DEAD ' );
-			this.morphs.play( 'die', {
-				duration: durations.death,
+			this.morphs.play( animationNames.die, {
+				duration: animationDurations.die,
 				solo: true,
-				durationClear: durations.clearSolo,
+				durationClear: animationDurations.clearSolo,
 				callback: $.proxy( this.decay, this )
 			} );
 			
@@ -383,18 +411,20 @@
 		var state = this.state,
 			stats = this.options.stats,
 			animation = this.options.animation,
-			durations = animation.durations,
+			animationDurations = animation.durations,
+			animationDelays = animation.delays,
+			animationNames = animation.names,
 			me = this;
 		
 		if ( state.dead === true ) {
 			
 			state.decaying = true;
 			console.log( this, ' decaying... ' );
-			this.morphs.play( 'decay', {
-				duration: durations.decay,
-				delay: durations.decayDelay,
+			this.morphs.play( animationNames.decay, {
+				duration: animationDurations.decay,
+				delay: animationDelays.decay,
 				solo: true,
-				durationClear: durations.clearSolo
+				durationClear: animationDurations.clearSolo
 			} );
 			
 			// opacity to 0
@@ -402,8 +432,8 @@
 			this.material.transparent = true;
 			
 			_ObjectHelper.tween( this.material, { opacity: 0 }, { 
-				duration: durations.decay,
-				delay: durations.decayDelay,
+				duration: animationDurations.decay,
+				delay: animationDelays.decay,
 				onComplete: function () {
 					
 					if ( me.parent instanceof THREE.Object3D ) {
@@ -448,7 +478,8 @@
 		
 		var state = this.state,
 			animation = this.options.animation,
-			durations = animation.durations,
+			animationDurations = animation.durations,
+			animationNames = animation.names,
 			me = this;
 		
 		this.reset();
@@ -475,6 +506,12 @@
 			}
 			console.log( this, ' respawned! ' );
 			this.onRespawned.dispatch();
+			
+			this.morphs.play( animationNames.respawn, {
+				duration: animationDurations.respawn,
+				solo: true,
+				durationClear: animationDurations.clearSolo
+			} );
 			
 			this.invulnerable = true;
 			
@@ -635,7 +672,8 @@
 	
 	function update ( timeDelta, timeDeltaMod ) {
 		
-		var rigidBody = this.rigidBody,
+		var me = this,
+			rigidBody = this.rigidBody,
 			morphs = this.morphs,
 			state = this.state,
 			options = this.options,
@@ -645,7 +683,9 @@
 			rotate = movement.rotate,
 			jump = movement.jump,
 			animation = options.animation,
-			durations = animation.durations,
+			animationNames = animation.names,
+			animationDurations = animation.durations,
+			animationDelays = animation.delays,
 			moveDir = move.direction,
 			moveSpeed = move.speed * timeDeltaMod,
 			rotateTurnAngleDelta,
@@ -674,7 +714,6 @@
 			velocityMovementForceDelta,
 			velocityMovementForceRotatedLength,
 			velocityMovementDamping,
-			dragCoefficient,
 			terminalVelocity,
 			playSpeedModifier;
 		
@@ -819,7 +858,7 @@
 				
 				jump.ready = false;
 				
-				morphs.play( 'jump', { duration: durations.jump, loop: true, solo: true, durationClear: durations.clearSolo } );
+				morphs.play( animationNames.jump, { duration: animationDurations.jump, loop: true, solo: true, durationClear: animationDurations.clearSolo } );
 				
 			}
 			// do jump
@@ -868,7 +907,16 @@
 					
 					// play jump
 					
-					morphs.play( 'jump', { duration: durations.jump, loop: true, solo: true, durationClear: durations.clearSolo } );
+					morphs.clear( animationNames.jumpStart );
+					
+					morphs.play( animationNames.jump, {
+						duration: animationDurations.jump,
+						loop: true,
+						solo: true, 
+						startAt: 0,
+						startAtMax: true,
+						durationClear: animationDurations.clearSolo
+					} );
 					
 					// properties
 					
@@ -887,7 +935,13 @@
 					
 					// play jump start
 					
-					morphs.play( 'jump_start', { duration: durations.jumpStart, loop: false, solo: true, durationClear: durations.clearSolo, callback: function () { morphs.clear( 'jump_start' ); } } );
+					morphs.play( animationNames.jumpStart, {
+						duration: animationDurations.jumpStart,
+						loop: false,
+						solo: true,
+						durationClear: animationDurations.clearSolo,
+						oneComplete: function () { morphs.clear( animationNames.jumpStart ); }
+					} );
 					
 				}
 				
@@ -900,9 +954,18 @@
 					
 					if ( jump.timeAfterNotGrounded >= jumpTimeAfterNotGroundedMax ) {
 						
-						morphs.clear( 'jump', durations.clear );
+						morphs.clear( animationNames.jump );
 						
-						morphs.play( 'jump_end', { duration: durations.jumpEnd, loop: false, callback: function () { morphs.clear( 'jump_end', durations.clear ); } } );
+						morphs.play( animationNames.jumpEnd, { 
+							duration: animationDurations.jumpEnd,
+							loop: false,
+							interruptable: false,
+							startAt: 0,
+							startAtMax: true,
+							oneComplete: function () {
+								morphs.clear( animationNames.jumpEnd, { duration: animationDurations.clear } );
+							}
+						} );
 						
 					}
 					
@@ -961,12 +1024,9 @@
 					
 					// get approximate terminal velocity based on acceleration (moveVec) and damping
 					// helps morphs play faster if character is moving faster, or slower if moving slower
-					// TODO: account for really low damping (0.95+)
+					// drag coefficient of 0.083 assumes damping of 0.5
 					
-					velocityMovementDamping = velocityMovement.damping.z;
-					dragCoefficient = ( 0.33758 * Math.pow( velocityMovementDamping, 2 ) ) + ( -0.67116 * velocityMovementDamping ) + 0.33419;
-					
-					terminalVelocity = Math.round( Math.sqrt( ( 2 * Math.abs( velocityMovement.force.z * 0.5 ) ) / dragCoefficient ) ) * 0.5;
+					terminalVelocity = Math.round( Math.sqrt( ( 2 * Math.abs( velocityMovement.force.z * 0.5 ) ) / 0.083 ) ) * 0.5;
 					playSpeedModifier = terminalVelocity / Math.round( velocityMovementForceRotatedLength );
 					
 					if ( main.is_number( playSpeedModifier ) !== true ) {
@@ -977,12 +1037,12 @@
 					
 					if ( velocityMovementForceRotatedLength >= move.runThreshold ) {
 						
-						this.morphs.play( 'run', { duration: durations.run * playSpeedModifier, loop: true, solo: true, durationClear: durations.clearSolo, reverse: state.movingBack } );
+						this.morphs.play( animationNames.run, { duration: animationDurations.run * playSpeedModifier, loop: true, solo: true, durationClear: animationDurations.clearSolo, reverse: state.movingBack } );
 						
 					}
 					else {
 						
-						this.morphs.play( 'walk', { duration: durations.walk * playSpeedModifier, loop: true, solo: true, durationClear: durations.clearSolo, reverse: state.movingBack } );
+						this.morphs.play( animationNames.walk, { duration: animationDurations.walk * playSpeedModifier, loop: true, solo: true, durationClear: animationDurations.clearSolo, reverse: state.movingBack } );
 						
 					}
 					
@@ -990,7 +1050,19 @@
 				// idle cycle
 				else {
 					
-					this.morphs.play( 'idle', { duration: durations.idle, loop: true, solo: true, durationClear: durations.clearSolo, reverse: false } );
+					this.morphs.play( animationNames.idle, {
+						duration: animationDurations.idle,
+						loop: true,
+						solo: true,
+						durationClear: animationDurations.clearSolo,
+						alternate: animationNames.idleAlt,
+						alternateDelay: animationDelays.idleAlt,
+						alternateParameters: {
+							duration: animationDurations.idleAlt,
+							solo: true,
+							durationClear: animationDurations.clearSolo
+						}
+					} );
 					
 				}
 				

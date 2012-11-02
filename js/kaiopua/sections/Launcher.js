@@ -81,11 +81,15 @@
 			material: new THREE.MeshFaceMaterial(),
 			options: {
 				animation: {
+					names: {
+						idleAlt: 'idle_alt'
+					},
 					durations: {
 						idle: 600,
+						idleAlt: 1500,
 						jump: 600,
-						jumpStart: 250,
-						jumpEnd: 250
+						jumpStart: 175,
+						jumpEnd: 300
 					}
 				}
 			}

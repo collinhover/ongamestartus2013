@@ -421,12 +421,6 @@
 		
 	}
 	
-	function remove_animator ( animator ) {
-		
-		
-		
-	}
-	
 	function get_morph_name_data ( name ) {
 		
 		var nameData = { 
