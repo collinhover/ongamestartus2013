@@ -35,14 +35,10 @@
 			"js/kaiopua/utils/ObjectHelper.js",
 			"js/kaiopua/physics/ObstacleSlippery.js",
 			"js/kaiopua/physics/ObstacleDamaging.js",
+            { path: shared.pathToAssets + "spawn_main.js", type: 'model' },
             { path: shared.pathToAssets + "hero.js", type: 'model' },
             { path: shared.pathToAssets + "asteroid.js", type: 'model' },
-			shared.pathToAssets + "skybox_world_posx.jpg",
-            shared.pathToAssets + "skybox_world_negx.jpg",
-			shared.pathToAssets + "skybox_world_posy.jpg",
-            shared.pathToAssets + "skybox_world_negy.jpg",
-			shared.pathToAssets + "skybox_world_posz.jpg",
-            shared.pathToAssets + "skybox_world_negz.jpg"
+			shared.pathToAssets + "skybox.jpg",
 		],
 		callbacksOnReqs: init_internal,
 		wait: true
@@ -54,7 +50,7 @@
     
     =====================================================*/
 	
-	function init_internal ( m, pl, w, sb, oh, obs, obd, heroGeometry, asteroidGeometry ) {
+	function init_internal ( m, pl, w, sb, oh, obs, obd, gSpawnMain, gHero, gAsteroid ) {
 		console.log('internal Launcher', _Launcher);
 		
 		// assets
@@ -74,34 +70,99 @@
 		_Launcher.remove = remove;
 		_Launcher.update = update;
 		
+		var spawnMain =  new _Model.Instance( {
+			geometry: gSpawnMain,
+			center: true
+		} );
+		shared.spawns.main.copy( spawnMain.position );
+		
 		shared.player = new _Player.Instance( {
-			geometry: heroGeometry,
-			material: new THREE.MeshFaceMaterial()
+			geometry: gHero,
+			material: new THREE.MeshFaceMaterial(),
+			options: {
+				animation: {
+					names: {
+						idleAlt: 'idle_alt'
+					},
+					durations: {
+						idle: 600,
+						idleAlt: 1500,
+						jump: 600,
+						jumpStart: 175,
+						jumpEnd: 300
+					}
+				}
+			}
 		} );
 		shared.player.controllable = true;
 		
 		// environment
 		
-		shared.skybox = new _Skybox.Instance( shared.pathToAssets + "skybox_world" );
+		shared.skybox = new _Skybox.Instance( shared.pathToAssets + "skybox", { repeat: 2, oneForAll: true } );
 		
 		shared.world = new _World.Instance( {
-			geometry: asteroidGeometry,
+			geometry: gAsteroid,
+			material: new THREE.MeshFaceMaterial(),
 			physics:  {
 				bodyType: 'mesh',
 				gravitySource: true
 			}
 		} );
+        
+		main.asset_require( { path: shared.pathToAssets + "asteroid_colliders.js", type: 'model' }, function ( geometry ) {
+			var model = new _Model.Instance( {
+				geometry: geometry,
+				material: new THREE.MeshFaceMaterial(),
+				physics:  {
+					bodyType: 'mesh'
+				}
+			} );
+			shared.world.add( model );
+		} );
 		
-		// lights
+		main.asset_require( { path: shared.pathToAssets + "asteroid_noncolliders.js", type: 'model' }, function ( geometry ) {
+			var model = new _Model.Instance( {
+				geometry: geometry,
+				material: new THREE.MeshFaceMaterial()
+			} );
+			shared.world.add( model );
+		} );
 		
-		var light = new THREE.PointLight( 0xffffff, 1 );
-		light.position.set( 0, 3000, 0 );
+		main.asset_require( { path: shared.pathToAssets + "moon.js", type: 'model' }, function ( gMoon ) {
+			shared.world.parts.moon = new _Model.Instance( {
+				geometry: gMoon,
+				material: new THREE.MeshFaceMaterial(),
+				center: true
+			} );
+			
+			shared.world.parts.moonLight.distance = shared.world.parts.moon.boundRadius * 10;
+			shared.world.parts.moon.add( shared.world.parts.moonLight );
+			
+			shared.world.add( shared.world.parts.moon );
+			
+		} );
+		main.asset_require( { path: shared.pathToAssets + "ship.js", type: 'model' }, function ( gShip ) {
+			var ship = new _Model.Instance( {
+				geometry: gShip,
+				material: new THREE.MeshFaceMaterial(),
+				physics:  {
+					bodyType: 'mesh'
+				},
+				center: true
+			} );
+			shared.world.add( ship );
+		} );
 		
-		shared.world.add( light );
-		shared.world.add( new THREE.AmbientLight( 0x555555 ) );
+		// lights, seems as if lights must be in world before world is added for the first time to scene
 		
+		shared.world.parts.ambientLight = new THREE.AmbientLight( 0x555555 );
+		shared.world.add( shared.world.parts.ambientLight );
 		
+		shared.world.parts.moonLight = new THREE.PointLight( 0xffffff, 1 );
+		shared.world.add( shared.world.parts.moonLight );
+	
 		
+		/*
 		// secondary gravity sources
 		
 		var moon1 = new _Model.Instance( {
@@ -137,8 +198,6 @@
 		moon3.scale.set( 0.1, 0.1, 0.1 );
 		shared.world.add( moon3 );
 		
-		
-		/*
 		// obstacle tests
 		
 		var ice = new _ObstacleSlippery.Instance( {
@@ -175,7 +234,7 @@
     function show () {
 		
 		shared.sceneBG.add( shared.skybox );
-		
+		console.log( 'adding world' );
 		shared.world.show();
 		
 		_ObjectHelper.revert_change( shared.cameraControls.options, true );

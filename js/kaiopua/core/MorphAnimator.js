@@ -53,7 +53,12 @@
 			loopChance: 1,
 			reverseOnComplete: false,
 			startDelay: 0,
+			startAt: -1,
+			startAtMax: false,
+			alternate: false,
+			alternateDelay: 0,
 			solo: false,
+			interruptable: true,
 			prepare: true
 		};
 		
@@ -77,6 +82,7 @@
 		
 		_MorphAnimator.Instance.prototype.reverse_direction = reverse_direction;
 		_MorphAnimator.Instance.prototype.reverse_interpolation = reverse_interpolation;
+		_MorphAnimator.Instance.prototype.get_frame_duration = get_frame_duration;
 		
 	}
 	
@@ -99,8 +105,6 @@
 	}
 	
 	function prepare ( looping ) {
-		
-		this.frameLast = main.is_number( this.frameLast ) ? this.frameLast : -1;
 		
 		if ( this.cleared !== true && main.is_number( this.frame ) ) {
 			
@@ -135,9 +139,18 @@
 			
 		}
 		
+		this.frameLast = main.is_number( this.frameLast ) && this.frameLast !== this.frame ? this.frameLast : -1;
+		
 		if ( looping !== true ) {
 			
 			this.animating = this.clearing = false;
+			this.alternateTime = 0;
+			
+		}
+		
+		if ( this.alternatingNeedsClear !== false ) {
+			
+			this.alternating = this.alternatingNeedsClear = false;
 			
 		}
 		
@@ -221,6 +234,8 @@
 	
 	function play ( parameters ) {
 		
+		var clearExceptions;
+		
 		if ( this.clearing === true ) {
 			
 			this.clearing = false;
@@ -235,17 +250,44 @@
 		
 		if ( this.options.solo === true && this.morphs.animatingNames.length > 1 ) {
 			
-			this.morphs.clear_all( { duration: this.options.durationClear }, this.name );
+			// clear duration is single frame duration
+			
+			if ( this.options.durationClear === true ) {
+				
+				this.options.durationClear = this.get_frame_duration();
+				
+			}
+			
+			clearExceptions = [ this.name ];
+			
+			if ( this.alternating === true ) {
+				
+				clearExceptions.push ( this.options.alternate );
+				
+			}
+			
+			this.morphs.clear_all( { duration: this.options.durationClear }, clearExceptions );
 			
 		}
 		
 		if ( this.animating !== true && typeof this.startTimeoutHandle === 'undefined' && typeof this.loopTimeoutHandle === 'undefined' ) {
 			
-			// prepare
-			
 			if ( this.cleared !== false && this.options.prepare !== false ) {
 				
 				this.prepare();
+				
+			}
+			
+			if ( main.is_number( this.options.startAt ) && this.options.startAt > -1 && this.options.startAt < this.map.length ) {
+				
+				this.frame = this.options.startAt;
+				
+			}
+			
+			if ( this.options.startAtMax === true ) {
+				
+				this.morphs.mesh.morphTargetInfluences[ this.map[ this.frame ].index ] = 1;
+				this.frameTimeDelta = this.get_frame_duration();
 				
 			}
 			
@@ -290,6 +332,15 @@
 	
 	function complete () {
 		
+		var alternate,
+			alternateParameters,
+			index,
+			alternating = false;
+		
+		// interruptable reset on complete
+		
+		this.options.interruptable = true;
+		
 		// clear
 		
 		if ( this.clearing === true ) {
@@ -299,11 +350,28 @@
 		}
 		else {
 			
+			// properties
+			
+			if ( this.options.reverseOnComplete === true ) {
+				
+				this.reverse_direction();
+				
+			}
+			
+			// loop or stop
+			
+			
+			if ( this.options.loop !== true ) {
+				
+				this.stop().prepare();
+				
+			}
+			
 			// one time callback
 			
 			if ( typeof this.options.oneComplete === 'function' ) {
 				
-				this.options.onceComplete();
+				this.options.oneComplete();
 				delete this.options.oneComplete;
 				
 			}
@@ -316,24 +384,39 @@
 				
 			}
 			
-			// properties
+			// attempt to play alternate
 			
-			if ( this.options.reverseOnComplete === true ) {
+			alternate = this.options.alternate;
+			
+			if ( typeof alternate === 'string' && alternate !== this.name ) {
 				
-				this.reverse_direction();
+				index = main.index_of_value( this.morphs.names, alternate );
+				
+				if ( index !== -1 ) {
+					
+					this.alternateTime += this.options.duration;
+					
+					if ( this.alternateTime >= this.options.alternateDelay ) {
+						
+						alternateParameters = $.extend( true, {}, this.options.alternateParameters );
+						alternating = true;
+						
+						this.alternateTime = 0;
+						this.alternateLoopDelay = alternateParameters.duration || 0;
+						
+						this.morphs.play( alternate, alternateParameters );
+						
+					}
+					
+				}
 				
 			}
 			
-			// loop or stop
+			this.alternating = alternating;
 			
 			if ( this.options.loop === true ) {
 				
 				loop.call( this );
-				
-			}
-			else {
-				
-				this.stop().prepare();
 				
 			}
 			
@@ -348,6 +431,16 @@
 		clear_delays.call( this );
 		
 		this.prepare( true );
+		
+		// alternate loop delay
+		
+		if ( this.alternating === true ) {
+			
+			this.alternatingNeedsClear = true;
+			
+			delay += this.alternateLoopDelay;
+			
+		}
 		
 		// loop chance
 		
@@ -407,45 +500,49 @@
 		
 		var duration;
 		
-		clear_delays.call( this );
-		
-		if ( this.cleared !== true ) {
+		if ( this.options.interruptable !== false ) {
 			
-			parameters = parameters || {};
-			duration = parameters.duration;
+			clear_delays.call( this );
 			
-			// clear over duration
-			
-			if ( main.is_number( duration ) && duration > 0 ) {
+			if ( this.cleared !== true ) {
 				
-				if ( this.clearing !== true || this.options.duration !== duration ) {
+				parameters = parameters || {};
+				duration = parameters.duration;
+				
+				// clear over duration
+				
+				if ( main.is_number( duration ) && duration > 0 ) {
 					
-					this.clearing = true;
-					this.change( parameters );
-					
-					this.recycle().resume();
+					if ( this.clearing !== true || this.options.duration !== duration ) {
+						
+						this.clearing = true;
+						this.change( parameters );
+						
+						this.recycle().resume();
+						
+					}
 					
 				}
-				
-			}
-			else {
-				
-				this.reset();
-				
-				// one time callback
-				
-				if ( typeof this.options.oneClear === 'function' ) {
+				else {
 					
-					this.options.oneClear();
-					delete this.options.oneClear;
+					this.reset();
 					
-				}
-				
-				// callback
-				
-				if ( typeof this.options.onClear === 'function' ) {
+					// one time callback
 					
-					this.options.onClear();
+					if ( typeof this.options.oneClear === 'function' ) {
+						
+						this.options.oneClear();
+						delete this.options.oneClear;
+						
+					}
+					
+					// callback
+					
+					if ( typeof this.options.onClear === 'function' ) {
+						
+						this.options.onClear();
+						
+					}
 					
 				}
 				
@@ -535,7 +632,7 @@
 			direction = o.direction;
 			interpolationDirection = o.interpolationDirection;
 			
-			frameDuration = duration / frameCount;
+			frameDuration = this.get_frame_duration();
 			interpolationDelta = ( timeDelta / frameDuration ) * interpolationDirection;
 			
 			index = map[ this.frame ].index;
@@ -658,6 +755,21 @@
 		this.options.interpolationDirection = -this.options.interpolationDirection;
 		
 		return this;
+		
+	}
+	
+	function get_frame_duration () {
+		
+		var mesh = this.morphs.mesh,
+			frameDuration = this.options.duration;
+		
+		if ( mesh instanceof THREE.Object3D ) {
+			
+			frameDuration *= Math.max( mesh.scale.x, mesh.scale.y, mesh.scale.z, 0.5 );
+			
+		}
+		
+		return frameDuration / this.map.length;
 		
 	}
 	

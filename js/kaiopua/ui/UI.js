@@ -9,7 +9,7 @@
 (function (main) {
     
     var shared = main.shared = main.shared || {},
-		assetPath = "js/kaiopua/core/UI.js",
+		assetPath = "js/kaiopua/ui/UI.js",
 		_UI = {},
 		_UIQueue;
     
@@ -45,6 +45,7 @@
 		
 		_UI.pause = pause;
 		_UI.resume = resume;
+		_UI.resize = resize;
 		
 		// dom elements
 		
@@ -621,6 +622,33 @@
 			element: shared.domElements.$buttonGamePause,
 			opacity: 1
 		} );
+		
+	}
+	
+	/*===================================================
+    
+    resize
+    
+    =====================================================*/
+	
+	function resize () {
+		
+		shared.screenOffsetTop = shared.domElements.$uiHeader.height();
+		shared.screenViewableHeight = shared.screenHeight - shared.screenOffsetTop;
+		
+		shared.domElements.$uiBody.css( {
+			'height' : shared.screenViewableHeight,
+			'top' : shared.screenOffsetTop
+		} );
+		
+		// because ui out game is scrollable, its grids are not aligned to main header grids
+		// so we need to pad left side of the individual containers to correct for this
+		
+		if ( shared.domElements.$uiOutGame[0].scrollHeight > shared.screenViewableHeight ) {
+			
+			shared.domElements.$menusInner.css( 'padding-left', $.scrollbarWidth() );
+			
+		}
 		
 	}
 	

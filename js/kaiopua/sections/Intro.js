@@ -22,13 +22,7 @@
 	main.asset_register( assetPath, { 
 		data: _Intro,
 		requirements: [
-			"js/kaiopua/utils/ObjectHelper.js",
-			shared.pathToAssets + "skybox_world_posx.jpg",
-            shared.pathToAssets + "skybox_world_negx.jpg",
-			shared.pathToAssets + "skybox_world_posy.jpg",
-            shared.pathToAssets + "skybox_world_negy.jpg",
-			shared.pathToAssets + "skybox_world_posz.jpg",
-            shared.pathToAssets + "skybox_world_negz.jpg"
+			"js/kaiopua/utils/ObjectHelper.js"
 		],
 		callbacksOnReqs: init_internal,
 		wait: true
@@ -68,7 +62,7 @@
 		
 		shared.world.show();
 		
-		shared.player.respawn( shared.scene, new THREE.Vector3( 35, 2200, 300 ) );
+		shared.player.respawn( shared.scene, shared.spawns.main );
 		
 		_ObjectHelper.revert_change( shared.cameraControls.options, true );
 		shared.cameraControls.target = shared.player;
