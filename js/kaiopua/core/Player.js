@@ -87,7 +87,7 @@
 		_Player.Instance.prototype.select = select;
 		
 		_Player.Instance.prototype.set_keybindings = set_keybindings;
-		_Player.Instance.prototype.trigger_key = trigger_key;
+		_Player.Instance.prototype.trigger_action = trigger_action;
 		
 		Object.defineProperty( _Player.Instance.prototype, 'parent', { 
 			get : function () { return this._parent; },
@@ -150,34 +150,12 @@
 					
 					if ( this.state.controllable === true ) {
 						
-						shared.signals.onGamePointerMoved.add( this.trigger_key, this );
-						shared.signals.onGamePointerTapped.add( this.trigger_key, this );
-						shared.signals.onGamePointerDoubleTapped.add( this.trigger_key, this );
-						shared.signals.onGamePointerHeld.add( this.trigger_key, this );
-						shared.signals.onGamePointerDragStarted.add( this.trigger_key, this );
-						shared.signals.onGamePointerDragged.add( this.trigger_key, this );
-						shared.signals.onGamePointerDragEnded.add( this.trigger_key, this );
-						shared.signals.onGamePointerWheel.add( this.trigger_key, this );
-						
-						shared.signals.onKeyPressed.add( this.trigger_key, this );
-						shared.signals.onKeyReleased.add( this.trigger_key, this );
+						shared.signals.onGameInput.add( this.trigger_action, this );
 						
 					}
 					else {
 						
-						shared.signals.onGamePointerMoved.remove( this.trigger_key, this );
-						shared.signals.onGamePointerTapped.remove( this.trigger_key, this );
-						shared.signals.onGamePointerDoubleTapped.remove( this.trigger_key, this );
-						shared.signals.onGamePointerHeld.remove( this.trigger_key, this );
-						shared.signals.onGamePointerDragStarted.remove( this.trigger_key, this );
-						shared.signals.onGamePointerDragged.remove( this.trigger_key, this );
-						shared.signals.onGamePointerDragEnded.remove( this.trigger_key, this );
-						shared.signals.onGamePointerWheel.remove( this.trigger_key, this );
-						
-						shared.signals.onKeyPressed.remove( this.trigger_key, this );
-						shared.signals.onKeyReleased.remove( this.trigger_key, this );
-						
-						// clear keys
+						shared.signals.onGameInput.remove( this.trigger_action, this );
 						
 						this.actions.clear_active();
 						
@@ -263,7 +241,7 @@
 		
 		// set list of keys that are always available
 		
-		kb.alwaysAvailable = ['escape'];
+		kb.alwaysAvailable = [];
 		
 		this.set_keybindings( kb );
 		
@@ -339,16 +317,7 @@
 			eventCallbacks: {
 				up: function () {
 					
-					if ( main.paused === true ) {
-						
-						main.resume();
-						
-					}
-					else {
-						
-						main.pause();
-						
-					}
+					// TODO: clear target?
 					
 				}
 			}
@@ -499,59 +468,11 @@
 		
 	}
 	
-	function trigger_key ( e ) {
+	function trigger_action ( e, keyName, state ) {
 		
 		var kbMap = this.keybindings,
-			keyCode,
-			keyName,
-			keyNameActual,
-			state,
-			type,
-			isAlwaysAvailable,
-			cameraRotated;
-		
-		// check for meta keys
-		
-		if ( e.metaKey || e.ctrlKey || e.shiftKey || e.altKey ) {
-			return;
-		}
-		
-		// handle by type
-		
-		type = ( e.type + '' );
-		
-		// special cases for pointer / mouse
-		
-		if ( type === 'tap' || type === 'doubletap' || type === 'hold' || type === 'dragstart' || type === 'drag' || type === 'dragend' || type === 'mousemove' ) {
-			
-			keyName = 'pointer';
-			state = type;
-			
-		}
-		else if ( type === 'mousewheel' || type === 'DOMMouseScroll' ) {
-			
-			keyName = 'pointer';
-			state = 'wheel';
-			
-		}
-		// fallback to key press
-		else {
-			
-			keyCode = ( ( e.which || e.key || e.keyCode ) + '' ).toLowerCase();
-			keyName = _KeyHelper.key( keyCode );
-			
-			state = type.toLowerCase();
-			state = state.replace( 'key', '' );
-			
-		}
-		
-		// get mapped key name
-		
-		keyNameActual = kbMap[ keyName ] || keyName;
-		
-		// if enabled or key is always available
-		
-		isAlwaysAvailable = main.index_of_value( kbMap.alwaysAvailable, keyNameActual ) !== -1;
+			keyNameActual = kbMap[ keyName ] || keyName,
+			isAlwaysAvailable = main.index_of_value( kbMap.alwaysAvailable, keyNameActual ) !== -1;
 		
 		if ( this.state.enabled === true || isAlwaysAvailable ) {
 			

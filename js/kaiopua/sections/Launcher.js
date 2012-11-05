@@ -12,7 +12,6 @@
 		assetPath = "js/kaiopua/sections/Launcher.js",
 		_Launcher = {},
 		_Model,
-		_Player,
 		_World,
 		_Skybox,
 		_ObjectHelper,
@@ -29,14 +28,11 @@
 		data: _Launcher,
 		requirements: [
 			"js/kaiopua/core/Model.js",
-			"js/kaiopua/core/Player.js",
 			"js/kaiopua/env/World.js",
 			"js/kaiopua/env/Skybox.js",
 			"js/kaiopua/utils/ObjectHelper.js",
 			"js/kaiopua/physics/ObstacleSlippery.js",
 			"js/kaiopua/physics/ObstacleDamaging.js",
-            { path: shared.pathToAssets + "spawn_main.js", type: 'model' },
-            { path: shared.pathToAssets + "hero.js", type: 'model' },
             { path: shared.pathToAssets + "asteroid.js", type: 'model' },
 			shared.pathToAssets + "skybox.jpg",
 		],
@@ -50,13 +46,12 @@
     
     =====================================================*/
 	
-	function init_internal ( m, pl, w, sb, oh, obs, obd, gSpawnMain, gHero, gAsteroid ) {
+	function init_internal ( m, w, sb, oh, obs, obd, gAsteroid ) {
 		console.log('internal Launcher', _Launcher);
 		
 		// assets
 		
 		_Model = m;
-		_Player = pl;
 		_World = w;
 		_Skybox = sb;
 		_ObjectHelper = oh;
@@ -69,32 +64,6 @@
 		_Launcher.hide = hide;
 		_Launcher.remove = remove;
 		_Launcher.update = update;
-		
-		var spawnMain =  new _Model.Instance( {
-			geometry: gSpawnMain,
-			center: true
-		} );
-		shared.spawns.main.copy( spawnMain.position );
-		
-		shared.player = new _Player.Instance( {
-			geometry: gHero,
-			material: new THREE.MeshFaceMaterial(),
-			options: {
-				animation: {
-					names: {
-						idleAlt: 'idle_alt'
-					},
-					durations: {
-						idle: 600,
-						idleAlt: 1500,
-						jump: 600,
-						jumpStart: 175,
-						jumpEnd: 300
-					}
-				}
-			}
-		} );
-		shared.player.controllable = true;
 		
 		// environment
 		
