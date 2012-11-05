@@ -55,9 +55,8 @@ var KAIOPUA = (function (main) {
 		_ErrorHandler,
 		_Scene,
 		_CameraControls,
+		_KeyHelper,
 		_UI,
-		_UIQueue,
-		_Player,
 		_Launcher,
 		_Intro,
 		renderComposer,
@@ -66,9 +65,8 @@ var KAIOPUA = (function (main) {
 		ready = false,
 		started = false,
         paused = false,
-		pausedByFocusLoss = false,
+		focusLost = false,
 		transitionTime = 500,
-		navStartDelayTime = 500,
         libsPrimaryList = [
             "js/lib/RequestAnimationFrame.js",
             "js/lib/RequestInterval.js",
@@ -89,7 +87,8 @@ var KAIOPUA = (function (main) {
 			"js/lib/jquery.multi-sticky.js"
 		],
         assetsGameCompatibility = [
-			"js/kaiopua/utils/ErrorHandler.js"
+			"js/kaiopua/utils/ErrorHandler.js",
+			"js/kaiopua/ui/UI.js"
         ],
         assetsGameFoundation = [
             "js/lib/three/three.min.js",
@@ -106,8 +105,7 @@ var KAIOPUA = (function (main) {
 		assetsGameCore = [
 			"js/kaiopua/core/Scene.js",
 			"js/kaiopua/core/CameraControls.js",
-			"js/kaiopua/ui/UI.js",
-			"js/kaiopua/ui/UIQueue.js"
+			"js/kaiopua/utils/KeyHelper.js"
 		],
         assetsGameLauncher = [
             "js/kaiopua/sections/Launcher.js"
@@ -132,9 +130,6 @@ var KAIOPUA = (function (main) {
 		
 		shared.domElements = shared.domElements || {};
 		shared.domElements.$game = $('#game');
-		shared.domElements.$statusInactive = $( '#statusInactive' );
-		shared.domElements.$statusActive = $( '#statusActive' );
-		shared.domElements.$statusItems = $('.status-item');
 		
 		shared.supports = shared.supports || {};
 		shared.supports.pointerEvents = css_property_supported( 'pointer-events' );
@@ -146,10 +141,16 @@ var KAIOPUA = (function (main) {
     
             onKeyPressed : new signals.Signal(),
             onKeyReleased : new signals.Signal(),
+			onGameInput : new signals.Signal(), 
     
             onWindowResized : new signals.Signal(),
 			
 			onUpdated: new signals.Signal(),
+			
+			onWorkerReset : new signals.Signal(),
+			onWorkerTaskStarted : new signals.Signal(),
+			onWorkerTaskCompleted : new signals.Signal(),
+			onWorkerTasksCompleted : new signals.Signal(),
             
             onLoadItemCompleted : new signals.Signal(),
             onLoadListCompleted : new signals.Signal(),
@@ -157,12 +158,15 @@ var KAIOPUA = (function (main) {
 			
 			onAssetReady : new signals.Signal(),
 			
+			onGameReady: new signals.Signal(),
 			onGamePaused : new signals.Signal(),
 			onGameResumed : new signals.Signal(),
 			onGameUpdated : new signals.Signal(),
 			onGameUpdated : new signals.Signal(),
 			onGameStarted : new signals.Signal(),
+			onGameStartedCompleted : new signals.Signal(),
 			onGameStopped : new signals.Signal(),
+			onGameStoppedCompleted : new signals.Signal(),
 			
 			onGamePointerMoved : new signals.Signal(),
 			onGamePointerTapped : new signals.Signal(),
@@ -189,13 +193,11 @@ var KAIOPUA = (function (main) {
 		
 		window.onerror = on_error;
 		
-		// pause / resume on focus
-		
 		shared.signals.onFocusLost.add( function () {
 			
 			if ( paused !== true ) {
 				
-				pausedByFocusLoss = true;
+				focusLost = true;
 			
 			}
 			
@@ -205,9 +207,9 @@ var KAIOPUA = (function (main) {
 		
 		shared.signals.onFocusGained.add( function () {
 			
-			if ( pausedByFocusLoss === true ) {
+			if ( focusLost === true ) {
 				
-				pausedByFocusLoss = false;
+				focusLost = false;
 				
 				resume();
 				
@@ -239,21 +241,11 @@ var KAIOPUA = (function (main) {
 		
 		// init worker
 		
-		worker.$domElement =  $("#worker");
-		worker.$progressStarted = worker.$domElement.find( "#workerProgressBarStarted" );
-		worker.$progressCompleted = worker.$domElement.find( "#workerProgressBarCompleted" );
 		worker.taskCount = 0;
-		worker.tasksStartedIds = [];
-		worker.tasksStarted = {};
-		worker.tasksCompleted = {};
-		worker.collapseDelay = 1000;
+		worker.tasksStarted = [];
+		worker.tasksCompleted = [];
 		
 		worker_reset();
-		worker.$domElement.on( 'hidden.reset', function () {
-			
-			worker_reset();
-			
-		} );
 		
 		// public functions
 		
@@ -292,8 +284,8 @@ var KAIOPUA = (function (main) {
 		main.reposition_pointer = reposition_pointer;
 		
 		main.worker_reset = worker_reset;
-		main.worker_start_task = worker_start_task;
-		main.worker_complete_task = worker_complete_task;
+		main.worker_task_start = worker_task_start;
+		main.worker_task_complete = worker_task_complete;
 		
 		main.load = load;
 		main.get_is_loaded = get_is_loaded;
@@ -316,6 +308,7 @@ var KAIOPUA = (function (main) {
 		main.set_section = set_section;
 		
 		main.start = start;
+		main.stop = stop;
 		main.resume = resume;
 		main.pause = pause;
 		
@@ -337,47 +330,17 @@ var KAIOPUA = (function (main) {
 			get : function () { return ready; }
 		});
 		
-		// status items show/hide
-		
-		shared.domElements.$statusItems.each( function () {
-			
-			var $item = $( this );
-			
-			if ( $item.parent().is( shared.domElements.$statusActive ) && $item.is( '.hidden, .collapsed' ) ) {
-				
-				shared.domElements.$statusInactive.append( $item );
-				
-			}
-			
-		} ).on('show.active', function () {
-			
-			shared.domElements.$statusActive.append( this );
-			
-		}).on('hidden.active', function () {
-			
-			shared.domElements.$statusInactive.append( this );
-			
+		Object.defineProperty(main, 'focusLost', { 
+			get : function () { return focusLost; }
 		});
 		
-		// hide preloader and start loading
+		// begin
 		
-		$("#preloader").one( 'hidden', function () {
-			
-			$( this ).remove();
-			
-			// start loading compatibility checks
-			
-			asset_require( assetsGameCompatibility, compatibility_check, true );
-			
-		} );
-		
-		dom_collapse( {
-			element: $("#preloader"),
-		} );
-		
-		// begin updating
+		$( window ).trigger( 'resize' );
 		
 		update();
+			
+		asset_require( assetsGameCompatibility, compatibility_check, true );
 		
     }
 	
@@ -387,9 +350,10 @@ var KAIOPUA = (function (main) {
     
     =====================================================*/
 	
-	function compatibility_check ( err ) {
+	function compatibility_check ( err, ui ) {
 		console.log('GAME: compatiblity check');
 		_ErrorHandler = err;
+		_UI = ui;
 		
 		// check for errors
         
@@ -475,14 +439,13 @@ var KAIOPUA = (function (main) {
     
     =====================================================*/
     
-    function init_setup ( sc, cc, ui, uiq ) {
+    function init_setup ( sc, cc, kh ) {
 		console.log('GAME: setup');
 		// utility
 		
 		_Scene = sc;
 		_CameraControls = cc;
-		_UI = ui;
-		_UIQueue = uiq;
+		_KeyHelper = kh;
 		
 		// spawns
 		
@@ -582,21 +545,9 @@ var KAIOPUA = (function (main) {
 		
 		_Intro = intro;
 		
-		$( '#buttonStart' ).on( 'tap', start );
-		$( '#buttonExitGame' ).on( 'tap', stop );
-		
-		// fade start menu in after short delay
-		
-		setTimeout( function () {
-			
-			main.dom_fade( {
-				element: shared.domElements.$navStart,
-				opacity: 1
-			} );
-			
-		}, navStartDelayTime );
-		
 		ready = true;
+		
+		shared.signals.onGameReady.dispatch();
 		
     }
 	
@@ -713,25 +664,32 @@ var KAIOPUA = (function (main) {
     
     function start () {
 		
-		if ( started === false ) {
-			console.log('GAME: START');
-			// set started
+		if ( ready === true ) {
 			
-			started = true;
+			// start or resume
 			
-			// hide start nav
+			if ( started === false ) {
+				console.log('GAME: START');
+				// set started
+				
+				started = true;
+				shared.signals.onGameStarted.dispatch();
+				
+				// set intro section
+				
+				set_section( _Intro, function () {
+					
+					shared.signals.onGameStartedCompleted.dispatch();
+					
+				} );
+				
 			
-			main.dom_fade( {
-				element: shared.domElements.$navStart
-			} );
-			
-			// set intro section
-			
-			set_section( _Intro );
-			
-			// signal
-			
-			shared.signals.onGameStarted.dispatch();
+			}
+			else {
+				
+				resume();
+				
+			}
 			
 		}
 		
@@ -739,11 +697,9 @@ var KAIOPUA = (function (main) {
 	
 	function stop () {
 		
-		if ( started === true ) {
+		if ( ready === true ) {
 			console.log('GAME: STOP');
 			started = false;
-			
-			// TODO: clear in game ui
 			
 			// signal
 			
@@ -752,13 +708,8 @@ var KAIOPUA = (function (main) {
 			// set launcher section
 			
 			set_section( _Launcher, function () {
-			
-				// show start menu
 				
-				main.dom_fade( {
-					element: shared.domElements.$navStart,
-					opacity: 1
-				} );
+				shared.signals.onGameStoppedCompleted.dispatch();
 				
 			});
 		
@@ -772,14 +723,15 @@ var KAIOPUA = (function (main) {
     
     =====================================================*/
 	
-    function pause ( preventDefault, preventMenuChange ) {
+    function pause ( preventDefault, $menu ) {
+		
 		// set state
 		
-        if (paused === false) {
+        if ( paused === false ) {
             console.log('GAME: PAUSE');
             paused = true;
-            
-            shared.signals.onGamePaused.dispatch( preventDefault, preventMenuChange );
+			
+			shared.signals.onGamePaused.dispatch( preventDefault, $menu );
 			
 			// render once to ensure user is not surprised when resuming
 			
@@ -793,7 +745,6 @@ var KAIOPUA = (function (main) {
 		
         if ( paused === true && _ErrorHandler.errorState !== true ) {
 			console.log('GAME: RESUME');
-			
 			paused = false;
 			
 			shared.signals.onGameResumed.dispatch();
@@ -1347,47 +1298,41 @@ var KAIOPUA = (function (main) {
 	
 	function on_pointer_moved ( e ) {
 		
-		var pointer;
+		shared.signals.onGamePointerMoved.dispatch( e, reposition_pointer( e ) );
 		
-		pointer = reposition_pointer( e );
-		
-		shared.signals.onGamePointerMoved.dispatch( e, pointer );
+		on_game_input( e );
 		
 	}
 	
 	function on_pointer_tapped ( e ) {
 		
-		var pointer;
+		shared.signals.onGamePointerTapped.dispatch( e, reposition_pointer( e ) );
 		
-		pointer = reposition_pointer( e );
-		
-		shared.signals.onGamePointerTapped.dispatch( e, pointer );
+		on_game_input( e );
 		
 	}
 	
 	function on_pointer_doubletapped ( e ) {
 		
-		var pointer;
+		shared.signals.onGamePointerDoubleTapped.dispatch( e, reposition_pointer( e ) );
 		
-		pointer = reposition_pointer( e );
-		
-		shared.signals.onGamePointerDoubleTapped.dispatch( e, pointer );
+		on_game_input( e );
 		
 	}
 	
 	function on_pointer_held ( e ) {
-		
-		var pointer;
-		
-		pointer = reposition_pointer( e );
 			
-		shared.signals.onGamePointerHeld.dispatch( e, pointer );
+		shared.signals.onGamePointerHeld.dispatch( e, reposition_pointer( e ) );
+		
+		on_game_input( e );
 		
 	}
 	
 	function on_pointer_dragstarted ( e ) {
 		
 		shared.signals.onGamePointerDragStarted.dispatch( e, main.get_pointer( e ) );
+		
+		on_game_input( e );
 		
 	}
     
@@ -1397,11 +1342,15 @@ var KAIOPUA = (function (main) {
 		
 		shared.signals.onGamePointerDragged.dispatch( e, main.get_pointer( e ) );
 		
+		on_game_input( e );
+		
     }
 	
 	function on_pointer_dragended ( e ) {
 		
 		shared.signals.onGamePointerDragEnded.dispatch( e, main.get_pointer( e ) );
+		
+		on_game_input( e );
 		
 	}
 	
@@ -1415,6 +1364,8 @@ var KAIOPUA = (function (main) {
 		e.wheelDelta = eo.wheelDelta = ( ( eo.detail < 0 || eo.wheelDelta > 0 ) ? 1 : -1 ) * shared.pointerWheelSpeed;
 		
 		shared.signals.onGamePointerWheel.dispatch( e );
+		
+		on_game_input( e );
         
         e.preventDefault();
 		
@@ -1432,13 +1383,63 @@ var KAIOPUA = (function (main) {
 		
         shared.signals.onKeyPressed.dispatch( e );
 		
+		on_game_input( e );
+		
     }
 
     function on_key_released( e ) {
 		
         shared.signals.onKeyReleased.dispatch( e );
 		
+		on_game_input( e );
+		
     }
+	
+	function on_game_input ( e ) {
+		
+		var keyCode,
+			keyName,
+			state,
+			type;
+		
+		// check for meta keys
+		
+		if ( e.metaKey || e.ctrlKey || e.shiftKey || e.altKey ) {
+			return;
+		}
+		
+		// handle by type
+		
+		type = ( e.type + '' );
+		
+		// special cases for pointer / mouse
+		
+		if ( type === 'tap' || type === 'doubletap' || type === 'hold' || type === 'dragstart' || type === 'drag' || type === 'dragend' || type === 'mousemove' ) {
+			
+			keyName = 'pointer';
+			state = type;
+			
+		}
+		else if ( type === 'mousewheel' || type === 'DOMMouseScroll' ) {
+			
+			keyName = 'pointer';
+			state = 'wheel';
+			
+		}
+		// fallback to key press
+		else {
+			
+			keyCode = ( ( e.which || e.key || e.keyCode ) + '' ).toLowerCase();
+			keyName = _KeyHelper.key( keyCode );
+			
+			state = type.toLowerCase();
+			state = state.replace( 'key', '' );
+			
+		}
+		
+		shared.signals.onGameInput.dispatch( e, keyName, state );
+		
+	}
 	
 	function on_focus_lost ( e ) {
 		
@@ -1467,14 +1468,18 @@ var KAIOPUA = (function (main) {
 		shared.screenViewableWidth = shared.domElements.$game.width();
 		shared.screenViewableHeight = shared.domElements.$game.height();
 		
-		if ( setup === true ) {
-			
-			// handle ui first
+		// handle ui first
+		
+		if ( _UI ) {
 			
 			_UI.resize();
 			
-			// remaining
+		}
 		
+		// remaining
+		
+		if ( setup === true ) {
+			
 			shared.signals.onWindowResized.dispatch( shared.screenWidth, shared.screenHeight );
 			
 			// renderer
@@ -1916,16 +1921,14 @@ var KAIOPUA = (function (main) {
 	
 	function worker_reset () {
 		
-		worker.tasksStartedIds = [];
-		worker.tasksStarted = {};
-		worker.tasksCompleted = {};
-		$().add( worker.$progressStarted ).add( worker.$progressCompleted ).children( '.work-task' ).remove();
+		worker.tasksStarted = [];
+		worker.tasksCompleted = [];
+		
+		shared.signals.onWorkerReset.dispatch();
 		
 	}
 	
-	function worker_start_task ( id ) {
-		
-		var $task;
+	function worker_task_start ( id ) {
 		
 		// if does not have task yet
 		
@@ -1933,108 +1936,32 @@ var KAIOPUA = (function (main) {
 			
 			worker.taskCount++;
 			
-			// clear collapse delay
-			
-			if ( typeof worker.collapseTimeoutHandle !== 'undefined' ) {
-				
-				window.clearTimeout( worker.collapseTimeoutHandle );
-				worker.collapseTimeoutHandle = undefined;
-				
-			}
-			
-			// block ui
-            
-			main.dom_fade( {
-				element: shared.domElements.$uiBlocker,
-				opacity: 0.75
-			} );
-			
-			// show if hidden
-			
-			main.dom_collapse( {
-				element: worker.$domElement,
-				show: true
-			} );
-			
-			// init task
-			
-			$task = $( '<img src="img/bar_vertical_color_64.png" id="' + id + '" class="iconk-tiny iconk-widthFollow iconk-tight work-task">' );
-			
 			// store
 			
-			worker.tasksStartedIds.push( id );
-			worker.tasksStarted[ id ] = $task;
+			worker.tasksStarted.push( id );
 			
-			// add into worker started progress bar
-			
-			worker.$progressStarted.append( $task );
+			shared.signals.onWorkerTaskStarted.dispatch( id );
 			
 		}
 		
 	}
 	
-	function worker_complete_task ( id ) {
+	function worker_task_complete ( id ) {
 		
-		var $taskStarted,
-			$task,
-			index;
+		var index = index_of_value( worker.tasksStarted, id );
 		
-		// if has task
-		
-		if ( typeof id === 'string' && id.length > 0 && worker.tasksStarted.hasOwnProperty( id ) ) {
+		if ( index !== -1 ) {
 			
-			// remove previous
+			worker.tasksStarted.splice( index, 1 );
+			worker.tasksCompleted.push( id );
 			
-			index = index_of_value( worker.tasksStartedIds, id );
-			if ( index !== -1 ) {
-				worker.tasksStartedIds.splice( index, 1 );
-			}
-			
-			worker.tasksStarted[ id ].remove();
-			delete worker.tasksStarted[ id ];
-			
-			// init task
-			
-			$task = $( '<img src="img/bar_vertical_64.png" id="' + id + '" class="iconk-tiny iconk-widthFollow iconk-tight work-task">' );
-			
-			// store
-			
-			worker.tasksCompleted[ id ] = $task;
-			
-			// add into worker completed progress bar
-			
-			worker.$progressCompleted.append( $task );
+			shared.signals.onWorkerTaskCompleted.dispatch( id );
 			
 			// check length of tasks started
 			
-			if ( worker.tasksStartedIds.length === 0 ) {
+			if ( worker.tasksStarted.length === 0 ) {
 				
-				// clear collapse delay
-				
-				if ( typeof worker.collapseTimeoutHandle !== 'undefined' ) {
-					
-					window.clearTimeout( worker.collapseTimeoutHandle );
-					worker.collapseTimeoutHandle = undefined;
-					
-				}
-				
-				// new collapse delay
-				
-				worker.collapseTimeoutHandle = window.setTimeout( function () {
-					
-					// hide blocker
-					
-					main.dom_fade( {
-						element: shared.domElements.$uiBlocker
-					} );
-					
-					// collapse
-					
-					main.dom_collapse( {
-						element: worker.$domElement
-					} );
-					
-				}, worker.collapseDelay );
+				shared.signals.onWorkerTasksCompleted.dispatch();
 				
 			}
 			
@@ -2101,7 +2028,7 @@ var KAIOPUA = (function (main) {
 					
 					loader.loadingListIDs.push( listID );
 					
-					worker_start_task( path );
+					worker_task_start( path );
 					
 					newLocations = true;
 					
@@ -2332,7 +2259,7 @@ var KAIOPUA = (function (main) {
 		
 		// complete task
 		
-		worker_complete_task( path );
+		worker_task_complete( path );
 		
 		// register asset
 		

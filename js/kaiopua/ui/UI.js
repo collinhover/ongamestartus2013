@@ -11,7 +11,10 @@
     var shared = main.shared = main.shared || {},
 		assetPath = "js/kaiopua/ui/UI.js",
 		_UI = {},
-		_UIQueue;
+		_UIQueue,
+		paused = false,
+		workerCollapseDelay = 1000,
+		workerCollapseTimeoutHandle;
     
     /*===================================================
     
@@ -52,7 +55,6 @@
 		shared.domElements = shared.domElements || {};
 		
 		shared.domElements.cloneables = shared.domElements.cloneables || {};
-		shared.domElements.cloneables.$reward = $( '<div class="reward"><button class="btn btn-large btn-circle-large"><img src="" class="iconk-giant reward-icon"></button><p class="reward-name"></p><p><small class="reward-type"></small></p></div>' );
 		
 		shared.domElements.$uiGameDimmer = $('#uiGameDimmer');
 		shared.domElements.$uiBlocker = $('#uiBlocker');
@@ -61,6 +63,21 @@
 		shared.domElements.$uiBody = $( '#uiBody' );
 		shared.domElements.$uiInGame = $( '#uiInGame' );
 		shared.domElements.$uiOutGame = $( '#uiOutGame' );
+		shared.domElements.$uiFooter = $( '#uiFooter' );
+		
+		shared.domElements.$autoCenter = $( '.auto-center' );
+		shared.domElements.$autoCenterVertical = $( '.auto-center-vertical' );
+		shared.domElements.$autoCenterHorizontal = $( '.auto-center-horizontal' );
+		
+		shared.domElements.$preloader = $("#preloader");
+		
+		shared.domElements.$statusInactive = $( '#statusInactive' );
+		shared.domElements.$statusActive = $( '#statusActive' );
+		shared.domElements.$statusItems = $('.status-item');
+		
+		shared.domElements.$worker =  $("#worker");
+		shared.domElements.$workerProgressBarStarted = $( "#workerProgressBarStarted" );
+		shared.domElements.$workerProgressBarCompleted = $( "#workerProgressBarCompleted" );
 		
 		shared.domElements.$dropdowns = $( '.dropdown' );
 		
@@ -72,86 +89,24 @@
 		shared.domElements.$actionsInactive = $( '#actionsInactive' );
 		shared.domElements.$actionItems = $('.action-item');
 		
-		shared.domElements.$menus = shared.domElements.$uiOutGame.find( '.menu' );
-		shared.domElements.$menuDefault = $();
+		shared.domElements.$menus = $( '.menu' );
+		shared.domElements.$menuDefault = $('#menuMain');
 		shared.domElements.$menusInner = $();
 		shared.domElements.$menuToggles = $();
 		shared.domElements.$menuToggleDefault = $();
 		shared.domElements.$menuActive = $( '#menuActive' );
 		shared.domElements.$menuInactive = $( '#menuInactive' );
-		shared.domElements.$menuFarming = $('#menuFarming');
-		shared.domElements.$menuOptions = $('#menuOptions');
 		
 		shared.domElements.$navbars = $( '.navbar, .subnavbar' );
 		shared.domElements.$navMenus = $('#navMenus');
-		shared.domElements.$navMenusButtons = shared.domElements.$navMenus.find( ".nav li a" );
-		shared.domElements.$navStart = $( '#navStart' );
+		shared.domElements.$navMain = $( '#navMain' );
 		
 		// major buttons
 		
-		shared.domElements.$buttonGamePause = $('#buttonGamePause');
+		shared.domElements.$buttonsGameStart = $('.game-start');
+		shared.domElements.$buttonsGameStop = $('.game-stop');
 		shared.domElements.$buttonsGamePause = $('.game-pause');
-		shared.domElements.$buttonGameResume = $('#buttonGameResume');
 		shared.domElements.$buttonsGameResume = $('.game-resume');
-		shared.domElements.$menuFarmingToggle = $('a[href="#menuFarming"]');
-		
-		// ui menus
-		
-		shared.domElements.$tools = $('#puzzleTools');
-		
-		shared.domElements.$puzzle = $('#puzzle');
-		shared.domElements.$puzzleActive = $( "#puzzleActive" );
-		shared.domElements.$puzzleActiveWarning = $( "#puzzleActiveWarning" );
-		shared.domElements.$puzzleActiveStarted = $( "#puzzleActiveStarted" );
-		shared.domElements.$puzzleActiveStartedPlan = $( "#puzzleActiveStartedPlan" );
-		shared.domElements.$puzzleActiveStartedPlanReady = $( "#puzzleActiveStartedPlanReady" );
-		shared.domElements.$puzzleActiveName = $( ".puzzle-active-name" );
-		shared.domElements.$puzzleActiveScoreBar = $( "#puzzleActiveScoreBar" );
-		shared.domElements.$puzzleActiveElementCount = $( ".puzzle-active-elementCount" );
-		shared.domElements.$puzzleActiveNumElementsMin = $( ".puzzle-active-numElementsMin" );
-		shared.domElements.$puzzleActiveShapesCounter = $( "#puzzleActiveShapesCounter" );
-		shared.domElements.$puzzleActiveNumShapesChosen = $( ".puzzle-active-numShapesChosen" );
-		shared.domElements.$puzzleActiveNumShapesRequired = $( ".puzzle-active-numShapesRequired" );
-		shared.domElements.$puzzleActiveShapes = $( "#puzzleActiveShapes" );
-		shared.domElements.$puzzleActiveShapesRequiredWarning = $( "#puzzleActiveShapesRequiredWarning" );
-		shared.domElements.$puzzleActiveShapesPicker = $( "#puzzleActiveShapesPicker" );
-		shared.domElements.$puzzleActiveStatusIcons = $( ".puzzle-statusIcon" );
-		shared.domElements.$puzzleActiveCompletionIcons = $( ".puzzle-completionIcon" );
-		shared.domElements.$puzzleActiveStatusText = $( "#puzzleActiveStatusText" );
-		shared.domElements.$puzzleActiveCompletionText = $( "#puzzleActiveCompletionText" );
-		shared.domElements.$puzzleActiveReady = $( "#puzzleActiveReady" );
-		shared.domElements.$puzzleActiveMap = $( "#puzzleActiveMap" );
-		shared.domElements.$puzzleActiveRewards = $( "#puzzleActiveRewards" );
-		
-		shared.domElements.$score = $( "#score" );
-		shared.domElements.$scorePuzzleName = $( ".score-puzzle-name" );
-		shared.domElements.$scoreTitle = $( "#scoreTitle" );
-		shared.domElements.$scoreElementCount = $( ".score-element-count" );
-		shared.domElements.$scoreElementCountGoal = $( ".score-element-count-goal" );
-		shared.domElements.$scoreBar = $( "#scoreBar" );
-		shared.domElements.$scorePoor = $( "#scorePoor" );
-		shared.domElements.$scoreGood = $( "#scoreGood" );
-		shared.domElements.$scorePerfect = $( "#scorePerfect" );
-		shared.domElements.$scorePct = $( ".score-pct" );
-		shared.domElements.$scoreRewards = $( "#scoreRewards" );
-		shared.domElements.$rewardsPoor = $( "#rewardsPoor" );
-		shared.domElements.$rewardsGood = $( "#rewardsGood" );
-		shared.domElements.$rewardsPerfect = $( "#rewardsPerfect" );
-		shared.domElements.$rewardsPoorList = shared.domElements.$rewardsPoor.find( ".reward-list" );
-		shared.domElements.$rewardsGoodList = shared.domElements.$rewardsGood.find( ".reward-list" );
-		shared.domElements.$rewardsPerfectList = shared.domElements.$rewardsPerfect.find( ".reward-list" );
-		shared.domElements.$scoreHint = $( "#scoreHint" );
-		
-		shared.domElements.$plant = $('#plant');
-		shared.domElements.$plantActive = $("#plantActive");
-		shared.domElements.$plantActiveWarning = $("#plantActiveWarning");
-		shared.domElements.$plantActivePortrait = $("#plantActivePortrait");
-		shared.domElements.$plantActiveShape = $("#plantActiveShape");
-		shared.domElements.$plantActiveShapeIcon = $("#plantActiveShapeIcon");
-		shared.domElements.$plantActiveSkin = $("#plantActiveSkin");
-		shared.domElements.$plantActiveSkinIcon = $("#plantActiveSkinIcon");
-		
-		shared.domElements.$collection = $('#collection');
 		
 		// set all images to not draggable
 		
@@ -194,6 +149,36 @@
 			main.dom_ignore_pointer( $(".ignore-pointer, .disabled"), true );
 			
 		}
+		
+		// worker
+		
+		shared.domElements.$worker.on( 'hidden.reset', function () {
+			
+			main.worker_reset();
+			
+		} );
+		
+		// status items show/hide
+		
+		shared.domElements.$statusItems.each( function () {
+			
+			var $item = $( this );
+			
+			if ( $item.is( '.hidden, .collapsed' ) ) {
+				
+				shared.domElements.$statusInactive.append( $item );
+				
+			}
+			
+		} ).on('show.active', function () {
+			
+			shared.domElements.$statusActive.append( this );
+			
+		}).on('hidden.active', function () {
+			
+			shared.domElements.$statusInactive.append( this );
+			
+		});
 		
 		// primary action items
 		
@@ -318,7 +303,7 @@
 			
 			var $menu = $( this ),
 				$inner = $menu.find( '.menu-inner' ),
-				$toggle = shared.domElements.$navMenusButtons.filter( '[href="#' + $menu.attr( 'id' ) + '"]' ),
+				$toggle = shared.domElements.$tabToggles.filter( '[href="#' + $menu.attr( 'id' ) + '"]' ),
 				activate,
 				deactivate,
 				first,
@@ -337,7 +322,8 @@
 			
 			activate = function () {
 				
-				main.pause( false, true );
+				//main.pause( false, $menu );
+				pause_consider_started( false, $menu );
 				
 				if ( $toggle.length > 0 ) {
 					
@@ -383,7 +369,8 @@
 			
 			first = function () {
 				
-				main.pause( false, true );
+				//main.pause( false, $menu );
+				pause_consider_started( false, $menu );
 				
 			};
 			
@@ -392,8 +379,9 @@
 				main.dom_fade( {
 					element: shared.domElements.$uiOutGame
 				} );
-				
-				main.resume();
+				//main.resume();
+					
+				resume_consider_started();
 				
 			};
 			
@@ -449,14 +437,12 @@
 				
 			}
 			
-			// find default menu
+			// set default menu, assumes only 1 menu is active at start
 			
-			if ( shared.domElements.$menuDefault.length === 0 && $menu.is( '.active' ) === true ) {
+			if ( $menu.is( '.active' ) === true ) {
 				
 				shared.domElements.$menuDefault = $menu;
 				shared.domElements.$menuToggleDefault = $toggle;
-				
-				deactivate();
 				
 			}
 			
@@ -495,30 +481,234 @@
 			
 		} );
 		
-		// pause / resume
-		
-		shared.domElements.$buttonsGamePause.on( 'tap', pause );
-		shared.domElements.$buttonsGameResume.on( 'tap', resume );
-		
-		// hide uiOutGame
-		
-		main.dom_fade( {
-			element: shared.domElements.$uiOutGame,
-			time: 0
-		} );
-		
-		// show menus nav
-		
-		main.dom_fade( {
-			element: shared.domElements.$navMenus,
-			opacity: 1
-		} );
+		shared.domElements.$buttonsGameStart.on( 'tap', main.start );
+		shared.domElements.$buttonsGameStop.on( 'tap', main.stop );
+		shared.domElements.$buttonsGamePause.on( 'tap', pause_consider_started );
+		shared.domElements.$buttonsGameResume.on( 'tap', resume_consider_started );
 		
 		// signals
 		
+		shared.signals.onGameInput.add( handle_input );
+		
+		shared.signals.onWorkerReset.add( worker_reset );
+		shared.signals.onWorkerTaskStarted.add( worker_task_start );
+		shared.signals.onWorkerTaskCompleted.add( worker_task_complete );
+		shared.signals.onWorkerTasksCompleted.add( worker_tasks_complete );
+		
+		shared.signals.onGameReady.add( ready );
+		shared.signals.onGameStarted.add( start );
+		shared.signals.onGameStartedCompleted.add( start_complete );
+		shared.signals.onGameStopped.add( stop );
+		shared.signals.onGameStoppedCompleted.add( stop_complete );
 		shared.signals.onGamePaused.add( pause );
 		shared.signals.onGameResumed.add( resume );
 		
+		// resize once
+		
+		$( window ).trigger( 'resize' );
+		
+		// open default menu
+		
+		shared.domElements.$menuDefault.trigger( 'open' );
+		
+	}
+	
+	/*===================================================
+    
+    worker
+    
+    =====================================================*/
+	
+	function worker_reset () {
+		
+		$().add( shared.domElements.$workerProgressBarStarted ).add( shared.domElements.$workerProgressBarCompleted ).children( '.work-task' ).remove();
+		
+	}
+	
+	function worker_task_start ( id ) {
+		
+		// clear collapse delay
+		
+		if ( typeof workerCollapseTimeoutHandle !== 'undefined' ) {
+			
+			window.clearTimeout( workerCollapseTimeoutHandle );
+			workerCollapseTimeoutHandle = undefined;
+			
+		}
+		
+		// block ui
+		
+		main.dom_fade( {
+			element: shared.domElements.$uiBlocker,
+			opacity: 0.75
+		} );
+		
+		// show if hidden
+		
+		main.dom_collapse( {
+			element: shared.domElements.$worker,
+			show: true
+		} );
+		
+		// add into worker started progress bar
+		
+		shared.domElements.$workerProgressBarStarted.append( $( '<img src="img/bar_vertical_color_64.png" id="' + id + '" class="iconk-tiny iconk-widthFollow iconk-tight work-task">' ) );
+		
+	}
+	
+	function worker_task_complete ( id ) {
+		
+		// we need to be escape jquery's invalid selector characters when selecting worker tasks as they may be file names
+		
+		var idEscaped = id.replace(/([ #;?&,.+*~\':"!^$[\]()=>|\/@])/g,'\\$1');
+		
+		shared.domElements.$workerProgressBarStarted.find( '#' + idEscaped ).remove();
+		
+		shared.domElements.$workerProgressBarCompleted.append( $( '<img src="img/bar_vertical_rev_64.png" id="' + id + '" class="iconk-tiny iconk-widthFollow iconk-tight work-task">' ) );
+		
+	}
+	
+	function worker_tasks_complete () {
+		
+		// clear collapse delay
+		
+		if ( typeof workerCollapseTimeoutHandle !== 'undefined' ) {
+			
+			window.clearTimeout( workerCollapseTimeoutHandle );
+			workerCollapseTimeoutHandle = undefined;
+			
+		}
+		
+		// new collapse delay
+		
+		workerCollapseTimeoutHandle = window.setTimeout( function () {
+			
+			// collapse
+			
+			main.dom_collapse( {
+				element: shared.domElements.$worker,
+				callback: function () {
+					main.dom_fade( {
+						element: shared.domElements.$uiBlocker
+					} );
+				}
+			} );
+			
+		}, workerCollapseDelay );
+		
+	}
+	
+	/*===================================================
+    
+    ready
+    
+    =====================================================*/
+	
+	function ready () {
+		
+		// hide preloader
+		
+		main.dom_fade( {
+			element: shared.domElements.$preloader,
+			time: 0
+		} );
+		
+		// show main menu
+		
+		main.dom_fade( {
+			element: shared.domElements.$navMain,
+			opacity: 1
+		} );
+		
+		// hide dimmer
+		
+		main.dom_fade( {
+			element: shared.domElements.$uiGameDimmer
+		} );
+		
+	}
+	
+	/*===================================================
+    
+    start / stop
+    
+    =====================================================*/
+	
+	function start () {
+		
+		resume();
+		
+	}
+	
+	function start_complete () {
+		
+		
+		
+	}
+	
+	function stop () {
+		
+		
+		
+	}
+	
+	function stop_complete () {
+		
+		// show main menu
+		
+		main.dom_fade( {
+			element: shared.domElements.$navMain,
+			opacity: 1
+		} );
+		
+	}
+	
+	function open_default_menu () {
+		
+		if ( shared.domElements.$menuToggleDefault.length > 0 ) {
+			
+			shared.domElements.$menuToggleDefault.trigger( 'tap' );
+			
+		}
+		else if ( shared.domElements.$menuDefault.length > 0 ) {
+			
+			shared.domElements.$menuDefault.trigger( 'open' );
+			
+		}
+		
+	}
+	
+	/*===================================================
+    
+    input
+    
+    =====================================================*/
+	
+	function handle_input ( e, keyName, state ) {
+		
+		// releasing key
+		
+		if ( state === 'up' ) {
+			
+			// escape
+			
+			if ( keyName === 'escape' ) {
+				
+				if ( ( main.started === true && main.paused === true ) || paused === true ) {
+					
+					resume_consider_started();
+					
+				}
+				else {
+					
+					pause_consider_started();
+					
+				}
+				
+			}
+			
+		}
+			
 	}
 	
 	/*===================================================
@@ -527,20 +717,37 @@
     
     =====================================================*/
 	
-	function pause ( preventDefault, preventMenuChange ) {
+	function pause_consider_started ( preventDefault, $menu ) {
+		
+		if ( main.started === true ) {
+			
+			main.pause( preventDefault, $menu );
+			
+		}
+		else {
+			
+			pause( preventDefault, $menu );
+			
+		}
+		
+	}
+	
+	function pause ( preventDefault, $menu ) {
+		
+		var nonDefaultMenu = $menu instanceof jQuery && !shared.domElements.$menuDefault.is( $menu );
+		
+		paused = true;
 		
 		// hide pause button
 		
 		main.dom_fade( {
-			element: shared.domElements.$buttonGamePause,
+			element: shared.domElements.$buttonsGamePause,
 			time: 0
 		} );
 		
-		// pause priority
+		// block ui
 		
 		if ( preventDefault === true ) {
-			
-			// block ui
 			
 			main.dom_fade( {
 				element: shared.domElements.$uiBlocker,
@@ -550,31 +757,32 @@
 		}
 		else {
 			
-			// uiGameDimmer
-			
-			main.dom_fade( {
-				element: shared.domElements.$uiGameDimmer,
-				opacity: 0.9
-			} );
-			
 			// swap to default menu
 			
-			if ( preventMenuChange !== true && shared.domElements.$menuToggleDefault.length > 0 ) {
+			if ( nonDefaultMenu !== true ) {
 				
-				shared.domElements.$menuToggleDefault.trigger( 'tap' );
+				open_default_menu();
 				
 			}
 			
-			// show resume button
-			
-			main.dom_fade( {
-				element: shared.domElements.$buttonGameResume,
-				opacity: 1
-			} );
-			
-			// add listener for click on uiGameDimmer
-			
-			shared.domElements.$uiGameDimmer.on( 'tap.resume', resume );
+			if ( main.started === true || nonDefaultMenu === true ) {
+				
+				// uiGameDimmer
+				
+				main.dom_fade( {
+					element: shared.domElements.$uiGameDimmer,
+					opacity: 0.9
+				} );
+				shared.domElements.$uiGameDimmer.on( 'tap.resume', resume );
+				
+				// show resume button
+				
+				main.dom_fade( {
+					element: shared.domElements.$buttonsGameResume,
+					opacity: 1
+				} );
+				
+			}
 			
 		}
 		
@@ -586,19 +794,30 @@
     
     =====================================================*/
 	
-	function resume () {
+	function resume_consider_started () {
+		
+		if ( main.started === true ) {
+			
+			main.resume();
+			
+		}
+		else {
+			
+			resume();
+			
+		}
+		
+	}
+	
+	function resume ( fromFocus ) {
+		
+		paused = false;
 		
 		// hide resume button
 		
 		main.dom_fade( {
-			element: shared.domElements.$buttonGameResume,
+			element: shared.domElements.$buttonsGameResume,
 			time: 0
-		} );
-		
-		// hide pause message
-		
-		main.dom_collapse( {
-			element: shared.domElements.$pauseMessage
 		} );
 		
 		// unblock ui
@@ -607,8 +826,6 @@
 			element: shared.domElements.$uiBlocker
 		} );
 		
-		_UIQueue.clear( shared.domElements.$uiOutGame );
-		
 		// uiGameDimmer
 		
 		shared.domElements.$uiGameDimmer.off( '.resume' );
@@ -616,12 +833,25 @@
 			element: shared.domElements.$uiGameDimmer
 		} );
 		
-		// show pause button
+		if ( main.started === true ) {
+			
+			// clear menus
+			
+			_UIQueue.clear( shared.domElements.$uiOutGame );
+			
+			// show pause button
+			
+			main.dom_fade( {
+				element: shared.domElements.$buttonsGamePause,
+				opacity: 1
+			} );
 		
-		main.dom_fade( {
-			element: shared.domElements.$buttonGamePause,
-			opacity: 1
-		} );
+		}
+		else {
+			
+			open_default_menu();
+			
+		}
 		
 	}
 	
