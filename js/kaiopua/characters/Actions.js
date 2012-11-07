@@ -9,7 +9,7 @@
 (function (main) {
     
     var shared = main.shared = main.shared || {},
-		assetPath = "js/kaiopua/core/Actions.js",
+		assetPath = "js/kaiopua/characters/Actions.js",
 		_Actions = {},
 		actionCount = 0,
 		actionOptions = {

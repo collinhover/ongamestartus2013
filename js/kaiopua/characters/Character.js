@@ -9,7 +9,7 @@
 (function (main) {
     
     var shared = main.shared = main.shared || {},
-		assetPath = "js/kaiopua/core/Character.js",
+		assetPath = "js/kaiopua/characters/Character.js",
 		_Character = {},
 		_Model,
 		_Actions,
@@ -28,7 +28,7 @@
 		data: _Character,
 		requirements: [
 			"js/kaiopua/core/Model.js",
-			"js/kaiopua/core/Actions.js",
+			"js/kaiopua/characters/Actions.js",
 			"js/kaiopua/utils/MathHelper.js",
 			"js/kaiopua/utils/VectorHelper.js",
 			"js/kaiopua/utils/ObjectHelper.js"
@@ -57,8 +57,15 @@
 		
 		_Character.options = {
 			dynamic: true,
+			physics: {
+				dynamic: true,
+				bodyType: 'box',
+				movementDamping: 0.5,
+				movementForceLengthMax: shared.universeGravityMagnitude.length() * 20
+			},
 			stats: {
 				healthMax: 100,
+				invincible: false,
 				invulnerabilityDuration: 1000,
 				invulnerabilityOpacityPulses: 3,
 				invulnerabilityOpacityMin: 0.5,
@@ -78,7 +85,7 @@
 					speedEnd: 0,
 					airControl: 0.1,
 					moveDamping: 0.99,
-					moveSpeedMod: 0.5,
+					moveSpeedMod: 0,
 					durationMin: 100,
 					duration: 100,
 					delayNotGrounded: 125,
@@ -126,8 +133,11 @@
 		_Character.Instance = Character;
 		_Character.Instance.prototype = new _Model.Instance();
 		_Character.Instance.prototype.constructor = _Character.Instance;
+		_Character.Instance.prototype.supr = _Model.Instance.prototype;
 		
 		_Character.Instance.prototype.reset = reset;
+		
+		_Character.Instance.prototype.set_scene = set_scene;
 		
 		_Character.Instance.prototype.hurt = hurt;
 		_Character.Instance.prototype.die = die;
@@ -144,6 +154,15 @@
 		_Character.Instance.prototype.stop_jumping = stop_jumping;
 		
 		_Character.Instance.prototype.update = update;
+		
+		Object.defineProperty( _Character.Instance.prototype, 'scene', { 
+			get : function () { return this._scene; },
+			set: function ( scene ) {
+				
+				this.set_scene( scene );
+				
+			}
+		});
 		
 		Object.defineProperty( _Character.Instance.prototype, 'health', { 
 			get : function () { return this.state.health; },
@@ -250,17 +269,14 @@
 		// handle parameters
 		
 		parameters = parameters || {};
+		
+		parameters.geometry = parameters.geometry || new THREE.CubeGeometry( 50, 100, 50 );
+		parameters.center = true;
+		
+		// TODO: physics parameters should be handled by options
+		
 		parameters.options = $.extend( true, {}, _Character.options, parameters.options );
-		
-		// physics
-		
-		if ( typeof parameters.physics !== 'undefined' ) {
-			
-			parameters.physics.dynamic = true;
-			parameters.physics.movementDamping = main.is_number( parameters.physics.movementDamping ) ? parameters.physics.movementDamping : 0.5;
-			parameters.physics.movementForceLengthMax = main.is_number( parameters.physics.movementForceLengthMax ) ? parameters.physics.movementForceLengthMax : shared.universeGravityMagnitude.length() * 20;
-			
-		}
+		parameters.physics = $.extend( {}, _Character.options.physics, parameters.physics );
 		
 		// prototype constructor
 		
@@ -291,8 +307,6 @@
 		jump = movement.jump;
 		jump.time = 0;
 		jump.timeNotGrounded = 0;
-		jump.startDelay = animation.durations.jumpStart;
-		jump.startDelayTime = 0;
 		jump.ready = true;
 		jump.active = false;
 		jump.holding = false;
@@ -339,6 +353,31 @@
 	
 	/*===================================================
 	
+	scene
+	
+	=====================================================*/
+	
+	function set_scene ( scene ) {
+		
+		this._scene = scene;
+		
+		// handle start/stop of updating
+		
+		if ( this._scene instanceof THREE.Scene ) {
+			
+			shared.signals.onGameUpdated.add( this.update, this );
+			
+		}
+		else {
+			
+			shared.signals.onGameUpdated.remove( this.update, this );
+			
+		}
+		
+	}
+	
+	/*===================================================
+	
 	health
 	
 	=====================================================*/
@@ -346,11 +385,12 @@
 	function hurt ( damage ) {
 		
 		var state = this.state,
+			stats = this.options.stats,
 			animation = this.options.animation,
 			animationDurations = animation.durations,
 			animationNames = animation.names;
 		console.log( this, ' trying to hurt for ', damage, ', invulnerable? ', state.invulnerable );
-		if ( state.invulnerable !== true && state.dead !== true && main.is_number( damage ) && damage > 0 ) {
+		if ( stats.invincible !== true && state.invulnerable !== true && state.dead !== true && main.is_number( damage ) && damage > 0 ) {
 			
 			this.health -= damage;
 			
@@ -388,23 +428,19 @@
 			animation = this.options.animation,
 			animationDurations = animation.durations,
 			animationNames = animation.names;
+			
+		this.health = 0;
 		
-		if ( state.invulnerable !== true ) {
-			
-			this.health = 0;
-			
-			state.dead = true;
-			console.log( this, ' DEAD ' );
-			this.morphs.play( animationNames.die, {
-				duration: animationDurations.die,
-				solo: true,
-				durationClear: animationDurations.clearSolo,
-				callback: $.proxy( this.decay, this )
-			} );
-			
-			this.onDead.dispatch();
-			
-		}
+		state.dead = true;
+		console.log( this, ' DEAD ' );
+		this.morphs.play( animationNames.die, {
+			duration: animationDurations.die,
+			solo: true,
+			durationClear: animationDurations.clearSolo,
+			callback: $.proxy( this.decay, this )
+		} );
+		
+		this.onDead.dispatch();
 		
 	}
 	
@@ -709,7 +745,6 @@
 			jumpTimeNotGrounded,
 			jumpDelayNotGrounded,
 			jumpDelayFalling,
-			jumpStartDelay,
 			grounded,
 			sliding,
 			velocityGravity,
@@ -817,7 +852,6 @@
 			jumpDuration = jump.duration;
 			jumpDelayNotGrounded = jump.delayNotGrounded;
 			jumpDelayFalling = jump.delayFalling;
-			jumpStartDelay = jump.startDelay;
 			jumpSpeedStart = jump.speedStart * timeDeltaMod;
 			jumpSpeedEnd = jump.speedEnd * timeDeltaMod;
 			jumpAirControl = jump.airControl;
@@ -825,6 +859,7 @@
 			
 			velocityMovement = rigidBody.velocityMovement;
 			velocityMovementForceDelta = velocityMovement.forceDelta;
+			velocityMovementForceRotatedLength = velocityMovement.forceRotated.length() / timeDeltaMod;
 			velocityGravity = rigidBody.velocityGravity;
 			velocityGravityForceDelta = velocityGravity.forceDelta;
 			
@@ -878,22 +913,17 @@
 				
 				jump.time = 0;
 				
-				jump.startDelayTime = 0;
-				
 				jump.ready = false;
 				
 				jump.active = true;
 				
 				jump.starting = true;
+				jump.started = false;
 				
 				jump.holding = true;
 				
 			}
 			else if ( jump.holding === true && jump.active === true && jump.time < jumpDuration ) {
-				
-				// count delay
-				
-				jump.startDelayTime += timeDelta;
 				
 				if ( state.up === 0 && jump.time >= jump.durationMin ) {
 					
@@ -901,21 +931,38 @@
 					
 				}
 				
-				// do jump after delay
+				// play jump start
 				
-				if ( jump.startDelayTime >= jump.startDelay ) {
+				if ( jump.starting === true ) {
 					
-					// if start delay just finished
+					// start jump when stationary
 					
-					if ( jump.starting === true ) {
+					if ( velocityMovementForceRotatedLength === 0 ) {
+						
+						morphs.play( animationNames.jumpStart, {
+							duration: animationDurations.jumpStart,
+							loop: false,
+							solo: true,
+							durationClear: animationDurations.clearSolo,
+							oneComplete: function () {
+								
+								jump.started = true;
+								jump.starting = false;
+								velocityGravity.reset();
+								
+							}
+						} );
+						
+					}
+					else {
 						
 						jump.starting = false;
-					
-						// reset velocity
-						
 						velocityGravity.reset();
 						
 					}
+					
+				}
+				else {
 					
 					// play jump
 					
@@ -927,7 +974,7 @@
 						solo: true, 
 						durationClear: animationDurations.clearSolo,
 						startAt: 0,
-						startAtMax: true
+						startAtMax: jump.started
 					} );
 					
 					// properties
@@ -943,19 +990,6 @@
 					velocityGravityForceDelta.y += jumpSpeedStart * ( 1 - jumpTimeRatio) + jumpSpeedEnd * jumpTimeRatio;
 					
 				}
-				else {
-					
-					// play jump start
-					
-					morphs.play( animationNames.jumpStart, {
-						duration: animationDurations.jumpStart,
-						loop: false,
-						solo: true,
-						durationClear: animationDurations.clearSolo,
-						oneComplete: function () { morphs.clear( animationNames.jumpStart ); }
-					} );
-					
-				}
 				
 			}
 			else {
@@ -964,7 +998,9 @@
 					
 					this.stop_jumping();
 					
-					if ( jumpTimeNotGrounded >= jumpDelayNotGrounded ) {
+					// end jump when not moving
+					
+					if ( jumpTimeNotGrounded >= jumpDelayNotGrounded && velocityMovementForceRotatedLength === 0 ) {
 						
 						morphs.clear( animationNames.jump );
 						
@@ -1025,10 +1061,6 @@
 			// walk/run/idle
 			
 			if ( jump.active === false && state.grounded === true ) {
-				
-				// get movement force
-				
-				velocityMovementForceRotatedLength = velocityMovement.forceRotated.length() / timeDeltaMod;
 				
 				// walk / run cycles
 				

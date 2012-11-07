@@ -67,18 +67,22 @@
 		_Model.Instance.prototype.constructor = _Model.Instance;
 		_Model.Instance.prototype.clone = clone;
 		
+		_Model.Instance.prototype.set_dynamic = set_dynamic;
 		_Model.Instance.prototype.set_intersectable = set_intersectable;
+		_Model.Instance.prototype.set_option_and_refresh = set_option_and_refresh;
 		
 		Object.defineProperty( _Model.Instance.prototype, 'interactive', { 
 			get : function () { return this.options.interactive; }
 		} );
 		
 		Object.defineProperty( _Model.Instance.prototype, 'dynamic', { 
-			get : function () { return this.options.dynamic || ( this.rigidBody && this.rigidBody.dynamic ); }
+			get : function () { return this.options.dynamic || ( this.rigidBody && this.rigidBody.dynamic ); },
+			set: set_dynamic
 		} );
 		
 		Object.defineProperty( _Model.Instance.prototype, 'intersectable', { 
-			get : function () { return this.options.intersectable; }
+			get : function () { return this.options.intersectable; },
+			set: set_intersectable
 		} );
 		
 		Object.defineProperty( _Model.Instance.prototype, 'gravityBody', { 
@@ -169,7 +173,7 @@
 		
 		this.id = objectCount++;
 		
-		this.options = $.extend( true, this.options || {}, _Model.options, parameters.options );
+		this.options = $.extend( true, {}, _Model.options, parameters.options );
 		
 		// geometry
 		
@@ -448,16 +452,28 @@
 	
 	=====================================================*/
 	
-	function set_intersectable ( intersectable, cascade ) {
+	function set_dynamic ( state, cascade ) {
+		
+		this.set_option_and_refresh( 'dynamic', state, cascade );
+		
+	}
+	
+	function set_intersectable ( state, cascade ) {
+		
+		this.set_option_and_refresh( 'intersectable', state, cascade );
+		
+	}
+	
+	function set_option_and_refresh ( property, value, cascade ) {
 		
 		var i, l,
-			intersectablePrev = this.options.intersectable,
+			valuePrev = this.options[ property ],
 			child,
 			parent;
 		
-		// when in scene, remove from parent and add again to account for intersectable change
+		// when in scene, remove from parent and add again to account for change
 		
-		if( intersectablePrev !== intersectable ) {
+		if( valuePrev !== intersectable ) {
 			
 			parent = this.parent;
 			
@@ -471,7 +487,7 @@
 		
 		// modify value
 		
-		this.options.intersectable = intersectable;
+		this.options[ property ] = value;
 		
 		if ( cascade === true ) {
 			
@@ -485,12 +501,12 @@
 				
 				if ( child instanceof Model ) {
 					
-					child.options.intersectable = intersectable;
+					child.options[ property ] = value;
 					
 				}
 				else {
 					
-					child.intersectable = intersectable;
+					child[ property ] = value;
 					
 				}
 				

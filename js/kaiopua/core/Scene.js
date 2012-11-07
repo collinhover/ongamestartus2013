@@ -100,24 +100,30 @@
 		
 		// when object actually added
 		
-		if ( this.__objects.length !== objectsCount && object instanceof _Model.Instance ) {
+		if ( this.__objects.length !== objectsCount ) {
 			
-			if ( object.intersectable === true ) {
+			object.scene = this;
+			
+			if ( object instanceof _Model.Instance ) {
 				
-				if ( object.dynamic !== true ) {
+				if ( object.intersectable === true ) {
 					
-					this.octree.add( object, true );
+					if ( object.dynamic !== true ) {
+						
+						this.octree.add( object, true );
+						
+					}
+					else {
+						
+						main.array_cautious_add( this.dynamics, object );
+						
+					}
 					
-				}
-				else {
-					
-					main.array_cautious_add( this.dynamics, object );
-					
-				}
-				
-				if ( object.rigidBody instanceof _RigidBody.Instance ) {
-					
-					this.physics.add( object );
+					if ( object.rigidBody instanceof _RigidBody.Instance ) {
+						
+						this.physics.add( object );
+						
+					}
 					
 				}
 				
@@ -141,30 +147,36 @@
 		
 		// when object actually removed
 		
-		if ( this.__objects.length !== objectsCount && object instanceof _Model.Instance ) {
+		if ( this.__objects.length !== objectsCount ) {
 			
-			if ( object.morphs instanceof _Morphs.Instance ) {
-				
-				object.morphs.stop_all();
-				
-			}
+			object.scene = undefined;
 			
-			if ( object.intersectable === true ) {
+			if ( object instanceof _Model.Instance ) {
 				
-				if ( object.dynamic !== true ) {
+				if ( object.morphs instanceof _Morphs.Instance ) {
 					
-					this.octree.remove( object );
-					
-				}
-				else {
-					
-					main.array_cautious_remove( this.dynamics, object );
+					object.morphs.stop_all();
 					
 				}
 				
-				if ( object.rigidBody instanceof _RigidBody.Instance ) {
+				if ( object.intersectable === true ) {
 					
-					this.physics.remove( object );
+					if ( object.dynamic !== true ) {
+						
+						this.octree.remove( object );
+						
+					}
+					else {
+						
+						main.array_cautious_remove( this.dynamics, object );
+						
+					}
+					
+					if ( object.rigidBody instanceof _RigidBody.Instance ) {
+						
+						this.physics.remove( object );
+						
+					}
 					
 				}
 				

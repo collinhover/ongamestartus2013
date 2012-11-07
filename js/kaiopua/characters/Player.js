@@ -9,12 +9,11 @@
 (function (main) {
     
     var shared = main.shared = main.shared || {},
-		assetPath = "js/kaiopua/core/Player.js",
+		assetPath = "js/kaiopua/characters/Player.js",
         _Player = {},
 		_Character,
 		_MathHelper,
 		_KeyHelper,
-		_SceneHelper,
 		_ObjectHelper,
 		_RayHelper;
 	
@@ -27,10 +26,9 @@
 	main.asset_register( assetPath, { 
 		data: _Player,
 		requirements: [
-			"js/kaiopua/core/Character.js",
+			"js/kaiopua/characters/Character.js",
 			"js/kaiopua/utils/MathHelper.js",
 			"js/kaiopua/utils/KeyHelper.js",
-			"js/kaiopua/utils/SceneHelper.js",
 			"js/kaiopua/utils/ObjectHelper.js",
 			"js/kaiopua/utils/RayHelper.js"
 		],
@@ -44,7 +42,7 @@
     
     =====================================================*/
 	
-	function init_internal ( c, mh, kh, sh, oh, rh ) {
+	function init_internal ( c, mh, kh, oh, rh ) {
 		console.log('internal player');
 		
 		// assets
@@ -52,7 +50,6 @@
 		_Character = c;
 		_MathHelper = mh;
 		_KeyHelper = kh;
-		_SceneHelper = sh;
 		_ObjectHelper = oh;
 		_RayHelper = rh;
 		
@@ -68,10 +65,11 @@
 				},
 				jump: {
 					speedStart: 3,
-					duration: 200,
-					startDelay: 125,
-					moveSpeedMod: 0
+					duration: 200
 				}
+			},
+			physics: {
+				volumetric: true
 			}
 		};
 		
@@ -82,61 +80,14 @@
 		_Player.Instance.prototype.constructor = _Player.Instance;
 		_Player.Instance.prototype.supr = _Character.Instance.prototype;
 		
+		_Player.Instance.prototype.set_scene = set_scene;
+		
 		_Player.Instance.prototype.die = die;
 		_Player.Instance.prototype.respawn = respawn;
 		_Player.Instance.prototype.select = select;
 		
 		_Player.Instance.prototype.set_keybindings = set_keybindings;
 		_Player.Instance.prototype.trigger_action = trigger_action;
-		
-		Object.defineProperty( _Player.Instance.prototype, 'parent', { 
-			get : function () { return this._parent; },
-			set: function ( parent ) {
-				
-				var scene;
-				
-				this._parent = parent;
-				
-				if ( this._parent instanceof THREE.Object3D ) {
-					
-					scene = _SceneHelper.extract_parent_root( this );
-					
-					if ( scene instanceof THREE.Scene !== true ) {
-						
-						this.enabled = false;
-						
-					}
-					
-				}
-				
-			}
-		});
-		
-		Object.defineProperty( _Player.Instance.prototype, 'enabled', { 
-			get : function () { return this.state.enabled; },
-			set : function ( enabled ) {
-				
-				var last = this.state.enabled;
-				
-				this.state.enabled = enabled;
-				
-				if ( this.state.enabled !== last ) {
-					
-					if ( this.state.enabled === true ) {
-						
-						shared.signals.onGameUpdated.add( this.update, this );
-						
-					}
-					else {
-						
-						shared.signals.onGameUpdated.remove( this.update, this );
-						
-					}
-					
-				}
-				
-			}
-		} );
 		
 		Object.defineProperty( _Player.Instance.prototype, 'controllable', { 
 			get : function () { return this.state.controllable; },
@@ -190,18 +141,16 @@
 		var me = this,
 			kb;
 		
+		// handle parameters
+		
 		parameters = parameters || {};
 		
 		parameters.name = 'Hero';
 		
-		parameters.geometry = parameters.geometry || new THREE.CubeGeometry( 50, 100, 50 );
-		parameters.center = true;
-		
-		parameters.physics = parameters.physics || {};
-		parameters.physics.bodyType = 'capsule';
-		parameters.physics.movementDamping = 0.5;
+		// TODO: physics parameters should be handled by options
 		
 		parameters.options = $.extend( true, {}, _Player.options, parameters.options );
+		parameters.physics = $.extend( {}, _Player.options.physics, parameters.physics );
 		
 		_Character.Instance.call( this, parameters );
 		
@@ -380,6 +329,30 @@
 	
 	/*===================================================
     
+    scene
+    
+    =====================================================*/
+	
+	function set_scene ( scene ) {
+		
+		_Player.Instance.prototype.supr.set_scene.call( this, scene );
+		
+		if ( this._scene instanceof THREE.Scene ) {
+			
+			this.controllable = true;
+			
+		}
+		else {
+			
+			this.controllable = false;
+			this.target = undefined;
+			
+		}
+		
+	}
+	
+	/*===================================================
+    
     die
     
     =====================================================*/
@@ -388,7 +361,7 @@
 		
 		_Player.Instance.prototype.supr.die.apply( this, arguments );
 		
-		this.controllable = false;
+		// TODO: ui changes
 		
 	}
 	
@@ -405,9 +378,6 @@
 		shared.cameraControls.target = undefined;
 		shared.cameraControls.target = this;
 		shared.cameraControls.rotateTarget = true;
-		
-		this.enabled = true;
-		this.controllable = true;
 		
 	}
 	
@@ -474,7 +444,7 @@
 			keyNameActual = kbMap[ keyName ] || keyName,
 			isAlwaysAvailable = main.index_of_value( kbMap.alwaysAvailable, keyNameActual ) !== -1;
 		
-		if ( this.state.enabled === true || isAlwaysAvailable ) {
+		if ( this.state.controllable === true || isAlwaysAvailable ) {
 			
 			// perform action
 			

@@ -53,7 +53,8 @@
 		
 		// properties
 		
-		_RigidBody.offsetPct = 0.4;
+		_RigidBody.movementOffsetPct = 0.4;
+		_RigidBody.gravityOffsetPct = 0.4;
 		_RigidBody.gravityCollisionAngleThreshold = Math.PI * 0.3;
 		_RigidBody.lerpDelta = 0.1;
 		_RigidBody.lerpDeltaGravityChange = 0;
@@ -146,7 +147,11 @@
 			radius,
 			radiusAvg,
 			position,
-			offsetPct,
+			volumetric,
+			movementOffsets,
+			gravityOffsets,
+			movementOffsetPct,
+			gravityOffsetPct,
 			gravityBodyRadiusAdditionPct,
 			gravityBodyRadiusAddition;
 		
@@ -346,18 +351,37 @@
 			right: shared.cardinalAxes.right.clone()
 		};
 		
-		// velocity trackers
+		// offsets for the illusion of volume
 		
-		offsetPct = parameters.offsetPct || _RigidBody.offsetPct;
+		volumetric = parameters.volumetric;
+		movementOffsets = parameters.movementOffsets;
+		gravityOffsets = parameters.gravityOffsets;
+		
+		if ( volumetric === true ) {
+			
+			movementOffsetPct = main.is_number( parameters.movementOffsetPct ) ? parameters.movementOffsetPct : _RigidBody.movementOffsetPct;
+			gravityOffsetPct = main.is_number( parameters.gravityOffsetPct ) ? parameters.gravityOffsetPct : _RigidBody.gravityOffsetPct;
+			
+			movementOffsets = movementOffsetPct === 0 ? [] : [
+				new THREE.Vector3( -width * movementOffsetPct, 0, 0 ), // left waist side
+				new THREE.Vector3( width * movementOffsetPct, 0, 0 ), // right waist side
+				new THREE.Vector3( 0, height * movementOffsetPct, 0 ) // near head
+			];
+			gravityOffsets = gravityOffsetPct === 0 ? [] : [
+				new THREE.Vector3( -width * gravityOffsetPct, 0, -depth * gravityOffsetPct ),
+				new THREE.Vector3( width * gravityOffsetPct, 0, -depth * gravityOffsetPct ),
+				new THREE.Vector3( width * gravityOffsetPct, 0, depth * gravityOffsetPct ),
+				new THREE.Vector3( -width * gravityOffsetPct, 0, depth * gravityOffsetPct )
+			];
+			
+		}
+		
+		// velocity trackers
 		
 		this.velocityMovement = new _Velocity.Instance( { 
 			rigidBody: this,
 			relativeTo: this.mesh,
-			offsets: parameters.movementOffsets || [ 
-				new THREE.Vector3( -width * offsetPct, 0, 0 ), // left waist side
-				new THREE.Vector3( width * offsetPct, 0, 0 ), // right waist side
-				new THREE.Vector3( 0, height * offsetPct, 0 ) // near head
-			],
+			offsets: movementOffsets,
 			options: {
 				damping: parameters.movementDamping,
 				dampingDecay: parameters.movementDampingDecay,
@@ -368,12 +392,7 @@
 		
 		this.velocityGravity = new _Velocity.Instance( { 
 			rigidBody: this,
-			offsets: parameters.gravityOffsets || [ 
-				new THREE.Vector3( -width * offsetPct, 0, -depth * offsetPct ),
-				new THREE.Vector3( width * offsetPct, 0, -depth * offsetPct ),
-				new THREE.Vector3( width * offsetPct, 0, depth * offsetPct ),
-				new THREE.Vector3( -width * offsetPct, 0, depth * offsetPct )
-			],
+			offsets: gravityOffsets,
 			options: {
 				damping: parameters.gravityDamping,
 				dampingDecay: parameters.gravityDampingDecay,

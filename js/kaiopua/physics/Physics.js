@@ -427,7 +427,9 @@
 		// more accurate than plain radius, but about 4x more cost
 		boundingRadius = rigidBody.bounds_in_direction( forceRotated ).length();
 		
-		// get intersection, and allow a longer search for movement velocity
+		// get intersection
+		// for now ignores dynamic bodies
+		// allow a longer search for movement velocity
 		
 		intersectionParameters = {
 			octrees: this.octree,
