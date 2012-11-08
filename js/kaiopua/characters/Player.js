@@ -12,6 +12,7 @@
 		assetPath = "js/kaiopua/characters/Player.js",
         _Player = {},
 		_Character,
+		_NonPlayer,
 		_MathHelper,
 		_KeyHelper,
 		_ObjectHelper,
@@ -27,6 +28,7 @@
 		data: _Player,
 		requirements: [
 			"js/kaiopua/characters/Character.js",
+			"js/kaiopua/characters/NonPlayer.js",
 			"js/kaiopua/utils/MathHelper.js",
 			"js/kaiopua/utils/KeyHelper.js",
 			"js/kaiopua/utils/ObjectHelper.js",
@@ -42,12 +44,13 @@
     
     =====================================================*/
 	
-	function init_internal ( c, mh, kh, oh, rh ) {
+	function init_internal ( c, np, mh, kh, oh, rh ) {
 		console.log('internal player');
 		
 		// assets
 		
 		_Character = c;
+		_NonPlayer = np;
 		_MathHelper = mh;
 		_KeyHelper = kh;
 		_ObjectHelper = oh;
@@ -84,7 +87,10 @@
 		
 		_Player.Instance.prototype.die = die;
 		_Player.Instance.prototype.respawn = respawn;
+		
+		_Player.Instance.prototype.hover = hover;
 		_Player.Instance.prototype.select = select;
+		_Player.Instance.prototype.interact = interact;
 		
 		_Player.Instance.prototype.set_keybindings = set_keybindings;
 		_Player.Instance.prototype.trigger_action = trigger_action;
@@ -198,7 +204,8 @@
 		
 		// wasd / arrows
 		
-		this.actions.add( 'w up_arrow', {
+		this.actions.add( {
+			names: 'w up_arrow',
 			eventCallbacks: {
 				down: function () {
 					me.move_state_change( 'forward' );
@@ -210,7 +217,8 @@
 			deactivateCallbacks: 'up'
 		} );
 		
-		this.actions.add( 's down_arrow', {
+		this.actions.add( {
+			names: 's down_arrow',
 			eventCallbacks: {
 				down: function () {
 					me.move_state_change( 'back' );
@@ -222,7 +230,8 @@
 			deactivateCallbacks: 'up'
 		} );
 		
-		this.actions.add( 'a left_arrow', {
+		this.actions.add( {
+			names: 'a left_arrow',
 			eventCallbacks: {
 				down: function () {
 					me.move_state_change( 'left' );
@@ -234,7 +243,8 @@
 			deactivateCallbacks: 'up'
 		} );
 		
-		this.actions.add( 'd right_arrow', {
+		this.actions.add( {
+			names: 'd right_arrow',
 			eventCallbacks: {
 				down: function () {
 					me.move_state_change( 'right' );
@@ -248,7 +258,8 @@
 		
 		// jump
 		
-		this.actions.add( 'space', {
+		this.actions.add( {
+			names: 'space',
 			eventCallbacks: {
 				down: function () {
 					me.move_state_change( 'up' );
@@ -262,7 +273,8 @@
 		
 		// misc
 		
-		this.actions.add( 'escape', {
+		this.actions.add( {
+			names: 'escape',
 			eventCallbacks: {
 				up: function () {
 					
@@ -274,42 +286,19 @@
 		
 		// selection
 		
-		this.actions.add( 'pointer', {
+		this.actions.add( {
+			names: 'pointer',
 			eventCallbacks: {
-				mousemove: function ( parameters ) {
-					
-					parameters = parameters || {};
-					
-					var e = parameters.event,
-						target = _RayHelper.raycast( {
-							pointer: main.get_pointer( e ),
-							camera: shared.camera,
-							objects: shared.scene.dynamics,
-							octrees: shared.scene.octree,
-							objectOnly: true
-						} );
-						
-					// cursor change on mouse over interactive
-					
-					if ( target instanceof THREE.Object3D && target.interactive === true ) {
-						
-						shared.domElements.$game.css( 'cursor', 'pointer' );
-						
-					}
-					else {
-						
-						shared.domElements.$game.css( 'cursor', 'auto' );
-						
-					}
-					
-				},
-				tap: $.proxy( this.select, this )
+				mousemove: $.proxy( this.hover, this ),
+				tap: $.proxy( this.select, this ),
+				doubletap: $.proxy( this.interact, this ),
 			}
 		} );
 		
 		// camera rotating
 		
-		this.actions.add( 'pointer', {
+		this.actions.add( {
+			names: 'pointer',
 			eventCallbacks: {
 				dragstart: $.proxy( shared.cameraControls.rotate_start, shared.cameraControls ),
 				drag: $.proxy( shared.cameraControls.rotate, shared.cameraControls  ),
@@ -383,9 +372,41 @@
 	
 	/*===================================================
     
-    selection
+    interaction
     
     =====================================================*/
+	
+	function hover ( parameters ) {
+		
+		parameters = parameters || {};
+		
+		var e = parameters.event,
+			target = _RayHelper.raycast( {
+				pointer: main.get_pointer( e ),
+				camera: shared.camera,
+				objects: shared.scene.dynamics,
+				octrees: shared.scene.octree,
+				objectOnly: true
+			} );
+			
+		// cursor change on mouse over interactive
+		
+		if ( target instanceof THREE.Object3D && target.interactive === true ) {
+			
+			shared.domElements.$game.css( 'cursor', 'pointer' );
+			
+			this.targetHover = target;
+			
+		}
+		else {
+			
+			shared.domElements.$game.css( 'cursor', 'auto' );
+			
+			this.targetHover = undefined;
+			
+		}
+		
+	}
 	
 	function select ( parameters ) {
 	
@@ -423,6 +444,21 @@
 		// update target
 		
 		_Player.Instance.prototype.supr.select.call( this, target );
+		
+	}
+	
+	function interact () {
+		console.log( 'player interact', this.target );
+		if ( this.target instanceof _NonPlayer.Instance ) {
+			
+			// look at each other
+			
+			this.look_at( this.target );
+			this.target.look_at( this );
+			
+			this.target.actions.execute( 'talk', 'greeting' );
+			
+		}
 		
 	}
 	

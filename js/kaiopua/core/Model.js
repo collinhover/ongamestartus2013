@@ -13,6 +13,7 @@
 		assetPath = "js/kaiopua/core/Model.js",
 		_Model = {},
 		_Morphs,
+		_Actions,
 		_RigidBody,
 		_SceneHelper,
 		_ObjectHelper,
@@ -28,6 +29,7 @@
 		data: _Model,
 		requirements: [
 			"js/kaiopua/core/Morphs.js",
+			"js/kaiopua/core/Actions.js",
 			"js/kaiopua/physics/RigidBody.js",
 			"js/kaiopua/utils/SceneHelper.js",
 			"js/kaiopua/utils/ObjectHelper.js"
@@ -42,9 +44,10 @@
     
     =====================================================*/
 	
-	function init_internal ( m, rb, sh, oh ) {
+	function init_internal ( m, ac, rb, sh, oh ) {
 		console.log('internal model', _Model);
 		_Morphs = m;
+		_Actions = ac;
 		_RigidBody = rb;
 		_SceneHelper = sh;
 		_ObjectHelper = oh;
@@ -72,7 +75,8 @@
 		_Model.Instance.prototype.set_option_and_refresh = set_option_and_refresh;
 		
 		Object.defineProperty( _Model.Instance.prototype, 'interactive', { 
-			get : function () { return this.options.interactive; }
+			get : function () { return this.options.interactive; },
+			set: function ( interactive ) { this.options.interactive = interactive; }
 		} );
 		
 		Object.defineProperty( _Model.Instance.prototype, 'dynamic', { 
@@ -332,6 +336,11 @@
 			
 		}
 		
+		// actions
+		
+		this.actions = new _Actions.Instance();
+		this.actions.add( parameters.actions );
+		
 	}
 	
 	/*===================================================
@@ -448,7 +457,7 @@
 	
 	/*===================================================
 	
-	intersectable
+	setters
 	
 	=====================================================*/
 	

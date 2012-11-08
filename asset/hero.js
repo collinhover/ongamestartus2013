@@ -26,7 +26,7 @@
 	"colorSpecular" : [0.0, 0.0, 0.0],
 	"depthTest" : true,
 	"depthWrite" : true,
-	"mapDiffuse" : "hero_texture.jpg",
+	"mapDiffuse" : "hero.jpg",
 	"mapDiffuseWrap" : ["repeat", "repeat"],
 	"shading" : "Lambert",
 	"specularCoef" : 50,

@@ -12,7 +12,6 @@
 		assetPath = "js/kaiopua/characters/Character.js",
 		_Character = {},
 		_Model,
-		_Actions,
 		_MathHelper,
 		_VectorHelper,
 		_ObjectHelper,
@@ -28,7 +27,6 @@
 		data: _Character,
 		requirements: [
 			"js/kaiopua/core/Model.js",
-			"js/kaiopua/characters/Actions.js",
 			"js/kaiopua/utils/MathHelper.js",
 			"js/kaiopua/utils/VectorHelper.js",
 			"js/kaiopua/utils/ObjectHelper.js"
@@ -43,12 +41,11 @@
     
     =====================================================*/
 	
-	function init_internal ( m, ac, mh, vh, oh ) {
+	function init_internal ( m, mh, vh, oh ) {
 		console.log('internal Character', _Character);
 		// modules
 		
 		_Model = m;
-		_Actions = ac;
 		_MathHelper = mh;
 		_VectorHelper = vh;
 		_ObjectHelper = oh;
@@ -149,9 +146,11 @@
 		_Character.Instance.prototype.select = select;
 		
 		_Character.Instance.prototype.move_state_change = move_state_change;
-		_Character.Instance.prototype.rotate_by_direction = rotate_by_direction;
-		_Character.Instance.prototype.rotate_by_angle = rotate_by_angle;
 		_Character.Instance.prototype.stop_jumping = stop_jumping;
+		
+		_Character.Instance.prototype.turn_by = turn_by;
+		_Character.Instance.prototype.face_local_direction = face_local_direction;
+		_Character.Instance.prototype.look_at = look_at;
 		
 		_Character.Instance.prototype.update = update;
 		
@@ -266,6 +265,12 @@
 			state,
 			animation;
 		
+		// utils
+		
+		this.utilVec31Look = new THREE.Vector3();
+		this.utilVec32Look = new THREE.Vector3();
+		this.utilVec33Look = new THREE.Vector3();
+		
 		// handle parameters
 		
 		parameters = parameters || {};
@@ -293,11 +298,13 @@
 		
 		// rotate
 		rotate = movement.rotate;
-		rotate.facingDirection = new THREE.Vector3( 0, 0, 1 );
+		rotate.facingDirectionBase = new THREE.Vector3( 0, 0, 1 );
+		rotate.facingDirection =rotate.facingDirectionBase.clone();
 		rotate.facingDirectionLast = rotate.facingDirection.clone();
 		rotate.facing = new THREE.Quaternion();
 		rotate.facingAngle = 0;
 		rotate.turn = new THREE.Quaternion();
+		rotate.turnDirection = rotate.facingDirection.clone();
 		rotate.turnAngle = 0;
 		rotate.axis = new THREE.Vector3( 0, 1, 0 );
 		rotate.delta = new THREE.Quaternion();
@@ -315,8 +322,6 @@
 		
 		this.name = parameters.name || characterName;
 		this.state = {};
-		
-		this.actions = new _Actions.Instance();
 		
 		this.onHurt = new signals.Signal();
 		this.onDead = new signals.Signal();
@@ -591,7 +596,7 @@
 		var movement = this.options.movement,
 			state = this.state,
 			rotate = movement.rotate,
-			rotateFacingDirection = rotate.facingDirection,
+			facingDirection = rotate.facingDirection,
 			forwardBack;
 		
 		// handle state property
@@ -606,35 +611,42 @@
 		
 		if ( state.forward === 1 ) {
 			
-			rotateFacingDirection.z = 1;
-			rotateFacingDirection.x = 0;
+			facingDirection.z = 1;
+			facingDirection.x = 0;
 			forwardBack = true;
 			
 		}
 		else if ( state.back === 1 ) {
 			
-			rotateFacingDirection.z = -1;
-			rotateFacingDirection.x = 0;
+			facingDirection.z = -1;
+			facingDirection.x = 0;
 			forwardBack = true;
 			
 		}
 		
 		if ( state.left === 1 || state.right === 1 ) {
 			
-			rotateFacingDirection.x = state.right === 1 ? -state.right : state.left;
+			facingDirection.x = state.right === 1 ? -state.right : state.left;
 			
 			if ( forwardBack !== true ) {
 				
-				rotateFacingDirection.z = 0;
+				facingDirection.z = 0;
 				
 			}
 			else {
 				
-				rotateFacingDirection.normalize();
+				facingDirection.normalize();
 				
 			}
 			
 		}
+		
+	}
+	
+	function stop_jumping () {
+		
+		this.options.movement.jump.active = false;
+		this.options.movement.jump.holding = false;
 		
 	}
 	
@@ -644,61 +656,87 @@
 	
 	=====================================================*/
 	
-	function rotate_by_direction ( dx, dy, dz ) {
+	function turn_by ( angleDelta ) {
 		
-		var rotate = this.options.movement.rotate;
+		var options = this.options,
+			movement = options.movement,
+			rotate = movement.rotate,
+			rotateDelta = rotate.delta;
 		
-		// update direction
-		
-		if ( main.is_number( dx ) ) {
+		if ( angleDelta !== 0 ) {
 			
-			rotate.facingDirection.x = dx;
+			rotateDelta.setFromAxisAngle( rotate.axis, angleDelta );
 			
-		}
-		
-		if ( main.is_number( dy ) ) {
+			this.quaternion.multiplySelf( rotateDelta );
 			
-			rotate.facingDirection.y = dy;
-			
-		}
-		
-		if ( main.is_number( dz ) ) {
-			
-			rotate.facingDirection.z = dz;
+			rotate.turn.multiplySelf( rotateDelta );
+			rotateDelta.multiplyVector3( rotate.turnDirection );
+			rotate.turnAngle = _MathHelper.rad_between_PI( rotate.turnAngle + angleDelta );
 			
 		}
 		
 	}
 	
-	function rotate_by_angle ( rotateAngleDelta ) {
+	function face_local_direction ( direction, lerp ) {
 		
-		var rotate = this.options.movement.rotate,
+		var options = this.options,
+			movement = options.movement,
+			rotate = movement.rotate,
 			rotateAxis = rotate.axis,
 			rotateDelta = rotate.delta,
-			rotateAngleTarget = _MathHelper.degree_between_180( rotate.facingAngle + rotateAngleDelta ),
-			rotateAngleDeltaShortest = _MathHelper.shortest_rotation_between_angles( rotate.facingAngle, rotateAngleTarget );
+			facingDirectionLast = rotate.facingDirectionLast,
+			facingAngleDelta = _VectorHelper.signed_angle_between_coplanar_vectors( facingDirectionLast, direction, rotateAxis ) * lerp,
+			facingAngleTarget,
+			facingAngleDeltaShortest;
 		
-		// find delta quaternion
+		// rotate by direction angle change
 		
-		rotateDelta.setFromAxisAngle( rotateAxis, rotateAngleDeltaShortest );
-		
-		// copy deltas
-		
-		rotateDelta.multiplyVector3( rotate.facingDirection );
-		rotate.facingAngle = rotateAngleTarget;
+		if ( facingAngleDelta !== 0 ) {
+			
+			facingAngleTarget = _MathHelper.rad_between_PI( rotate.facingAngle + facingAngleDelta );
+			facingAngleDeltaShortest = _MathHelper.shortest_rotation_between_angles( rotate.facingAngle, facingAngleTarget );
+			rotateDelta.setFromAxisAngle( rotateAxis, facingAngleDeltaShortest );
+			
+			this.quaternion.multiplySelf( rotateDelta );
+			
+			// copy new direction angle
+			
+			rotate.facing.multiplySelf( rotateDelta );
+			rotateDelta.multiplyVector3( facingDirectionLast );
+			rotate.facingAngle = facingAngleTarget;
+			
+		}
 		
 	}
 	
-	/*===================================================
-	
-	jump
-	
-	=====================================================*/
-	
-	function stop_jumping () {
+	function look_at ( object ) {
 		
-		this.options.movement.jump.active = false;
-		this.options.movement.jump.holding = false;
+		var options = this.options,
+			movement = options.movement,
+			rotate = movement.rotate,
+			axis = rotate.axis,
+			rotateDelta = rotate.delta,
+			difference = _VectorHelper.vector_between( this.position, object.position ),
+			diffDotAxis= difference.dot( axis ),
+			axisToObjPosition = this.utilVec31Look.copy( axis ).multiplyScalar( diffDotAxis ),
+			projectedPosition = this.utilVec32Look.sub( object.position, axisToObjPosition ),
+			normal = _VectorHelper.normal_between( this.position, projectedPosition ),
+			forward = this.utilVec33Look.copy( rotate.facingDirectionBase ),
+			angle;
+		
+		rotate.turn.multiplyVector3( forward );
+		rotate.facing.multiplyVector3( forward );
+		angle = _VectorHelper.signed_angle_between_coplanar_vectors( forward, normal, axis );
+		
+		rotateDelta.setFromAxisAngle( axis, angle );
+				
+		this.quaternion.multiplySelf( rotateDelta );
+		
+		// copy new direction angle
+		
+		rotate.facing.multiplySelf( rotateDelta );
+		rotateDelta.multiplyVector3( rotate.facingDirectionLast );
+		rotate.facingAngle = angle;
 		
 	}
 	
@@ -726,15 +764,6 @@
 			animationDelays = animation.delays,
 			moveDir = move.direction,
 			moveSpeed = move.speed * timeDeltaMod,
-			rotateTurnAngleDelta,
-			rotateAxis = rotate.axis,
-			rotateFacingAngleDelta,
-			rotateFacingAngleDeltaShortest,
-			rotateFacingAngleTarget,
-			rotateFacingDirection = rotate.facingDirection,
-			rotateFacingDirectionLast = rotate.facingDirectionLast,
-			rotateDelta = rotate.delta,
-			rotateLerpDelta = rotate.lerpDelta * timeDeltaMod,
 			jumpSpeedStart,
 			jumpSpeedEnd,
 			jumpAirControl,
@@ -798,47 +827,17 @@
 		
 		moveDir.z = state.movingHorizontal ? 1 : 0;
 		
-		// update rotation angles
-		
-		rotateTurnAngleDelta = ( state.right === 1 ? -state.right : state.left ) * rotate.turnSpeed;
-		rotateFacingAngleDelta = _VectorHelper.signed_angle_between_coplanar_vectors( rotateFacingDirectionLast, rotateFacingDirection, rotateAxis ) * rotateLerpDelta;
-		
 		// if moving
 		
 		if ( state.movingHorizontal === true ) {
 			
 			// rotate by turn angle change
 			
-			if ( rotateTurnAngleDelta !== 0 ) {
-				
-				rotateDelta.setFromAxisAngle( rotateAxis, rotateTurnAngleDelta );
-				
-				this.quaternion.multiplySelf( rotateDelta );
-				
-				// copy new turn angle
-				
-				rotate.turn.multiplySelf( rotateDelta );
-				rotate.turnAngle = _MathHelper.degree_between_180( rotate.turnAngle + rotateTurnAngleDelta );
-				
-			}
+			this.turn_by( ( state.right === 1 ? -state.right : state.left ) * rotate.turnSpeed );
 			
-			// rotate by direction angle change
+			// rotate to face direction
 			
-			if ( rotateFacingAngleDelta !== 0 ) {
-				
-				rotateFacingAngleTarget = _MathHelper.degree_between_180( rotate.facingAngle + rotateFacingAngleDelta );
-				rotateFacingAngleDeltaShortest = _MathHelper.shortest_rotation_between_angles( rotate.facingAngle, rotateFacingAngleTarget );
-				rotateDelta.setFromAxisAngle( rotateAxis, rotateFacingAngleDeltaShortest );
-				
-				this.quaternion.multiplySelf( rotateDelta );
-				
-				// copy new direction angle
-				
-				rotate.facing.multiplySelf( rotateDelta );
-				rotateDelta.multiplyVector3( rotateFacingDirectionLast );
-				rotate.facingAngle = rotateFacingAngleTarget;
-				
-			}
+			this.face_local_direction( rotate.facingDirection, _MathHelper.clamp( rotate.lerpDelta * timeDeltaMod, 0, 1 ) );
 			
 		}
 		

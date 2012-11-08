@@ -192,6 +192,7 @@
 		this.utilVec32Update = new THREE.Vector3();
 		this.utilQ31Update = new THREE.Quaternion();
 		this.utilQ32Update = new THREE.Quaternion();
+		this.utilQ31Rotate = new THREE.Quaternion();
 		
 		// options
 		
@@ -281,7 +282,7 @@
 	function rotate_update () {
 		
 		var target = this._target,
-			targetRotateAxis;
+			targetRotateDeltaQ;
 		
 		this.rotationConstrained.copy( this.rotationBase );
 		
@@ -308,23 +309,28 @@
 				
 				// rotation axis
 				
-				if ( target.options && target.options.movement && target.options.movement.rotate ) {
+				if ( typeof target.turn_by === 'function' ) {
 					
-					targetRotateAxis = target.options.movement.rotate.axis;
-					
-				}
-				else if ( target.rigidBody ) {
-					
-					targetRotateAxis = target.rigidBody.axes.up;
+					target.turn_by( this.rotationRotatedDelta.y );
 					
 				}
 				else {
 					
-					targetRotateAxis = this.up;
+					if ( target.rigidBody ) {
+						
+						targetRotateAxis = target.rigidBody.axes.up;
+						
+					}
+					else {
+						
+						targetRotateAxis = this.up;
+						
+					}
+					
+					targetRotateDeltaQ = this.utilQ31Rotate.setFromAxisAngle( targetRotateAxis, this.rotationRotatedDelta.y );
+					target.quaternion.multiplySelf( targetRotateDeltaQ );
 					
 				}
-				
-				target.quaternion.multiplySelf( new THREE.Quaternion().setFromAxisAngle( targetRotateAxis, this.rotationRotatedDelta.y ) );
 				
 				// since we add the rotation delta y to the target, we only add the rotation delta x to the constrained / offset
 				
@@ -442,7 +448,7 @@
 				
 				// get distance to target position
 				
-				distance = _VectorHelper.distance_to( this.position, target.position );
+				distance = _VectorHelper.distance_between( this.position, target.position );
 				
 				if ( this.targetNew === true && distance - this.options.distanceThresholdMin <= this.distanceThresholdMax ) {
 					

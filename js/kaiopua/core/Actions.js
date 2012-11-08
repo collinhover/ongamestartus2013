@@ -9,7 +9,7 @@
 (function (main) {
     
     var shared = main.shared = main.shared || {},
-		assetPath = "js/kaiopua/characters/Actions.js",
+		assetPath = "js/kaiopua/core/Actions.js",
 		_Actions = {},
 		actionCount = 0,
 		actionOptions = {
@@ -105,37 +105,51 @@
     
     =====================================================*/
 	
-	function add ( names, parameters, clean ) {
+	function add ( actions ) {
 		
-		var i, l,
-			namesList = handle_names( names ),
+		var i, il,
+			j, jl,
+			parameters,
+			names,
+			namesList,
 			name,
 			nameActions,
 			action;
 		
-		// remove all previous actions at names
+		actions = main.to_array( actions );
 		
-		if ( clean === true ) {
+		for ( i = 0, il = actions.length; i < il; i++ ) {
 			
-			this.remove( namesList );
+			parameters = actions[ i ];
+			names = parameters.names;
+			namesList = handle_names( names );
+			
+			// remove all previous actions at names
+			
+			if ( parameters.clean === true ) {
+				
+				this.remove( namesList );
+				
+			}
+			
+			// for each name
+			
+			for ( j = 0, jl = namesList.length; j < jl; j++ ) {
+				
+				name = namesList[ j ];
+				nameActions = this.map[ name ] = this.map[ name ] || [];
+				
+				action = new Action( parameters );
+				
+				nameActions.push( action );
+				nameActions.sort( sort_priority );
+				
+				main.array_cautious_add( this.actionNames, name );
+				
+			}
 			
 		}
 		
-		// for each name
-		
-		for ( i = 0, l = namesList.length; i < l; i++ ) {
-			
-			name = namesList[ i ];
-			nameActions = this.map[ name ] = this.map[ name ] || [];
-			
-			action = new Action( parameters );
-			
-			nameActions.push( action );
-			nameActions.sort( sort_priority );
-			
-			main.array_cautious_add( this.actionNames, name );
-			
-		}
 	}
 	
 	function remove ( names ) {

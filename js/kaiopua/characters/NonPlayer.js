@@ -43,6 +43,7 @@
 		// properties
 		
 		_NonPlayer.options = {
+			interactive: true,
 			physics: {
 				movementOffsetPct: 0,
 				gravityOffsetPct: 0

@@ -102,26 +102,40 @@
 		
 		shared.player.respawn( shared.scene, shared.spawns.main );
 		
+		main.asset_require( { path: shared.pathToAssets + "speaker_hover_collin.js", type: 'model' }, function ( gSpeaker ) {
 		//for ( var i = 0; i < 100; i++ ) {
 			
 			var npc = new _NonPlayer.Instance( {
-				material: new THREE.MeshLambertMaterial(),
+				geometry: gSpeaker,
+				material: new THREE.MeshFaceMaterial(),
 				options: {
 					//dynamic: false,
 				},
 				physics: {
 					//dynamic: false,
 					bodyType: 'box'
-				}
+				},
+				actions: [
+					{
+						names: 'talk',
+						eventCallbacks: {
+							greeting: function () {
+								console.log( 'Hi, I am a Speaker!' );
+							},
+						}
+					}
+				]
 			} );
 			var loc = shared.spawns.main.clone();
-			loc.x += Math.random() * 2000 - 1000;
-			loc.z += Math.random() * 2000 - 1000;
+			//loc.x += Math.random() * 2000 - 1000;
+			//loc.z += Math.random() * 2000 - 1000;
 			npc.respawn( shared.scene, loc );
 			//npc.move_state_change( Math.round( Math.random() ) === 1 ? 'forward' : 'back' );
 			//npc.move_state_change( Math.round( Math.random() ) === 1 ? 'left' : 'right' );
 			
 		//}
+		
+		} );
 		
 		_ObjectHelper.revert_change( shared.cameraControls.options, true );
 		shared.cameraControls.target = shared.player;
