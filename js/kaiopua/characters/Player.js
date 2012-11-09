@@ -151,7 +151,7 @@
 		
 		parameters = parameters || {};
 		
-		parameters.name = 'Hero';
+		parameters.name = typeof parameters.name === 'string' && parameters.name.length > 0 ? parameters.name : 'Hero';
 		
 		// TODO: physics parameters should be handled by options
 		
@@ -204,115 +204,104 @@
 		
 		// wasd / arrows
 		
-		this.actions.add( {
-			names: 'w up_arrow',
-			eventCallbacks: {
-				down: function () {
-					me.move_state_change( 'forward' );
+		this.actions.add( [
+			{
+				names: 'w up_arrow',
+				eventCallbacks: {
+					down: function () {
+						me.move_state_change( 'forward' );
+					},
+					up: function () {
+						me.move_state_change( 'forward', true );
+					}
 				},
-				up: function () {
-					me.move_state_change( 'forward', true );
-				}
+				deactivateCallbacks: 'up'
 			},
-			deactivateCallbacks: 'up'
-		} );
-		
-		this.actions.add( {
-			names: 's down_arrow',
-			eventCallbacks: {
-				down: function () {
-					me.move_state_change( 'back' );
+			{
+				names: 's down_arrow',
+				eventCallbacks: {
+					down: function () {
+						me.move_state_change( 'back' );
+					},
+					up: function () {
+						me.move_state_change( 'back', true );
+					}
 				},
-				up: function () {
-					me.move_state_change( 'back', true );
-				}
+				deactivateCallbacks: 'up'
 			},
-			deactivateCallbacks: 'up'
-		} );
-		
-		this.actions.add( {
-			names: 'a left_arrow',
-			eventCallbacks: {
-				down: function () {
-					me.move_state_change( 'left' );
+			{
+				names: 'a left_arrow',
+				eventCallbacks: {
+					down: function () {
+						me.move_state_change( 'left' );
+					},
+					up: function () {
+						me.move_state_change( 'left', true );
+					}
 				},
-				up: function () {
-					me.move_state_change( 'left', true );
-				}
+				deactivateCallbacks: 'up'
 			},
-			deactivateCallbacks: 'up'
-		} );
-		
-		this.actions.add( {
-			names: 'd right_arrow',
-			eventCallbacks: {
-				down: function () {
-					me.move_state_change( 'right' );
+			{
+				names: 'd right_arrow',
+				eventCallbacks: {
+					down: function () {
+						me.move_state_change( 'right' );
+					},
+					up: function () {
+						me.move_state_change( 'right', true );
+					}
 				},
-				up: function () {
-					me.move_state_change( 'right', true );
-				}
+				deactivateCallbacks: 'up'
 			},
-			deactivateCallbacks: 'up'
-		} );
-		
-		// jump
-		
-		this.actions.add( {
-			names: 'space',
-			eventCallbacks: {
-				down: function () {
-					me.move_state_change( 'up' );
+			// jump
+			{
+				names: 'space',
+				eventCallbacks: {
+					down: function () {
+						me.move_state_change( 'up' );
+					},
+					up: function () {
+						me.move_state_change( 'up', true );
+					}
 				},
-				up: function () {
-					me.move_state_change( 'up', true );
+				deactivateCallbacks: 'up'
+			},
+			{
+				names: 'escape',
+				eventCallbacks: {
+					up: function () {
+						
+						// TODO: clear target?
+						
+					}
+				},
+			},
+			// selection
+			{
+				names: 'pointer',
+				eventCallbacks: {
+					mousemove: $.proxy( this.hover, this ),
+					tap: $.proxy( this.select, this ),
+					doubletap: $.proxy( this.interact, this ),
 				}
 			},
-			deactivateCallbacks: 'up'
-		} );
-		
-		// misc
-		
-		this.actions.add( {
-			names: 'escape',
-			eventCallbacks: {
-				up: function () {
-					
-					// TODO: clear target?
-					
+			{
+				names: 'pointer',
+				eventCallbacks: {
+					dragstart: $.proxy( shared.cameraControls.rotate_start, shared.cameraControls ),
+					drag: $.proxy( shared.cameraControls.rotate, shared.cameraControls  ),
+					dragend: $.proxy( shared.cameraControls.rotate_stop, shared.cameraControls  ),
+					wheel: $.proxy( shared.cameraControls.zoom, shared.cameraControls  )
+				},
+				activeCheck: function () {
+					return shared.cameraControls.rotating;
+				},
+				options: {
+					priority: 1,
+					silencing: true
 				}
-			}
-		} );
-		
-		// selection
-		
-		this.actions.add( {
-			names: 'pointer',
-			eventCallbacks: {
-				mousemove: $.proxy( this.hover, this ),
-				tap: $.proxy( this.select, this ),
-				doubletap: $.proxy( this.interact, this ),
-			}
-		} );
-		
-		// camera rotating
-		
-		this.actions.add( {
-			names: 'pointer',
-			eventCallbacks: {
-				dragstart: $.proxy( shared.cameraControls.rotate_start, shared.cameraControls ),
-				drag: $.proxy( shared.cameraControls.rotate, shared.cameraControls  ),
-				dragend: $.proxy( shared.cameraControls.rotate_stop, shared.cameraControls  ),
-				wheel: $.proxy( shared.cameraControls.zoom, shared.cameraControls  )
-			},
-			activeCheck: function () {
-				return shared.cameraControls.rotating;
-			},
-			options: {
-				priority: 1,
-				silencing: true
-			}
-		} );
+			} 
+		] );
 		
 	}
 	
@@ -448,7 +437,7 @@
 	}
 	
 	function interact () {
-		console.log( 'player interact', this.target );
+		
 		if ( this.target instanceof _NonPlayer.Instance ) {
 			
 			// look at each other
@@ -456,7 +445,8 @@
 			this.look_at( this.target );
 			this.target.look_at( this );
 			
-			this.target.actions.execute( 'talk', 'greeting' );
+			console.log( 'Hi ', this.target.name );
+			this.target.actions.execute( 'communicate', 'greeting' );
 			
 		}
 		

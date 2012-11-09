@@ -12,7 +12,6 @@
 		assetPath = "js/kaiopua/sections/Launcher.js",
 		_Launcher = {},
 		_Model,
-		_World,
 		_Skybox,
 		_ObjectHelper,
 		_ObstacleSlippery,
@@ -28,7 +27,6 @@
 		data: _Launcher,
 		requirements: [
 			"js/kaiopua/core/Model.js",
-			"js/kaiopua/env/World.js",
 			"js/kaiopua/env/Skybox.js",
 			"js/kaiopua/utils/ObjectHelper.js",
 			"js/kaiopua/physics/ObstacleSlippery.js",
@@ -46,13 +44,12 @@
     
     =====================================================*/
 	
-	function init_internal ( m, w, sb, oh, obs, obd, gAsteroid ) {
+	function init_internal ( m, sb, oh, obs, obd, gAsteroid ) {
 		console.log('internal Launcher', _Launcher);
 		
 		// assets
 		
 		_Model = m;
-		_World = w;
 		_Skybox = sb;
 		_ObjectHelper = oh;
 		_ObstacleSlippery = obs;
@@ -69,7 +66,7 @@
 		
 		shared.skybox = new _Skybox.Instance( shared.pathToAssets + "skybox", { repeat: 2, oneForAll: true } );
 		
-		shared.world = new _World.Instance( {
+		shared.world = new _Model.Instance( {
 			geometry: gAsteroid,
 			material: new THREE.MeshFaceMaterial(),
 			physics:  {
@@ -77,6 +74,7 @@
 				gravitySource: true
 			}
 		} );
+		shared.world.parts = {};
         
 		main.asset_require( { path: shared.pathToAssets + "asteroid_colliders.js", type: 'model' }, function ( geometry ) {
 			var model = new _Model.Instance( {
@@ -203,8 +201,8 @@
     function show () {
 		
 		shared.sceneBG.add( shared.skybox );
-		console.log( 'adding world' );
-		shared.world.show();
+		
+		shared.scene.add( shared.world );
 		
 		_ObjectHelper.revert_change( shared.cameraControls.options, true );
 		shared.cameraControls.target = shared.world;
@@ -223,7 +221,7 @@
     
     function remove () {
 		
-		shared.world.hide();
+		shared.scene.remove( shared.world );
 		
 		shared.sceneBG.remove( shared.skybox );
         

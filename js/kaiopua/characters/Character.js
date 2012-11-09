@@ -353,6 +353,7 @@
 		state.health = stats.healthMax;
 		
 		this.morphs.clear_all();
+		this.actions.clear_active();
 		
 	}
 	
@@ -376,6 +377,8 @@
 		else {
 			
 			shared.signals.onGameUpdated.remove( this.update, this );
+			
+			this.reset();
 			
 		}
 		

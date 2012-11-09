@@ -263,6 +263,7 @@ var KAIOPUA = (function (main) {
 		main.ensure_not_array = ensure_not_array;
 		main.array_cautious_add = array_cautious_add;
 		main.array_cautious_remove = array_cautious_remove;
+		main.array_random_value = array_random_value;
 		main.index_of_value = index_of_value;
 		main.last_index_of_value = last_index_of_value;
 		main.indices_of_value = indices_of_value;
@@ -1085,6 +1086,12 @@ var KAIOPUA = (function (main) {
 		}
 		
 		return removed;
+		
+	}
+	
+	function array_random_value ( array ) {
+		
+		return array[ Math.round( Math.random() * ( array.length - 1 ) ) ];
 		
 	}
 	

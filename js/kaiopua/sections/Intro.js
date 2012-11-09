@@ -13,7 +13,7 @@
 		_Intro = {},
 		_Model,
 		_Player,
-		_NonPlayer,
+		_Speaker,
 		_ObjectHelper;
     
     /*===================================================
@@ -27,7 +27,7 @@
 		requirements: [
 			"js/kaiopua/core/Model.js",
 			"js/kaiopua/characters/Player.js",
-			"js/kaiopua/characters/NonPlayer.js",
+			"js/kaiopua/characters/Speaker.js",
 			"js/kaiopua/utils/ObjectHelper.js",
             { path: shared.pathToAssets + "spawn_main.js", type: 'model' },
             { path: shared.pathToAssets + "hero.js", type: 'model' }
@@ -42,14 +42,14 @@
     
     =====================================================*/
 	
-	function init_internal ( m, pl,  npl, oh, gSpawnMain, gHero ) {
+	function init_internal ( m, pl,  sp, oh, gSpawnMain, gHero ) {
 		console.log('internal intro', _Intro);
 		
 		// assets
 		
 		_Model = m;
 		_Player = pl;
-		_NonPlayer = npl;
+		_Speaker = sp;
 		_ObjectHelper = oh;
 		
 		// property
@@ -98,40 +98,25 @@
 		
 		shared.sceneBG.add( shared.skybox );
 		
-		shared.world.show();
+		shared.scene.add( shared.world );
 		
 		shared.player.respawn( shared.scene, shared.spawns.main );
 		
 		main.asset_require( { path: shared.pathToAssets + "speaker_hover_collin.js", type: 'model' }, function ( gSpeaker ) {
 		//for ( var i = 0; i < 100; i++ ) {
 			
-			var npc = new _NonPlayer.Instance( {
+			var speaker = new _Speaker.Instance( {
+				name: "Collin Hover",
 				geometry: gSpeaker,
 				material: new THREE.MeshFaceMaterial(),
-				options: {
-					//dynamic: false,
-				},
-				physics: {
-					//dynamic: false,
-					bodyType: 'box'
-				},
-				actions: [
-					{
-						names: 'talk',
-						eventCallbacks: {
-							greeting: function () {
-								console.log( 'Hi, I am a Speaker!' );
-							},
-						}
-					}
-				]
+				options: {}
 			} );
 			var loc = shared.spawns.main.clone();
 			//loc.x += Math.random() * 2000 - 1000;
 			//loc.z += Math.random() * 2000 - 1000;
-			npc.respawn( shared.scene, loc );
-			//npc.move_state_change( Math.round( Math.random() ) === 1 ? 'forward' : 'back' );
-			//npc.move_state_change( Math.round( Math.random() ) === 1 ? 'left' : 'right' );
+			speaker.respawn( shared.scene, loc );
+			//speaker.move_state_change( Math.round( Math.random() ) === 1 ? 'forward' : 'back' );
+			//speaker.move_state_change( Math.round( Math.random() ) === 1 ? 'left' : 'right' );
 			
 		//}
 		
@@ -156,7 +141,7 @@
 		
 		shared.scene.remove( shared.player );
 		
-		shared.world.hide();
+		shared.scene.remove( shared.world );
 		
 		shared.sceneBG.remove( shared.skybox );
         
