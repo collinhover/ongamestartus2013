@@ -13,6 +13,7 @@
         _Player = {},
 		_Character,
 		_NonPlayer,
+		_Tooltip,
 		_MathHelper,
 		_KeyHelper,
 		_ObjectHelper,
@@ -29,6 +30,7 @@
 		requirements: [
 			"js/kaiopua/characters/Character.js",
 			"js/kaiopua/characters/NonPlayer.js",
+			"js/kaiopua/ui/Tooltip.js",
 			"js/kaiopua/utils/MathHelper.js",
 			"js/kaiopua/utils/KeyHelper.js",
 			"js/kaiopua/utils/ObjectHelper.js",
@@ -44,13 +46,14 @@
     
     =====================================================*/
 	
-	function init_internal ( c, np, mh, kh, oh, rh ) {
+	function init_internal ( c, np, tt, mh, kh, oh, rh ) {
 		console.log('internal player');
 		
 		// assets
 		
 		_Character = c;
 		_NonPlayer = np;
+		_Tooltip = tt;
 		_MathHelper = mh;
 		_KeyHelper = kh;
 		_ObjectHelper = oh;
@@ -94,6 +97,8 @@
 		
 		_Player.Instance.prototype.set_keybindings = set_keybindings;
 		_Player.Instance.prototype.trigger_action = trigger_action;
+		
+		_Player.Instance.prototype.pause = pause;
 		
 		Object.defineProperty( _Player.Instance.prototype, 'controllable', { 
 			get : function () { return this.state.controllable; },
@@ -271,7 +276,7 @@
 				eventCallbacks: {
 					up: function () {
 						
-						// TODO: clear target?
+						me.select();
 						
 					}
 				},
@@ -283,7 +288,11 @@
 					mousemove: $.proxy( this.hover, this ),
 					tap: $.proxy( this.select, this ),
 					doubletap: $.proxy( this.interact, this ),
-				}
+				},
+				activeCheck: function () {
+					return me.targetHover instanceof THREE.Object3D || me.target instanceof THREE.Object3D;
+				},
+				deactivateCallbacks: [ 'mousemove', 'tap' ]
 			},
 			{
 				names: 'pointer',
@@ -303,6 +312,10 @@
 			} 
 		] );
 		
+		// tooltip
+		
+		this.tooltip = new _Tooltip.Instance( parameters.tooltip );
+		
 	}
 	
 	/*===================================================
@@ -317,11 +330,13 @@
 		
 		if ( this._scene instanceof THREE.Scene ) {
 			
+			shared.signals.onGamePaused.add( this.pause, this );
 			this.controllable = true;
 			
 		}
 		else {
 			
+			shared.signals.onGamePaused.remove( this.pause, this );
 			this.controllable = false;
 			this.target = undefined;
 			
@@ -367,72 +382,105 @@
 	
 	function hover ( parameters ) {
 		
-		parameters = parameters || {};
+		var clean = true,
+			e,
+			pointer,
+			target,
+			targetLast = this.targetHover;
 		
-		var e = parameters.event,
+		if ( typeof parameters !== 'undefined' ) {
+			
+			e = parameters.event;
+			pointer = main.get_pointer( e );
+			
 			target = _RayHelper.raycast( {
-				pointer: main.get_pointer( e ),
+				pointer: pointer,
 				camera: shared.camera,
 				objects: shared.scene.dynamics,
 				octrees: shared.scene.octree,
 				objectOnly: true
 			} );
+				
+			// cursor change on mouse over interactive
 			
-		// cursor change on mouse over interactive
-		
-		if ( target instanceof THREE.Object3D && target.interactive === true ) {
-			
-			shared.domElements.$game.css( 'cursor', 'pointer' );
-			
-			this.targetHover = target;
+			if ( target instanceof THREE.Object3D && target.interactive === true ) {
+				
+				clean = false;
+				
+				this.targetHover = target;
+				
+				if ( this.targetHover !== targetLast ) {
+					
+					shared.domElements.$game.css( 'cursor', 'pointer' );
+					
+					this.tooltip.content( this.targetHover.name ).show( pointer );
+					
+				}
+				
+			}
 			
 		}
-		else {
-			
-			shared.domElements.$game.css( 'cursor', 'auto' );
+		
+		if ( clean === true ) {
 			
 			this.targetHover = undefined;
+			
+			if ( this.targetHover !== targetLast ) {
+				
+				shared.domElements.$game.css( 'cursor', 'auto' );
+				
+				this.tooltip.hide();
+				
+			}
 			
 		}
 		
 	}
 	
 	function select ( parameters ) {
-	
+		
 		var target,
 			e;
 		
-		parameters = parameters || {};
-		
 		// find target
 		
-		if ( parameters instanceof THREE.Object3D ) {
+		if ( typeof parameters !== 'undefined' ) {
 			
-			target = parameters;
-			
-		}
-		else if ( parameters.target instanceof THREE.Object3D ) {
-			
-			target = parameters.target;
-			
-		}
-		else {
-			
-			e = parameters.event;
-			
-			target = _RayHelper.raycast( {
-				pointer: main.get_pointer( e ),
-				camera: shared.camera,
-				objects: shared.scene.dynamics,
-				octrees: shared.scene.octree,
-				objectOnly: true
-			} );
+			if ( parameters instanceof THREE.Object3D ) {
+				
+				target = parameters;
+				
+			}
+			else if ( parameters.target instanceof THREE.Object3D ) {
+				
+				target = parameters.target;
+				
+			}
+			else {
+				
+				e = parameters.event;
+				
+				target = _RayHelper.raycast( {
+					pointer: main.get_pointer( e ),
+					camera: shared.camera,
+					objects: shared.scene.dynamics,
+					octrees: shared.scene.octree,
+					objectOnly: true
+				} );
+				
+			}
 			
 		}
 		
 		// update target
 		
 		_Player.Instance.prototype.supr.select.call( this, target );
+		
+		if ( this.target === this.targetHover  ) {
+			
+			this.tooltip.hide();
+			
+		}
 		
 	}
 	
@@ -485,15 +533,13 @@
 	
 	/*===================================================
     
-    update
+    pause
     
     =====================================================*/
 	
-	function update ( timeDelta, timeDeltaMod ) {
+	function pause () {
 		
-		_Player.Instance.prototype.supr.update.apply( this, arguments );
-		
-		// TODO: update selected?
+		this.actions.clear_active();
 		
 	}
 	

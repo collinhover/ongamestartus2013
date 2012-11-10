@@ -270,7 +270,8 @@
 		
 		var eventName,
 			deactivateCallbacks,
-			deactivateCallback;
+			deactivateCallback,
+			index;
 		
 		// handle parameters
 		
@@ -318,9 +319,24 @@
 						
 					}
 					// unique deactivate
-					else if ( deactivateCallbacks.hasOwnProperty( eventName ) ) {
+					else {
 						
-						deactivateCallback = deactivateCallbacks[ eventName ];
+						if ( deactivateCallbacks.hasOwnProperty( eventName ) ) {
+							
+							deactivateCallback = deactivateCallbacks[ eventName ];
+							
+						}
+						else if ( main.is_array( deactivateCallbacks ) ) {
+							
+							index = main.index_of_value( deactivateCallbacks, eventName );
+							
+							if ( index !== -1 ) {
+								
+								deactivateCallback = deactivateCallbacks[ index ];
+								
+							}
+							
+						}
 						
 						// unique deactivate is event callback
 						if ( typeof deactivateCallback === 'string' && this.eventCallbacks.hasOwnProperty( deactivateCallback ) ) {
@@ -328,7 +344,7 @@
 							this.deactivateCallbacks[ eventName ] = this.eventCallbacks[ deactivateCallback ];
 							
 						}
-						else {
+						else if ( typeof deactivateCallback === 'function' ) {
 							
 							this.deactivateCallbacks[ eventName ] = deactivateCallback;
 						

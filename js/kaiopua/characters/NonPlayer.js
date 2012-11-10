@@ -76,6 +76,8 @@
 		
 		parameters = parameters || {};
 		
+		parameters.name = typeof parameters.name === 'string' && parameters.name.length > 0 ? parameters.name : 'NPC';
+		
 		// TODO: physics parameters should be handled by options
 		
 		parameters.options = $.extend( true, {}, _NonPlayer.options, parameters.options );

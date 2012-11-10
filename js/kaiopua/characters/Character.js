@@ -275,6 +275,7 @@
 		
 		parameters = parameters || {};
 		
+		parameters.name = typeof parameters.name === 'string' && parameters.name.length > 0 ? parameters.name : 'Character';
 		parameters.geometry = parameters.geometry || new THREE.CubeGeometry( 50, 100, 50 );
 		parameters.center = true;
 		
