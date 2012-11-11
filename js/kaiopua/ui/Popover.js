@@ -75,7 +75,7 @@
 		this.offset = { top: 0, left: 0 };
 		
 		this.$element = $( this.options.template );
-		this.$inner = this.$element.find( parameters.inner || parameters.$inner );
+		this.$inner = this.$element.find( this.options.inner );
 		if ( this.$inner.length === 0 ) {
 			
 			this.$inner = this.$element;

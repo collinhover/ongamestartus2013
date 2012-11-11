@@ -1,10 +1,10 @@
 /* player
 -------------------------------------------------------------------------------*/
 
-@tooltipBorderRadius: 4px;
-
 .tooltip {
 	.ignore-pointer;
+	font-size: @baseFontSize;
+	font-family: @sansFontFamily;
 	
 	&.topleft {
 		margin-top: -3px;
@@ -50,4 +50,204 @@
 			border-bottom-color: @tooltipArrowColor;
 		}
 	}
+}
+
+.textbubble {
+	font-family: @sansFontFamily;
+	background: @textbubbleColor;
+	.round( @textbubbleSize );
+	.box-shadow( 0 0 0px 6px rgba(0,0,0,0.1) );
+	border: solid 1px transparent; // margin collapse fix
+	
+	.textbubble-inner {
+		width: 100% - @textbubblePadding * 2;
+		height: 100% - @textbubblePadding * 2;
+		margin: @textbubblePadding auto;
+		text-align: center;
+		overflow: auto;
+		
+		.textbubble-content {
+			display: table;
+			width: 100%;
+			height: 100%;
+			
+			.textbubble-content-inner {
+				display: table-cell;
+				vertical-align: middle;
+				width: 100%;
+				margin: 0;
+				font-size: 22px;
+				line-height: 140%;
+			}
+			
+		}
+		
+	}
+	
+	.textbubble-ring {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		padding: @textbubbleRingPadding;
+		.box-sizing( border-box );
+		
+		.textbubble-ring-inner {
+			width: 100%;
+			height: 100%;
+			border: solid 4px @textbubbleRingColor;
+			.border-radius( 50% );
+			padding: @textbubbleRingPadding;
+			.box-sizing( border-box );
+		}
+		
+	}
+	
+	.textbubble-name {
+		position: absolute;
+		bottom: 5%;
+		font-size: 16px;
+		line-height: 100%;
+		padding: 5px;
+		width: 100%;
+		box-sizing: border-box;
+		font-weight: bold;
+		color: rgba(0, 0, 0, 0.2);
+		text-align: center;
+	}
+	
+	.textbubble-arrow {
+		position: absolute;
+		//z-index: -1;
+		width: 0;
+		height: 0;
+		border-color: @textbubbleColor;
+		border-style: solid;
+	}
+	
+	&.top {
+		margin-bottom: @textbubbleArrowHeight - 1;
+		
+		.textbubble-ring-inner {
+			border-style: dotted dotted solid;
+		}
+		
+		.textbubble-arrow {
+			bottom: -@textbubbleArrowHeight + @textbubbleRingPadding;
+			left: 50%;
+			margin-left: -@textbubbleArrowWidth;
+			border-width: @textbubbleArrowHeight @textbubbleArrowWidth 0;
+			border-bottom-color: transparent;
+			border-left-color: transparent;
+			border-right-color: transparent;
+		}
+	}
+	&.bottom {
+		margin-top: @textbubbleArrowHeight - 1;
+		
+		.textbubble-ring-inner {
+			border-style: solid dotted dotted;
+		}
+		
+		.textbubble-arrow {
+			top: -@textbubbleArrowHeight + @textbubbleRingPadding;
+			left: 50%;
+			margin-left: -@textbubbleArrowWidth;
+			border-width: 0 @textbubbleArrowWidth @textbubbleArrowHeight;
+			border-top-color: transparent;
+			border-left-color: transparent;
+			border-right-color: transparent;
+		}
+	}
+	&.left {
+		margin-right: @textbubbleArrowHeight - 1;
+		
+		.textbubble-ring-inner {
+			border-style: solid dotted solid solid;
+		}
+		
+		.textbubble-arrow {
+			top: 50%;
+			right: -@textbubbleArrowHeight + @textbubbleRingPadding;
+			margin-top: -@textbubbleArrowWidth;
+			border-width: @textbubbleArrowWidth 0 @textbubbleArrowWidth @textbubbleArrowHeight;
+			border-top-color: transparent;
+			border-bottom-color: transparent;
+			border-right-color: transparent;
+		}
+	}
+	&.right {
+		margin-left: @textbubbleArrowHeight - 1;
+		
+		.textbubble-ring-inner {
+			border-style: solid solid solid dotted;
+		}
+		
+		.textbubble-arrow {
+			top: 50%;
+			left: -@textbubbleArrowHeight + @textbubbleRingPadding;
+			margin-top: -@textbubbleArrowWidth;
+			border-width: @textbubbleArrowWidth @textbubbleArrowHeight @textbubbleArrowWidth 0;
+			border-top-color: transparent;
+			border-bottom-color: transparent;
+			border-left-color: transparent;
+		}
+	}
+	
+	&.topleft {
+		
+		.textbubble-ring-inner {
+			border-style: solid dotted dotted solid;
+		}
+		
+		.textbubble-arrow {
+			bottom: @textbubbleArrowDiagonalSize;
+			right: @textbubbleArrowDiagonalSize;
+			border-width: @textbubbleArrowWidth @textbubbleArrowDiagonalSize @textbubbleArrowDiagonalSize @textbubbleArrowWidth;
+			border-left-color: transparent;
+			border-top-color: transparent;
+		}
+	}
+	&.topright {
+		
+		.textbubble-ring-inner {
+			border-style: solid solid dotted dotted;
+		}
+		
+		.textbubble-arrow {
+			bottom: @textbubbleArrowDiagonalSize;
+			left: @textbubbleArrowDiagonalSize;
+			border-width: @textbubbleArrowWidth @textbubbleArrowDiagonalSize @textbubbleArrowDiagonalSize @textbubbleArrowWidth;
+			border-right-color: transparent;
+			border-top-color: transparent;
+		}
+	}
+	&.bottomleft {
+		
+		.textbubble-ring-inner {
+			border-style: dotted dotted solid solid;
+		}
+		
+		.textbubble-arrow {
+			top: @textbubbleArrowDiagonalSize;
+			right: @textbubbleArrowDiagonalSize;
+			border-width: @textbubbleArrowWidth @textbubbleArrowDiagonalSize @textbubbleArrowDiagonalSize @textbubbleArrowWidth;
+			border-left-color: transparent;
+			border-bottom-color: transparent;
+		}
+	}
+	&.bottomright {
+		
+		.textbubble-ring-inner {
+			border-style: dotted solid solid dotted;
+		}
+		
+		.textbubble-arrow {
+			top: @textbubbleArrowDiagonalSize;
+			left: @textbubbleArrowDiagonalSize;
+			border-width: @textbubbleArrowWidth @textbubbleArrowDiagonalSize @textbubbleArrowDiagonalSize @textbubbleArrowWidth;
+			border-right-color: transparent;
+			border-bottom-color: transparent;
+		}
+	}
+	
 }

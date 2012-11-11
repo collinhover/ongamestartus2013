@@ -1,7 +1,7 @@
 /*
  *
- * Tooltip.js
- * General use tooltip for hovering or selecting.
+ * Textbubble.js
+ * General use Textbubble for npc interaction.
  *
  * @author Collin Hover / http://collinhover.com/
  *
@@ -9,8 +9,8 @@
 (function (main) {
     
     var shared = main.shared = main.shared || {},
-		assetPath = "js/kaiopua/ui/Tooltip.js",
-		_Tooltip = {},
+		assetPath = "js/kaiopua/ui/Textbubble.js",
+		_Textbubble = {},
 		_Popover;
 	
 	/*===================================================
@@ -20,7 +20,7 @@
     =====================================================*/
 	
 	main.asset_register( assetPath, { 
-		data: _Tooltip,
+		data: _Textbubble,
 		requirements: [
 			"js/kaiopua/ui/Popover.js"
 		],
@@ -35,29 +35,30 @@
     =====================================================*/
 	
 	function init_internal ( po ) {
-		console.log('internal Tooltip', _Tooltip);
+		console.log('internal Textbubble', _Textbubble);
 		_Popover = po;
 		
 		// properties
 		
-		_Tooltip.options = {
-			template: '<div class="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>',
-			inner: '.tooltip-inner'
+		_Textbubble.options = {
+			placement: 'topleft',
+			template: '<div class="textbubble bottom"><div class="textbubble-arrow"></div><div class="textbubble-ring"><div class="textbubble-ring-inner"></div></div><div class="textbubble-inner"><div class="textbubble-content"><div class="textbubble-content-inner">Hello world, it looks like a good day!</div></div></div></div>',
+			inner: '.textbubble-content-inner'
 		};
 		
 		// instance
 		
-		_Tooltip.Instance = Tooltip;
-		_Tooltip.Instance.prototype = new _Popover.Instance();
-		_Tooltip.Instance.prototype.constructor = _Tooltip.Instance;
-		_Tooltip.Instance.prototype.supr = _Popover.Instance.prototype;
+		_Textbubble.Instance = Textbubble;
+		_Textbubble.Instance.prototype = new _Popover.Instance();
+		_Textbubble.Instance.prototype.constructor = _Textbubble.Instance;
+		_Textbubble.Instance.prototype.supr = _Popover.Instance.prototype;
 		
-		_Tooltip.Instance.prototype.show = show;
-		_Tooltip.Instance.prototype.hide = hide;
+		_Textbubble.Instance.prototype.show = show;
+		_Textbubble.Instance.prototype.hide = hide;
 		
-		_Tooltip.Instance.prototype.update_placement = update_placement;
+		_Textbubble.Instance.prototype.update_placement = update_placement;
 		
-		_Tooltip.Instance.prototype.follow = follow;
+		_Textbubble.Instance.prototype.follow = follow;
 		
 	}
 	
@@ -67,19 +68,19 @@
     
     =====================================================*/
 	
-	function Tooltip ( parameters ) {
+	function Textbubble ( parameters ) {
 		
 		// handle parameters
 		
 		parameters = parameters || {};
 		
-		parameters.options = $.extend( true, {}, _Tooltip.options, parameters.options );
+		parameters.options = $.extend( true, {}, _Textbubble.options, parameters.options );
 		
 		// prototype constructor
 		
 		_Popover.Instance.call( this, parameters );
 		
-		this.$arrow = $( parameters.arrow || parameters.$arrow || this.$element.find( '.tooltip-arrow' ) );
+		this.$arrow = $( parameters.arrow || parameters.$arrow || this.$element.find( '.textbubble-arrow' ) );
 		
 	}
 	
@@ -91,7 +92,7 @@
 	
 	function show ( pointer ) {
 		
-		_Tooltip.Instance.prototype.supr.show.apply( this, arguments );
+		_Textbubble.Instance.prototype.supr.show.apply( this, arguments );
 		
 		this.pointer = pointer;
 		
@@ -105,7 +106,7 @@
 		shared.signals.onGamePointerMoved.remove( this.follow, this );
 		this.pointer = undefined;
 		
-		return _Tooltip.Instance.prototype.supr.hide.apply( this, arguments );
+		return _Textbubble.Instance.prototype.supr.hide.apply( this, arguments );
 		
 	}
 	
@@ -117,7 +118,7 @@
 	
 	function update_placement ( placement ) {
 		
-		_Tooltip.Instance.prototype.supr.update_placement.apply( this, arguments );
+		_Textbubble.Instance.prototype.supr.update_placement.apply( this, arguments );
 		
 		if ( typeof placement === 'string' ) {
 			
