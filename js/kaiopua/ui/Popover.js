@@ -37,7 +37,8 @@
 		
 		_Popover.options = {
 			placement: 'top',
-			template: '<div></div>'
+			template: '<div></div>',
+			animate: false
 		};
 		
 		// instance
@@ -45,10 +46,12 @@
 		_Popover.Instance = Popover;
 		_Popover.Instance.prototype.constructor = _Popover.Instance;
 		
+		_Popover.Instance.prototype.reset = reset;
 		_Popover.Instance.prototype.content = content;
 		
 		_Popover.Instance.prototype.show = show;
 		_Popover.Instance.prototype.hide = hide;
+		_Popover.Instance.prototype.remove = remove;
 		
 		_Popover.Instance.prototype.reposition = reposition;
 		_Popover.Instance.prototype.update_placement = update_placement;
@@ -70,10 +73,6 @@
 		
 		this.options = $.extend( true, {}, _Popover.options, parameters.options );
 		
-		this.position = { top: 0, left: 0 };
-		this.positionBase = { top: 0, left: 0 };
-		this.offset = { top: 0, left: 0 };
-		
 		this.$element = $( this.options.template );
 		this.$inner = this.$element.find( this.options.inner );
 		if ( this.$inner.length === 0 ) {
@@ -81,9 +80,19 @@
 			this.$inner = this.$element;
 			
 		}
-		this.$container = $( parameters.container || parameters.$container || shared.domElements.$uiInGame || shared.domElements.$game );
+		this.$container = $( parameters.container || parameters.$container || shared.domElements.$uiOverGame || shared.domElements.$uiInGame || shared.domElements.$game );
 		
 		this.content( parameters.content );
+		
+		this.reset();
+		
+	}
+	
+	function reset () {
+		
+		this.position = { top: 0, left: 0 };
+		this.positionBase = { top: 0, left: 0 };
+		this.offset = { top: 0, left: 0 };
 		
 	}
 	
@@ -126,13 +135,47 @@
 			.appendTo( this.$container )
 			.addClass('in');
 		
+		if ( this.options.animate === true ) {
+			
+			main.dom_fade( {
+				element: this.$element,
+				duration: this.options.animateDuration,
+				opacity: 1,
+				initHidden: true
+			} );
+			
+		}
+			
 		return this;
 		
 	}
 	
 	function hide () {
 		
-		this.$element.remove();
+		if ( this.options.animate === true ) {
+			
+			main.dom_fade( {
+				element: this.$element,
+				duration: this.options.animateDuration,
+				callback: $.proxy( this.remove, this )
+			} );
+			
+		}
+		else {
+			
+			this.remove();
+			
+		}
+		
+		return this;
+		
+	}
+	
+	function remove () {
+		
+		this.$element.removeClass('in').remove();
+		
+		this.reset();
 		
 		return this;
 		
@@ -155,35 +198,35 @@
 			
 			// left
 			
-			if ( main.is_number( position.left ) ) {
-				
-				if ( this.positionBase.left !== position.left ) positionChanged = true;
-				
-				this.positionBase.left = position.left;
-				
-			}
-			else if ( main.is_number( position.x ) ) {
+			if ( main.is_number( position.x ) ) {
 				
 				if ( this.positionBase.left !== position.x ) positionChanged = true;
 				
 				this.positionBase.left = position.x;
 				
 			}
+			else if ( main.is_number( position.left ) ) {
+				
+				if ( this.positionBase.left !== position.left ) positionChanged = true;
+				
+				this.positionBase.left = position.left;
+				
+			}
 			
 			// top
 			
-			if ( main.is_number( position.top ) ) {
-				
-				if ( this.positionBase.top !== position.top ) positionChanged = true;
-				
-				this.positionBase.top = position.top;
-				
-			}
-			else if ( main.is_number( position.y ) ) {
+			if ( main.is_number( position.y ) ) {
 				
 				if ( this.positionBase.top !== position.y ) positionChanged = true;
 				
 				this.positionBase.top = position.y;
+				
+			}
+			else if ( main.is_number( position.top ) ) {
+				
+				if ( this.positionBase.top !== position.top ) positionChanged = true;
+				
+				this.positionBase.top = position.top;
 				
 			}
 			
@@ -211,6 +254,12 @@
 				else if ( this.position.top + this.elementHeight > shared.screenViewableHeight ) {
 					
 					placementBounded += 'top';
+					
+				}
+				
+				if ( this.placementCurrent !== placementBounded && placementBounded.length > 0 ) {
+					
+					this.update_placement( placementBounded ).update_position();
 					
 				}
 				
@@ -284,8 +333,8 @@
 				
 				this.placementCurrent = placement;
 				
-				this.elementWidth = this.$element.outerWidth();
-				this.elementHeight = this.$element.outerHeight();
+				this.elementWidth = this.$element.outerWidth( true );
+				this.elementHeight = this.$element.outerHeight( true );
 				
 			}
 			

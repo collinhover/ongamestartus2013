@@ -12,9 +12,9 @@
 		assetPath = "js/kaiopua/characters/Player.js",
         _Player = {},
 		_Character,
-		_NonPlayer,
 		_Tooltip,
 		_MathHelper,
+		_VectorHelper,
 		_KeyHelper,
 		_ObjectHelper,
 		_RayHelper;
@@ -29,9 +29,9 @@
 		data: _Player,
 		requirements: [
 			"js/kaiopua/characters/Character.js",
-			"js/kaiopua/characters/NonPlayer.js",
 			"js/kaiopua/ui/Tooltip.js",
 			"js/kaiopua/utils/MathHelper.js",
+			"js/kaiopua/utils/VectorHelper.js",
 			"js/kaiopua/utils/KeyHelper.js",
 			"js/kaiopua/utils/ObjectHelper.js",
 			"js/kaiopua/utils/RayHelper.js"
@@ -46,15 +46,15 @@
     
     =====================================================*/
 	
-	function init_internal ( c, np, tt, mh, kh, oh, rh ) {
+	function init_internal ( c, tt, mh, vh, kh, oh, rh ) {
 		console.log('internal player');
 		
 		// assets
 		
 		_Character = c;
-		_NonPlayer = np;
 		_Tooltip = tt;
 		_MathHelper = mh;
+		_VectorHelper = vh;
 		_KeyHelper = kh;
 		_ObjectHelper = oh;
 		_RayHelper = rh;
@@ -62,6 +62,9 @@
 		// properties
 		
 		_Player.options = {
+			interactions: {
+				distance: 500
+			},
 			stats: {
 				respawnOnDeath: true
 			},
@@ -281,23 +284,39 @@
 					}
 				},
 			},
+			// hovering
+			{
+				names: 'pointer',
+				eventCallbacks: {
+					mousemove: $.proxy( this.hover, this )
+				},
+				activeCheck: function () {
+					return me.targetHover instanceof THREE.Object3D;
+				},
+				deactivateCallbacks: 'mousemove'
+			},
 			// selection
 			{
 				names: 'pointer',
 				eventCallbacks: {
-					mousemove: $.proxy( this.hover, this ),
 					tap: $.proxy( this.select, this ),
 					doubletap: $.proxy( this.interact, this ),
 				},
 				activeCheck: function () {
-					return me.targetHover instanceof THREE.Object3D || me.target instanceof THREE.Object3D;
+					return me.target instanceof THREE.Object3D;
 				},
-				deactivateCallbacks: [ 'mousemove', 'tap' ]
+				deactivateCallbacks: 'tap'
 			},
 			{
 				names: 'pointer',
 				eventCallbacks: {
-					dragstart: $.proxy( shared.cameraControls.rotate_start, shared.cameraControls ),
+					dragstart: $.proxy( function ( ) {
+						
+						this.hover();
+						
+						shared.cameraControls.rotate_start.apply( shared.cameraControls, arguments );
+						
+					}, this ),
 					drag: $.proxy( shared.cameraControls.rotate, shared.cameraControls  ),
 					dragend: $.proxy( shared.cameraControls.rotate_stop, shared.cameraControls  ),
 					wheel: $.proxy( shared.cameraControls.zoom, shared.cameraControls  )
@@ -331,12 +350,14 @@
 		if ( this._scene instanceof THREE.Scene ) {
 			
 			shared.signals.onGamePaused.add( this.pause, this );
+			shared.signals.onGamePointerLeft.add( this.pause, this );
 			this.controllable = true;
 			
 		}
 		else {
 			
 			shared.signals.onGamePaused.remove( this.pause, this );
+			shared.signals.onGamePointerLeft.remove( this.pause, this );
 			this.controllable = false;
 			this.target = undefined;
 			
@@ -368,6 +389,10 @@
 		
 		_Player.Instance.prototype.supr.respawn.apply( this, arguments );
 		
+		// face camera initially
+		
+		this.face_local_direction( new THREE.Vector3( 0, 0, -1 ) );
+		
 		shared.cameraControls.target = undefined;
 		shared.cameraControls.target = this;
 		shared.cameraControls.rotateTarget = true;
@@ -380,6 +405,19 @@
     
     =====================================================*/
 	
+	function get_raycast_parameters ( e, pointer ) {
+		
+		return {
+			pointer: pointer || main.get_pointer( e ),
+			camera: shared.camera,
+			far: this.options.interactions.distance + _VectorHelper.distance_between( this.matrixWorld.getPosition(), shared.camera.position ),
+			objects: shared.scene.dynamics,
+			octrees: shared.scene.octree,
+			objectOnly: true
+		};
+		
+	}
+	
 	function hover ( parameters ) {
 		
 		var clean = true,
@@ -390,16 +428,10 @@
 		
 		if ( typeof parameters !== 'undefined' ) {
 			
-			e = parameters.event;
+			e = parameters.event || parameters;
 			pointer = main.get_pointer( e );
 			
-			target = _RayHelper.raycast( {
-				pointer: pointer,
-				camera: shared.camera,
-				objects: shared.scene.dynamics,
-				octrees: shared.scene.octree,
-				objectOnly: true
-			} );
+			target = _RayHelper.raycast( get_raycast_parameters.call( this, e, pointer ) );
 				
 			// cursor change on mouse over interactive
 			
@@ -460,13 +492,7 @@
 				
 				e = parameters.event;
 				
-				target = _RayHelper.raycast( {
-					pointer: main.get_pointer( e ),
-					camera: shared.camera,
-					objects: shared.scene.dynamics,
-					octrees: shared.scene.octree,
-					objectOnly: true
-				} );
+				target = _RayHelper.raycast( get_raycast_parameters.call( this, e ) );
 				
 			}
 			
@@ -486,7 +512,7 @@
 	
 	function interact () {
 		
-		if ( this.target instanceof _NonPlayer.Instance ) {
+		if ( this.target instanceof _Character.Instance ) {
 			
 			// look at each other
 			
@@ -539,7 +565,7 @@
 	
 	function pause () {
 		
-		this.actions.clear_active();
+		this.hover();
 		
 	}
 	

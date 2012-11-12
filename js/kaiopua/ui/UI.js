@@ -62,6 +62,7 @@
 		shared.domElements.$uiHeader = $( '#uiHeader' );
 		shared.domElements.$uiBody = $( '#uiBody' );
 		shared.domElements.$uiInGame = $( '#uiInGame' );
+		shared.domElements.$uiOverGame = $( '#uiOverGame' );
 		shared.domElements.$uiOutGame = $( '#uiOutGame' );
 		shared.domElements.$uiFooter = $( '#uiFooter' );
 		
@@ -362,7 +363,7 @@
 				
 				main.dom_fade( {
 					element: $menu,
-					time: 0
+					duration: 0
 				} );
 				
 			};
@@ -610,7 +611,7 @@
 		
 		main.dom_fade( {
 			element: shared.domElements.$preloader,
-			time: 0
+			duration: 0
 		} );
 		
 		// show main menu
@@ -742,7 +743,7 @@
 		
 		main.dom_fade( {
 			element: shared.domElements.$buttonsGamePause,
-			time: 0
+			duration: 0
 		} );
 		
 		// block ui
@@ -809,7 +810,7 @@
 		
 	}
 	
-	function resume ( fromFocus ) {
+	function resume () {
 		
 		paused = false;
 		
@@ -817,7 +818,7 @@
 		
 		main.dom_fade( {
 			element: shared.domElements.$buttonsGameResume,
-			time: 0
+			duration: 0
 		} );
 		
 		// unblock ui

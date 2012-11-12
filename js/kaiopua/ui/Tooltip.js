@@ -41,6 +41,7 @@
 		// properties
 		
 		_Tooltip.options = {
+			placement: 'left',
 			template: '<div class="tooltip"><div class="tooltip-arrow"></div><div class="tooltip-inner"></div></div>',
 			inner: '.tooltip-inner'
 		};
@@ -120,10 +121,6 @@
 		_Tooltip.Instance.prototype.supr.update_placement.apply( this, arguments );
 		
 		if ( typeof placement === 'string' ) {
-			
-			// add placement to element
-			
-			this.$element.addClass( placement );
 			
 			// offsets
 			

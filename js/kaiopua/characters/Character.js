@@ -12,6 +12,7 @@
 		assetPath = "js/kaiopua/characters/Character.js",
 		_Character = {},
 		_Model,
+		_Textbubble,
 		_MathHelper,
 		_VectorHelper,
 		_ObjectHelper,
@@ -27,6 +28,7 @@
 		data: _Character,
 		requirements: [
 			"js/kaiopua/core/Model.js",
+			"js/kaiopua/ui/Textbubble.js",
 			"js/kaiopua/utils/MathHelper.js",
 			"js/kaiopua/utils/VectorHelper.js",
 			"js/kaiopua/utils/ObjectHelper.js"
@@ -41,11 +43,12 @@
     
     =====================================================*/
 	
-	function init_internal ( m, mh, vh, oh ) {
+	function init_internal ( m, tb, mh, vh, oh ) {
 		console.log('internal Character', _Character);
 		// modules
 		
 		_Model = m;
+		_Textbubble = tb;
 		_MathHelper = mh;
 		_VectorHelper = vh;
 		_ObjectHelper = oh;
@@ -145,6 +148,10 @@
 		
 		_Character.Instance.prototype.select = select;
 		
+		_Character.Instance.prototype.add_dialogue = add_dialogue;
+		_Character.Instance.prototype.communicate = communicate;
+		_Character.Instance.prototype.silence = silence;
+		
 		_Character.Instance.prototype.move_state_change = move_state_change;
 		_Character.Instance.prototype.stop_jumping = stop_jumping;
 		
@@ -193,7 +200,7 @@
 				// pulse opacity
 				
 				if ( state.invulnerable === true ) {
-					console.log( this, ' is now invulnerable!' );
+					
 					this.material.transparent = true;
 					
 					tweenShow = _ObjectHelper.tween( this.material, { opacity: 1 }, {
@@ -263,7 +270,10 @@
 			rotate,
 			jump,
 			state,
-			animation;
+			animation,
+			conversations,
+			communicateCallbacks = {},
+			dialogueName;
 		
 		// utils
 		
@@ -323,6 +333,32 @@
 		
 		this.name = parameters.name || characterName;
 		this.state = {};
+		
+		this.communicating = false;
+		conversations = this.conversations = {};
+		conversations.names = [];
+		conversations.said = [];
+		conversations.unsaid = [];
+		conversations.randomable = [];
+		conversations.randomableUnsaid = [];
+		conversations.dialogueData = {};
+		
+		// handle dialogues
+		
+		for ( dialogueName in this.options.dialogues ) {
+			
+			communicateCallbacks[ dialogueName ] = this.add_dialogue( dialogueName );
+			
+		}
+		
+		communicateCallbacks.silence = $.proxy( this.silence, this );
+		
+		this.actions.add( {
+			names: 'communicate',
+			eventCallbacks: communicateCallbacks,
+			deactivateCallbacks: 'silence',
+			activeCheck: $.proxy( function () { return this.communicating; }, this )
+		} );
 		
 		this.onHurt = new signals.Signal();
 		this.onDead = new signals.Signal();
@@ -398,7 +434,7 @@
 			animation = this.options.animation,
 			animationDurations = animation.durations,
 			animationNames = animation.names;
-		console.log( this, ' trying to hurt for ', damage, ', invulnerable? ', state.invulnerable );
+		
 		if ( stats.invincible !== true && state.invulnerable !== true && state.dead !== true && main.is_number( damage ) && damage > 0 ) {
 			
 			this.health -= damage;
@@ -411,7 +447,6 @@
 				durationClear: animationDurations.clearSolo
 			} );
 			
-			console.log( ' > hurt for ', damage, ' new hp = ', this.health );
 			if ( state.health === 0 ) {
 				
 				this.die();
@@ -441,7 +476,7 @@
 		this.health = 0;
 		
 		state.dead = true;
-		console.log( this, ' DEAD ' );
+		
 		this.morphs.play( animationNames.die, {
 			duration: animationDurations.die,
 			solo: true,
@@ -466,7 +501,7 @@
 		if ( state.dead === true ) {
 			
 			state.decaying = true;
-			console.log( this, ' decaying... ' );
+			
 			this.morphs.play( animationNames.decay, {
 				duration: animationDurations.decay,
 				delay: animationDelays.decay,
@@ -551,7 +586,7 @@
 				this.position.copy( state.spawnLocation );
 				
 			}
-			console.log( this, ' respawned! ' );
+			
 			this.onRespawned.dispatch();
 			
 			this.morphs.play( animationNames.respawn, {
@@ -586,6 +621,218 @@
 			this.target = undefined;
 			
 		}
+		
+	}
+	
+	/*===================================================
+    
+    communication
+    
+    =====================================================*/
+	
+	function add_dialogue ( dialogueName, dialogue ) {
+		
+		var me = this,
+			conversations = this.conversations;
+		
+		dialogue = this.options.dialogues[ dialogueName ] = dialogue || this.options.dialogues[ dialogueName ] || {};
+		
+		// record dialogue in lists
+		
+		main.array_cautious_add( conversations.names, dialogueName );
+		main.array_cautious_add( conversations.unsaid, dialogueName );
+		
+		if ( dialogue.randomable !== false ) {
+			
+			main.array_cautious_add( conversations.randomable, dialogueName );
+			main.array_cautious_add( conversations.randomableUnsaid, dialogueName );
+			
+		}
+		
+		// make action callback for dialogue
+		
+		return function () {
+			
+			me.communicate( dialogueName );
+			
+		};
+		
+	}
+	
+	function communicate ( dialogueName ) {
+		
+		var i, il,
+			conversations = this.conversations,
+			dialogueData = conversations.dialogueData,
+			dialogue = this.options.dialogues[ dialogueName ],
+			data,
+			saidAll,
+			responses,
+			response,
+			message,
+			next,
+			randomable;
+		
+		if ( typeof dialogue !== 'undefined' ) {
+			
+			// data
+			
+			if ( dialogueData.hasOwnProperty( dialogueName ) !== true ) {
+				
+				dialogueData[ dialogueName ] = {
+					said: []
+				};
+				
+				// ensure dialogue correctly on randomable list
+				
+				if ( dialogue.randomable !== false ) {
+					
+					main.array_cautious_add( conversations.randomable, dialogueName );
+					main.array_cautious_add( conversations.randomableUnsaid, dialogueName );
+					
+				}
+				else {
+					
+					main.array_cautious_remove( conversations.randomable, dialogueName );
+					main.array_cautious_remove( conversations.randomableUnsaid, dialogueName );
+					
+				}
+				
+			}
+			
+			data = dialogueData[ dialogueName ];
+			
+			// responses
+		
+			if ( typeof dialogue === 'string' ) {
+				
+				responses = dialogue;
+				
+			}
+			else {
+				
+				responses = dialogue.responses;
+				
+			}
+			
+			// response
+			
+			if ( typeof responses === 'string' ) {
+				
+				response = responses;
+				
+			}
+			else {
+				
+				// when all responses said, pick at random
+				
+				saidAll = dialogue.random === true || data.said.length === responses.length;
+				
+				if ( saidAll === true ) {
+					
+					response = main.array_random_value( responses );
+					
+				}
+				// until all said, go through linearly
+				else {
+					
+					for ( i = 0, il = responses.length; i < il; i++ ) {
+						
+						if ( main.index_of_value( data.said, responses[ i ] ) === -1 ) {
+							
+							response = responses[ i ];
+							data.said.push( response );
+							break;
+							
+						}
+						
+					}
+					
+				}
+				
+			}
+			
+			// message
+			
+			if ( typeof response === 'string' ) {
+				
+				message = response;
+				
+			}
+			else {
+				
+				message = response.message;
+				next = response.next;
+				
+			}
+			
+			// dialogue has now been said
+			
+			main.array_cautious_add( conversations.said, dialogueName );
+			
+			main.array_cautious_remove( conversations.unsaid, dialogueName );
+			main.array_cautious_remove( conversations.randomableUnsaid, dialogueName );
+			
+			// communicate
+			
+			if ( typeof message === 'string' ) {
+				
+				this.communicating = true;
+				
+				// textbubble
+				
+				if ( this.conversations.textbubble instanceof _Textbubble.Instance !== true ) {
+					
+					this.conversations.textbubble = new _Textbubble.Instance();
+					
+				}
+				
+				console.log( this.name, ' message: ', message );
+				this.conversations.textbubble.hide().content( message ).show( this );
+				
+				// next dialogue
+				
+				if ( next === 'unsaid' ) {
+					
+					if ( conversations.randomableUnsaid.length > 0 ) {
+						
+						next = main.array_random_value( conversations.randomableUnsaid );
+						
+					}
+					else {
+						
+						next = undefined;
+						
+					}
+				
+				}
+				
+				if ( next === 'random' ) {
+					
+					randomable = conversations.randomable.slice( 0 );
+					main.array_cautious_remove( randomable, dialogueName );
+					
+					next = main.array_random_value( randomable );
+					
+				}
+				
+				if ( typeof next === 'string' && next !== dialogueName ) {
+					
+					this.communicate( next );
+					
+				}
+				
+			}
+			
+		}
+		
+	}
+	
+	function silence () {
+		
+		this.communicating = false;
+		
+		// TODO
 		
 	}
 	
@@ -689,7 +936,7 @@
 			rotateAxis = rotate.axis,
 			rotateDelta = rotate.delta,
 			facingDirectionLast = rotate.facingDirectionLast,
-			facingAngleDelta = _VectorHelper.signed_angle_between_coplanar_vectors( facingDirectionLast, direction, rotateAxis ) * lerp,
+			facingAngleDelta = _VectorHelper.signed_angle_between_coplanar_vectors( facingDirectionLast, direction, rotateAxis ) * ( main.is_number( lerp ) ? lerp : 1 ),
 			facingAngleTarget,
 			facingAngleDeltaShortest;
 		

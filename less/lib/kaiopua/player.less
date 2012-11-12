@@ -2,9 +2,12 @@
 -------------------------------------------------------------------------------*/
 
 .tooltip {
-	.ignore-pointer;
 	font-size: @baseFontSize;
 	font-family: @sansFontFamily;
+	
+	&, * {
+		.ignore-pointer;
+	}
 	
 	&.topleft {
 		margin-top: -3px;
@@ -58,12 +61,12 @@
 	.round( @textbubbleSize );
 	.box-shadow( 0 0 0px 6px rgba(0,0,0,0.1) );
 	border: solid 1px transparent; // margin collapse fix
+	text-align: center;
 	
 	.textbubble-inner {
 		width: 100% - @textbubblePadding * 2;
 		height: 100% - @textbubblePadding * 2;
 		margin: @textbubblePadding auto;
-		text-align: center;
 		overflow: auto;
 		
 		.textbubble-content {
@@ -76,8 +79,8 @@
 				vertical-align: middle;
 				width: 100%;
 				margin: 0;
-				font-size: 22px;
-				line-height: 140%;
+				font-size: @textbubbleContentFontSize;
+				line-height: @textbubbleContentLineHeight;
 			}
 			
 		}
@@ -102,22 +105,22 @@
 		
 	}
 	
-	.textbubble-name {
+	.textbubble-next {
 		position: absolute;
 		bottom: 5%;
-		font-size: 16px;
+		font-size: @textbubbleNextFontSize;
 		line-height: 100%;
 		padding: 5px;
 		width: 100%;
 		box-sizing: border-box;
 		font-weight: bold;
-		color: rgba(0, 0, 0, 0.2);
-		text-align: center;
+		color: @textbubbleNextColor;
+		cursor: pointer;
 	}
 	
 	.textbubble-arrow {
 		position: absolute;
-		//z-index: -1;
+		display: none;
 		width: 0;
 		height: 0;
 		border-color: @textbubbleColor;
@@ -132,6 +135,7 @@
 		}
 		
 		.textbubble-arrow {
+			display: block;
 			bottom: -@textbubbleArrowHeight + @textbubbleRingPadding;
 			left: 50%;
 			margin-left: -@textbubbleArrowWidth;
@@ -149,6 +153,7 @@
 		}
 		
 		.textbubble-arrow {
+			display: block;
 			top: -@textbubbleArrowHeight + @textbubbleRingPadding;
 			left: 50%;
 			margin-left: -@textbubbleArrowWidth;
@@ -166,6 +171,7 @@
 		}
 		
 		.textbubble-arrow {
+			display: block;
 			top: 50%;
 			right: -@textbubbleArrowHeight + @textbubbleRingPadding;
 			margin-top: -@textbubbleArrowWidth;
@@ -183,6 +189,7 @@
 		}
 		
 		.textbubble-arrow {
+			display: block;
 			top: 50%;
 			left: -@textbubbleArrowHeight + @textbubbleRingPadding;
 			margin-top: -@textbubbleArrowWidth;

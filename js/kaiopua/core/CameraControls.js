@@ -239,6 +239,9 @@
 		this.boundRadiusPct = this.options.boundRadiusPctMax;
 		this.boundRadiusMod = this.options.boundRadiusModMax;
 		
+		this.moved = true;
+		this.onCameraMoved = new signals.Signal();
+		
 		this.camera = parameters.camera;
 		this.target = parameters.target;
 		
@@ -285,6 +288,7 @@
 			targetRotateDeltaQ;
 		
 		this.rotationConstrained.copy( this.rotationBase );
+		this.rotationRotatedLast.copy( this.rotationRotated );
 		
 		// while moving, return to 0 rotation offset
 		
@@ -295,8 +299,6 @@
 			
 		}
 		else {
-			
-			this.rotationRotatedLast.copy( this.rotationRotated );
 			
 			this.rotationRotated.x = _MathHelper.clamp( _MathHelper.rad_between_PI( this.rotationRotated.x + this.rotationDeltaTotal.x ), this.options.rotationMinX, this.options.rotationMaxX );
 			this.rotationRotated.y = _MathHelper.clamp( _MathHelper.rad_between_PI( this.rotationRotated.y + this.rotationDeltaTotal.y ), this.options.rotationMinY, this.options.rotationMaxY );
@@ -342,7 +344,7 @@
 				this.rotationConstrained.addSelf( this.rotationRotated );
 				
 			}
-		
+			
 		}
 		
 		this.rotationConstrained.x = _MathHelper.clamp( _MathHelper.rad_between_PI( this.rotationConstrained.x ), this.options.rotationMinX, this.options.rotationMaxX );
@@ -387,7 +389,6 @@
 		
 		this.positionOffset.lerpSelf( this.positionOffsetTarget, this.targetNew === true ? this.options.positionOffsetSpeedWhenNew : this.options.positionOffsetSpeed );
 		
-		
 	}
 	
 	/*===================================================
@@ -408,10 +409,21 @@
 			distanceSpeedPctAlphaShrink,
 			qToNew,
 			positionOffsetScaled = this.utilVec31Update,
+			positionFinal = this.utilVec32Update,
 			rotationTargetNew = this.utilQ32Update,
 			cameraLerpDelta = this.cameraLerpDelta;
 		
 		if ( this.enabled === true ) {
+			
+			// moved since last update
+			// dispatch before updating, not after, otherwise raycasting/projection will be messed up
+			
+			if ( this.moved === true ) {
+				
+				this.moved = false;
+				this.onCameraMoved.dispatch();
+				
+			}
 			
 			// first time target is new
 			
@@ -420,6 +432,7 @@
 				this.targetNew = true;
 				this.distanceSpeedPctWhenNew = 0;
 				this.cameraLerpDeltaWhenNew = 0;
+				this.distanceSpeed = 0;
 				
 			}
 			
@@ -435,16 +448,6 @@
 				rigidBody = target.rigidBody;
 				scale = Math.max( target.scale.x, target.scale.y, target.scale.z );
 				positionOffsetScaled.copy( this.positionOffset ).multiplyScalar( scale );
-				
-				/*
-				// make sure camera and target parents are same
-				
-				if ( this.camera.parent !== target.parent ) {
-					
-					target.parent.add( this.camera );
-					
-				}
-				*/
 				
 				// get distance to target position
 				
@@ -569,15 +572,23 @@
 			
 			this.rotationCamera.copy( this.rotationTarget ).multiplySelf( this.rotationOffset );
 			
+			this.moved = _VectorHelper.different( this.rotationCamera, this.camera.quaternion );
+			
 			this.camera.quaternion.copy( this.rotationCamera );
 			
-			// adjust position
+			// get final position
 			
 			this.camera.quaternion.multiplyVector3( positionOffsetScaled );
 			
-			// apply position
+			positionFinal.add( this.position, positionOffsetScaled );
 			
-			this.camera.position.copy( this.position ).addSelf( positionOffsetScaled );
+			if ( this.moved !== true ) {
+				
+				this.moved = _VectorHelper.different( this.camera.position, positionFinal );
+				
+			}
+			
+			this.camera.position.copy( positionFinal );
 			
 		}
 		

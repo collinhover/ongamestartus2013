@@ -70,6 +70,7 @@
 		_VectorHelper.clamp_length = clamp_length;
 		_VectorHelper.different = different;
 		_VectorHelper.distance_between = distance_between;
+		_VectorHelper.distance_sq_between = distance_sq_between;
 		_VectorHelper.vector_between = vector_between;
 		_VectorHelper.normal_between = normal_between;
 		_VectorHelper.closest_point_on_line_to_point = closest_point_on_line_to_point;
@@ -134,7 +135,7 @@
 	
 	function different ( va, vb ) {
 		
-		if ( va.x !== vb.x || va.y !== vb.y || va.z !== vb.z || ( va.hasOwnProperty( 'w' ) && va.w !== vb.w ) ) {
+		if ( va.x !== vb.x || va.y !== vb.y || va.z !== vb.z || va.w !== vb.w ) {
 			return true;
 		}
 		
@@ -151,6 +152,12 @@
 	function distance_between ( vecFrom, vecTo ) {
 		
 		return Math.sqrt( utilVec31DistanceTo.sub( vecTo, vecFrom ).lengthSq() );
+		
+	}
+	
+	function distance_sq_between ( vecFrom, vecTo ) {
+		
+		return utilVec31DistanceTo.sub( vecTo, vecFrom ).lengthSq();
 		
 	}
 	

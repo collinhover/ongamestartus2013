@@ -11,7 +11,7 @@
     var shared = main.shared = main.shared || {},
 		assetPath = "js/kaiopua/characters/Speaker.js",
 		_Speaker = {},
-		_NonPlayer;
+		_Character;
 	
 	/*===================================================
     
@@ -22,7 +22,7 @@
 	main.asset_register( assetPath, { 
 		data: _Speaker,
 		requirements: [
-			"js/kaiopua/characters/NonPlayer.js"
+			"js/kaiopua/characters/Character.js"
 		],
 		callbacksOnReqs: init_internal,
 		wait: true
@@ -34,11 +34,11 @@
     
     =====================================================*/
 	
-	function init_internal ( np ) {
+	function init_internal ( c ) {
 		console.log('internal Speaker', _Speaker);
 		// modules
 		
-		_NonPlayer = np;
+		_Character = c;
 		
 		// properties
 		
@@ -48,6 +48,9 @@
 				bodyType: 'box',
 				movementOffsetPct: 0,
 				gravityOffsetPct: 0
+			},
+			stats: {
+				invincible: true
 			},
 			dialogues: {
 				greeting: {
@@ -95,7 +98,7 @@
 		// instance
 		
 		_Speaker.Instance = Speaker;
-		_Speaker.Instance.prototype = new _NonPlayer.Instance();
+		_Speaker.Instance.prototype = new _Character.Instance();
 		_Speaker.Instance.prototype.constructor = _Speaker.Instance;
 		
 	}
@@ -133,7 +136,7 @@
 		
 		// prototype constructor
 		
-		_NonPlayer.Instance.call( this, parameters );
+		_Character.Instance.call( this, parameters );
 		
 	}
 	
