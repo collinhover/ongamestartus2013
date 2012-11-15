@@ -1846,7 +1846,7 @@ var KAIOPUA = (function (main) {
 				
 			}
 			
-			$element.fadeTo( duration, opacity, easing, fadeComplete );
+			$element.animate( { opacity: opacity }, { duration: duration, easing: easing, complete: fadeComplete } );
 				
 		} );
 		

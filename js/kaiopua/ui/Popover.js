@@ -73,6 +73,8 @@
 		
 		this.options = $.extend( true, {}, _Popover.options, parameters.options );
 		
+		this.showing = false;
+		
 		this.$element = $( this.options.template );
 		this.$inner = this.$element.find( this.options.inner );
 		if ( this.$inner.length === 0 ) {
@@ -125,24 +127,36 @@
     
     =====================================================*/
 	
-	function show () {
+	function show ( options ) {
 		
-		this.$element
-			.css( {
-				'left' : '',
-				'top' : ''
-			} )
-			.appendTo( this.$container )
-			.addClass('in');
-		
-		if ( this.options.animate === true ) {
+		if ( this.showing !== true ) {
 			
-			main.dom_fade( {
-				element: this.$element,
-				duration: this.options.animateDuration,
-				opacity: 1,
-				initHidden: true
-			} );
+			this.showing = true;
+			
+			if ( typeof options !== 'undefined' ) {
+				
+				this.options = $.extend( true, this.options, options );
+				
+			}
+			
+			this.$element
+				.css( {
+					'left' : '',
+					'top' : ''
+				} )
+				.appendTo( this.$container )
+				.addClass('in');
+			
+			if ( this.options.animate === true ) {
+				
+				main.dom_fade( {
+					element: this.$element,
+					duration: this.options.animateDuration,
+					opacity: 1,
+					initHidden: true
+				} );
+				
+			}
 			
 		}
 			
@@ -152,18 +166,37 @@
 	
 	function hide () {
 		
-		if ( this.options.animate === true ) {
+		if ( this.showing !== false ) {
 			
-			main.dom_fade( {
-				element: this.$element,
-				duration: this.options.animateDuration,
-				callback: $.proxy( this.remove, this )
-			} );
+			this.showing = false;
 			
-		}
-		else {
+			if ( typeof this.options.oneHideCallback === 'function' ) {
+				
+				this.options.oneHideCallback();
+				delete this.options.oneHideCallback;
+				
+			}
 			
-			this.remove();
+			if ( typeof this.options.onHideCallback === 'function' ) {
+				
+				this.options.onHideCallback();
+				
+			}
+			
+			if ( this.options.animate === true ) {
+				
+				main.dom_fade( {
+					element: this.$element,
+					duration: this.options.animateDuration,
+					callback: $.proxy( this.remove, this )
+				} );
+				
+			}
+			else {
+				
+				this.remove();
+				
+			}
 			
 		}
 		
@@ -172,6 +205,19 @@
 	}
 	
 	function remove () {
+		
+		if ( typeof this.options.oneRemoveCallback === 'function' ) {
+			
+			this.options.oneRemoveCallback();
+			delete this.options.oneRemoveCallback;
+			
+		}
+		
+		if ( typeof this.options.onRemoveCallback === 'function' ) {
+			
+			this.options.onRemoveCallback();
+			
+		}
 		
 		this.$element.removeClass('in').remove();
 		

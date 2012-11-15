@@ -57,7 +57,7 @@
 
 .textbubble {
 	font-family: @sansFontFamily;
-	background: @textbubbleColor;
+	background-color: @textbubbleColor;
 	.round( @textbubbleSize );
 	.box-shadow( 0 0 0px 6px rgba(0,0,0,0.1) );
 	border: solid 1px transparent; // margin collapse fix
@@ -87,35 +87,35 @@
 		
 	}
 	
-	.textbubble-ring {
+	.textbubble-close, .textbubble-status {
+		cursor: pointer;
 		position: absolute;
-		width: 100%;
-		height: 100%;
-		padding: @textbubbleRingPadding;
-		.box-sizing( border-box );
+		display: table;
+		background-color: inherit;
+		font-size: 26px;
+		line-height: 100%;
+		font-weight: bold;
+		color: rgba(0, 0, 0, 0.5);
 		
-		.textbubble-ring-inner {
+		.textbubble-close-inner, .textbubble-status-inner {
+			display: table-cell;
+			vertical-align: middle;
 			width: 100%;
-			height: 100%;
-			border: solid 4px @textbubbleRingColor;
-			.border-radius( 50% );
-			padding: @textbubbleRingPadding;
-			.box-sizing( border-box );
 		}
 		
 	}
 	
-	.textbubble-next {
-		position: absolute;
-		bottom: 5%;
-		font-size: @textbubbleNextFontSize;
-		line-height: 100%;
-		padding: 5px;
-		width: 100%;
-		box-sizing: border-box;
-		font-weight: bold;
-		color: @textbubbleNextColor;
-		cursor: pointer;
+	.textbubble-close {
+		.round( 15% );
+		top: 8%;
+		left: 8%;
+	}
+	
+	.textbubble-status {
+		.round( 20% );
+		top: 40%;
+		right: -7%;
+		.box-shadow( 0 0 0px 4px rgba(0, 0, 0, 0.05) );
 	}
 	
 	.textbubble-arrow {
@@ -123,7 +123,7 @@
 		display: none;
 		width: 0;
 		height: 0;
-		border-color: @textbubbleColor;
+		border-color: inherit;
 		border-style: solid;
 	}
 	
@@ -207,6 +207,7 @@
 		}
 		
 		.textbubble-arrow {
+			display: block;
 			bottom: @textbubbleArrowDiagonalSize;
 			right: @textbubbleArrowDiagonalSize;
 			border-width: @textbubbleArrowWidth @textbubbleArrowDiagonalSize @textbubbleArrowDiagonalSize @textbubbleArrowWidth;
@@ -221,6 +222,7 @@
 		}
 		
 		.textbubble-arrow {
+			display: block;
 			bottom: @textbubbleArrowDiagonalSize;
 			left: @textbubbleArrowDiagonalSize;
 			border-width: @textbubbleArrowWidth @textbubbleArrowDiagonalSize @textbubbleArrowDiagonalSize @textbubbleArrowWidth;
@@ -235,6 +237,7 @@
 		}
 		
 		.textbubble-arrow {
+			display: block;
 			top: @textbubbleArrowDiagonalSize;
 			right: @textbubbleArrowDiagonalSize;
 			border-width: @textbubbleArrowWidth @textbubbleArrowDiagonalSize @textbubbleArrowDiagonalSize @textbubbleArrowWidth;
@@ -249,6 +252,7 @@
 		}
 		
 		.textbubble-arrow {
+			display: block;
 			top: @textbubbleArrowDiagonalSize;
 			left: @textbubbleArrowDiagonalSize;
 			border-width: @textbubbleArrowWidth @textbubbleArrowDiagonalSize @textbubbleArrowDiagonalSize @textbubbleArrowWidth;

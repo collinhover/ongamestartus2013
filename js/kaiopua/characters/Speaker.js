@@ -1,7 +1,7 @@
 /*
  *
  * Speaker.js
- * General collision based Speaker.
+ * Speaker npc.
  *
  * @author Collin Hover / http://collinhover.com/
  *

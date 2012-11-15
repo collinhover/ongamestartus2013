@@ -125,6 +125,13 @@
 					decay: 500,
 					idleAlt: 5000
 				}
+			},
+			communication: {
+				boundRadiusPctX: 0,
+				boundRadiusPctY: 0.75,
+				boundRadiusPctZ: 0,
+				distanceMovedMax: 100,
+				distanceOutsideScreenMax: 50
 			}
 		};
 		
@@ -150,6 +157,7 @@
 		
 		_Character.Instance.prototype.add_dialogue = add_dialogue;
 		_Character.Instance.prototype.communicate = communicate;
+		_Character.Instance.prototype.communicate_update = communicate_update;
 		_Character.Instance.prototype.silence = silence;
 		
 		_Character.Instance.prototype.move_state_change = move_state_change;
@@ -277,6 +285,9 @@
 		
 		// utils
 		
+		this.utilProjector1Communicate = new THREE.Projector();
+		this.utilVec31Communicate = new THREE.Vector3();
+		this.utilVec32Communicate = new THREE.Vector3();
 		this.utilVec31Look = new THREE.Vector3();
 		this.utilVec32Look = new THREE.Vector3();
 		this.utilVec33Look = new THREE.Vector3();
@@ -342,6 +353,7 @@
 		conversations.randomable = [];
 		conversations.randomableUnsaid = [];
 		conversations.dialogueData = {};
+		conversations.positionStart = new THREE.Vector3();
 		
 		// handle dialogues
 		
@@ -659,7 +671,7 @@
 		
 	}
 	
-	function communicate ( dialogueName ) {
+	function communicate ( dialogueName, messages ) {
 		
 		var i, il,
 			conversations = this.conversations,
@@ -773,24 +785,13 @@
 			main.array_cautious_remove( conversations.unsaid, dialogueName );
 			main.array_cautious_remove( conversations.randomableUnsaid, dialogueName );
 			
-			// communicate
+			// store message and handle next
 			
-			if ( typeof message === 'string' ) {
+			messages = main.to_array( messages );
+			
+			if ( typeof message === 'string' && main.index_of_value( messages, message ) === -1 ) {
 				
-				this.communicating = true;
-				
-				// textbubble
-				
-				if ( this.conversations.textbubble instanceof _Textbubble.Instance !== true ) {
-					
-					this.conversations.textbubble = new _Textbubble.Instance();
-					
-				}
-				
-				console.log( this.name, ' message: ', message );
-				this.conversations.textbubble.hide().content( message ).show( this );
-				
-				// next dialogue
+				messages.push( message );
 				
 				if ( next === 'unsaid' ) {
 					
@@ -816,11 +817,107 @@
 					
 				}
 				
+				// add next dialogue and do not show message yet
+				
 				if ( typeof next === 'string' && next !== dialogueName ) {
 					
-					this.communicate( next );
+					return this.communicate( next, messages );
 					
 				}
+				
+			}
+			
+			// communicate and show messages
+			
+			if ( messages.length > 0 ) {
+				
+				this.communicating = true;
+				
+				// textbubble
+				
+				if ( conversations.textbubble instanceof _Textbubble.Instance !== true ) {
+					
+					conversations.textbubble = new _Textbubble.Instance();
+					
+				}
+				
+				conversations.textbubble.content( messages ).show( { oneHideCallback: $.proxy( this.silence, this ) } );
+				console.log( this.name, ' messages: ', messages );
+				
+				// record initial position when conversation started
+				// if we move too much, cancel the conversation
+				
+				conversations.positionStart.copy( this.position );
+				
+				// also make sure we update textbubble as camera moves
+				
+				shared.cameraControls.onCameraMoved.add( this.communicate_update, this );
+				this.communicate_update();
+				
+			}
+			
+		}
+		
+	}
+	
+	function communicate_update () {
+		
+		var options = this.options,
+			communication = options.communication,
+			conversations = this.conversations,
+			projector = this.utilProjector1Communicate,
+			position = this.utilVec31Communicate,
+			positionOffset = this.utilVec32Communicate,
+			projectedX,
+			projectedY,
+			distanceMoved,
+			distanceProjectedToScreen,
+			screenPosition;
+		
+		// compare current local position to start local position to find moved
+		
+		distanceMoved = _VectorHelper.distance_between( conversations.positionStart, this.position );
+		
+		if ( distanceMoved > communication.distanceMovedMax ) {
+			
+			this.silence();
+			
+		}
+		else {
+			
+			// find position and offset
+			
+			position.copy( this.matrixWorld.getPosition() );
+			
+			positionOffset.set( communication.boundRadiusPctX, communication.boundRadiusPctY, communication.boundRadiusPctZ ).multiplyScalar( this.boundRadius );
+			
+			this.matrixRotationWorld.extractRotation( this.matrixWorld ).multiplyVector3( positionOffset );
+			
+			position.addSelf( positionOffset );
+			
+			// project total position
+			
+			projector.projectVector( position, shared.camera );
+			
+			projectedX = shared.screenWidth * ( position.x + 1 ) * 0.5;
+			projectedY = -( shared.screenHeight * ( position.y - 1 ) ) * 0.5;
+			
+			screenPosition = { 
+				x: _MathHelper.clamp( projectedX, 0, shared.screenWidth ), 
+				y: _MathHelper.clamp( projectedY, 0, shared.screenHeight )
+			};
+			
+			distance = Math.sqrt( Math.pow( projectedX - screenPosition.x, 2 ) + Math.pow( projectedY - screenPosition.y, 2 ) );
+			
+			if ( distance > communication.distanceOutsideScreenMax ) {
+				
+				this.silence();
+				
+			}
+			else {
+				
+				
+				this.conversations.textbubble.reposition( screenPosition );
 				
 			}
 			
@@ -830,9 +927,15 @@
 	
 	function silence () {
 		
-		this.communicating = false;
-		
-		// TODO
+		if ( this.communicating !== false ) {
+			
+			shared.cameraControls.onCameraMoved.remove( this.communicate_update, this );
+			
+			this.conversations.textbubble.hide();
+			
+			this.communicating = false;
+			
+		}
 		
 	}
 	

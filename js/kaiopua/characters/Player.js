@@ -514,13 +514,23 @@
 		
 		if ( this.target instanceof _Character.Instance ) {
 			
+			if ( this.targetInteract instanceof _Character.Instance ) {
+				
+				// TODO: end interaction with last
+				
+			}
+			
+			this.targetInteract = this.target;
+			
 			// look at each other
 			
-			this.look_at( this.target );
-			this.target.look_at( this );
+			this.look_at( this.targetInteract );
+			this.targetInteract.look_at( this );
 			
-			console.log( 'Hi ', this.target.name );
-			this.target.actions.execute( 'communicate', 'greeting' );
+			console.log( 'Hi ', this.targetInteract.name );
+			
+			// TODO: communicate should be two way so if one stops, both stop
+			this.targetInteract.actions.execute( 'communicate', 'greeting' );
 			
 		}
 		
