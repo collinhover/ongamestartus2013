@@ -52,9 +52,11 @@
 			statusInner: '.textbubble-status-inner',
 			animate: true,
 			animateDuration: 250,
-			contentAdvanceDelayMin: 4000,
 			wpm: 100,
-			autoAdvance: false
+			autoAdvance: false,
+			disableAdvanceByUser: false,
+			delayAdvanceMin: 1000,
+			delayAdvanced: 0
 		};
 		
 		// instance
@@ -70,6 +72,7 @@
 		
 		_Textbubble.Instance.prototype.show = show;
 		_Textbubble.Instance.prototype.hide = hide;
+		_Textbubble.Instance.prototype.remove = remove;
 		
 	}
 	
@@ -121,6 +124,8 @@
 	
 	function content ( content ) {
 		
+		var oneStarted;
+		
 		if ( typeof content !== 'undefined' ) {
 			
 			content = main.to_array( content );
@@ -129,6 +134,25 @@
 				
 				this.messages = content;
 				this.messageParts = undefined;
+				
+				// callbacks
+				
+				oneStarted = this.options.oneStarted;
+				
+				if ( typeof oneStarted === 'function' ) {
+					
+					delete this.options.oneStarted;
+					oneStarted();
+					
+				}
+				
+				if ( typeof this.options.oneStarted === 'function' ) {
+					
+					this.options.oneStarted();
+					
+				}
+				
+				// advance
 				
 				this.content_advance();
 				
@@ -147,7 +171,7 @@
 	
 	function content_advance () {
 		
-		clear_content_advance_timeout.call( this );
+		clear_timeouts.call( this );
 		
 		this.messageParts = content_split.call( this, this.messageParts || this.messages );
 		
@@ -167,7 +191,8 @@
 	
 	function content_show () {
 		
-		var $elements = $();
+		var $elements = $(),
+			oneAdvanced;
 		
 		if ( this.messageParts.showing.length > 0 ) {
 			
@@ -176,25 +201,83 @@
 			
 		}
 		
-		if ( this.messageParts.hidden.length > 0 || this.messageParts.messages.length > 0 ) {
+		// more to show so advance on status interaction
+		
+		this.$status.off( '.textbubbleStatus' );
+		
+		if ( this.options.disableAdvanceByUser !== true ) {
 			
 			$elements = $elements.add( this.$status );
+			
+			if ( this.messageParts.hidden.length > 0 || this.messageParts.messages.length > 0 ) {
+				
+				this.$status.on( 'tap.textbubbleStatus', $.proxy( this.content_advance, this ) );
+				
+			}
+			// when no more to show, trigger ended callbacks
+			else {
+				
+				this.$status.on( 'tap.textbubbleStatus', $.proxy( function () {
+					
+					var oneEnded = this.options.oneEnded;
+					
+					if ( typeof oneEnded === 'function' ) {
+						
+						delete this.options.oneEnded;
+						oneEnded();
+						
+					}
+					
+					if ( typeof this.options.onEnded === 'function' ) {
+						
+						this.options.onEnded();
+						
+					}
+					
+				}, this ) );
+				
+			}
 			
 		}
 		
 		main.dom_fade( {
 			element: $elements,
 			opacity: 1,
-			duration: this.messageParts.shown.length > 0 ? this.options.animateDuration : 0,
+			duration: this.messageParts.shown.length > 0 || this.options.animateAlways === true ? this.options.animateDuration : 0,
 			callback: $.proxy( function () {
 				
-				clear_content_advance_timeout.call( this );
+				clear_timeouts.call( this );
 				
-				if ( this.options.autoAdvance === true && ( this.messageParts.hidden.length > 0 || this.messageParts.messages.length > 0 ) ) {
+				// advanced callbacks can be delayed to allow a pause before advancing again
+				
+				this.contentAdvancedTimeoutId = requestTimeout( $.proxy( function () {
 					
-					this.contentAdvanceTimeoutId = requestTimeout( $.proxy( this.content_advance, this ), Math.max( this.options.contentAdvanceDelayMin, ( 60000 / this.options.wpm ) * this.messageParts.numWords ) );
-				
-				}
+					clear_timeouts.call( this );
+					
+					oneAdvanced = this.options.oneAdvanced;
+					
+					if ( typeof oneAdvanced === 'function' ) {
+						
+						delete this.options.oneAdvanced;
+						oneAdvanced();
+						
+					}
+					
+					if ( typeof this.options.onAdvanced === 'function' ) {
+						
+						this.options.onAdvanced();
+						
+					}
+					
+					// auto advance
+					
+					if ( this.options.autoAdvance === true && ( this.messageParts.hidden.length > 0 || this.messageParts.messages.length > 0 ) ) {
+						
+						this.contentAutoAdvanceTimeoutId = requestTimeout( $.proxy( this.content_advance, this ), Math.max( this.options.delayAdvanceMin, ( 60000 / this.options.wpm ) * this.messageParts.numWords ) );
+					
+					}
+					
+				}, this ), this.options.delayAdvanced );
 				
 			}, this )
 		} );
@@ -346,12 +429,19 @@
     
     =====================================================*/
 	
-	function clear_content_advance_timeout () {
+	function clear_timeouts () {
 		
-		if ( typeof this.contentAdvanceTimeoutId !== 'undefined' ) {
+		if ( typeof this.contentAdvancedTimeoutId !== 'undefined' ) {
 			
-			clearRequestTimeout( this.contentAdvanceTimeoutId );
-			this.contentAdvanceTimeoutId = undefined;
+			clearRequestTimeout( this.contentAdvancedTimeoutId );
+			this.contentAdvancedTimeoutId = undefined;
+			
+		}
+		
+		if ( typeof this.contentAutoAdvanceTimeoutId !== 'undefined' ) {
+			
+			clearRequestTimeout( this.contentAutoAdvanceTimeoutId );
+			this.contentAutoAdvanceTimeoutId = undefined;
 			
 		}
 		
@@ -359,7 +449,7 @@
 	
 	function clear_content_events () {
 		
-		clear_content_advance_timeout.call( this );
+		clear_timeouts.call( this );
 		
 		this.$close.off( '.textbubbleClose' );
 		this.$status.off( '.textbubbleStatus' );
@@ -379,7 +469,6 @@
 		clear_content_events.call( this );
 		
 		this.$close.on( 'tap.textbubbleClose', $.proxy( this.hide, this ) );
-		this.$status.on( 'tap.textbubbleStatus', $.proxy( this.content_advance, this ) );
 		
 		// restart message
 		
@@ -392,6 +481,14 @@
 		clear_content_events.call( this );
 		
 		return _Textbubble.Instance.prototype.supr.hide.apply( this, arguments );
+		
+	}
+	
+	function remove () {
+		
+		clear_content_events.call( this );
+		
+		return _Textbubble.Instance.prototype.supr.remove.apply( this, arguments );
 		
 	}
 	

@@ -50,8 +50,12 @@
 		_Popover.Instance.prototype.content = content;
 		
 		_Popover.Instance.prototype.show = show;
+		
 		_Popover.Instance.prototype.hide = hide;
+		_Popover.Instance.prototype.hide_complete = hide_complete;
+		
 		_Popover.Instance.prototype.remove = remove;
+		_Popover.Instance.prototype.remove_complete = remove_complete;
 		
 		_Popover.Instance.prototype.reposition = reposition;
 		_Popover.Instance.prototype.update_placement = update_placement;
@@ -123,27 +127,23 @@
 	
 	/*===================================================
     
-    show / hide
+    show
     
     =====================================================*/
 	
 	function show ( options ) {
 		
+		if ( typeof options !== 'undefined' ) {
+			
+			this.options = $.extend( true, this.options, options );
+			
+		}
+		
 		if ( this.showing !== true ) {
 			
 			this.showing = true;
 			
-			if ( typeof options !== 'undefined' ) {
-				
-				this.options = $.extend( true, this.options, options );
-				
-			}
-			
 			this.$element
-				.css( {
-					'left' : '',
-					'top' : ''
-				} )
 				.appendTo( this.$container )
 				.addClass('in');
 			
@@ -164,22 +164,32 @@
 		
 	}
 	
+	/*===================================================
+    
+    hide
+    
+    =====================================================*/
+	
 	function hide () {
+		
+		var oneHidden;
 		
 		if ( this.showing !== false ) {
 			
 			this.showing = false;
 			
-			if ( typeof this.options.oneHideCallback === 'function' ) {
+			oneHidden = this.options.oneHidden;
+			
+			if ( typeof oneHidden === 'function' ) {
 				
-				this.options.oneHideCallback();
-				delete this.options.oneHideCallback;
+				delete this.options.oneHidden;
+				oneHidden();
 				
 			}
 			
-			if ( typeof this.options.onHideCallback === 'function' ) {
+			if ( typeof this.options.onHidden === 'function' ) {
 				
-				this.options.onHideCallback();
+				this.options.onHidden();
 				
 			}
 			
@@ -188,15 +198,20 @@
 				main.dom_fade( {
 					element: this.$element,
 					duration: this.options.animateDuration,
-					callback: $.proxy( this.remove, this )
+					callback: $.proxy( this.hide_complete, this )
 				} );
 				
 			}
 			else {
 				
-				this.remove();
+				this.hide_complete();
 				
 			}
+			
+		}
+		else {
+			
+			this.hide_complete();
 			
 		}
 		
@@ -204,20 +219,68 @@
 		
 	}
 	
+	function hide_complete () {
+		
+		this.$element.removeClass('in').remove();
+		
+		return this;
+		
+	}
+	
+	/*===================================================
+    
+    remove
+    
+    =====================================================*/
+	
 	function remove () {
 		
-		if ( typeof this.options.oneRemoveCallback === 'function' ) {
+		if ( this.showing !== false ) {
 			
-			this.options.oneRemoveCallback();
-			delete this.options.oneRemoveCallback;
+			this.showing = false;
+			
+			oneRemoved = this.options.oneRemoved;
+			
+			if ( typeof oneRemoved === 'function' ) {
+				
+				delete this.options.oneRemoved;
+				oneRemoved();
+				
+			}
+			
+			if ( typeof this.options.onRemoved === 'function' ) {
+				
+				this.options.onRemoved();
+				
+			}
+			
+			if ( this.options.animate === true ) {
+				
+				main.dom_fade( {
+					element: this.$element,
+					duration: this.options.animateDuration,
+					callback: $.proxy( this.remove_complete, this )
+				} );
+				
+			}
+			else {
+				
+				this.remove_complete();
+				
+			}
+			
+		}
+		else {
+			
+			this.remove_complete();
 			
 		}
 		
-		if ( typeof this.options.onRemoveCallback === 'function' ) {
-			
-			this.options.onRemoveCallback();
-			
-		}
+		return this;
+		
+	}
+	
+	function remove_complete () {
 		
 		this.$element.removeClass('in').remove();
 		

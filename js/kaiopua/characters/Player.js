@@ -62,8 +62,8 @@
 		// properties
 		
 		_Player.options = {
-			interactions: {
-				distance: 500
+			physics: {
+				volumetric: true
 			},
 			stats: {
 				respawnOnDeath: true
@@ -77,8 +77,11 @@
 					duration: 200
 				}
 			},
-			physics: {
-				volumetric: true
+			interactions: {
+				distance: 500
+			},
+			dialogues: {
+				greeting: [ "Hello!", "Heyo!", "Hi!" ]
 			}
 		};
 		
@@ -97,6 +100,8 @@
 		_Player.Instance.prototype.hover = hover;
 		_Player.Instance.prototype.select = select;
 		_Player.Instance.prototype.interact = interact;
+		
+		_Player.Instance.prototype.silence = silence;
 		
 		_Player.Instance.prototype.set_keybindings = set_keybindings;
 		_Player.Instance.prototype.trigger_action = trigger_action;
@@ -280,6 +285,7 @@
 					up: function () {
 						
 						me.select();
+						me.interact();
 						
 					}
 				},
@@ -512,27 +518,37 @@
 	
 	function interact () {
 		
-		if ( this.target instanceof _Character.Instance ) {
+		// clear last communication
+		
+		if ( this.targetInteract instanceof _Character.Instance ) {
 			
-			if ( this.targetInteract instanceof _Character.Instance ) {
-				
-				// TODO: end interaction with last
-				
-			}
+			this.silence();
+			
+		}
+		
+		if ( this.target instanceof _Character.Instance ) {
 			
 			this.targetInteract = this.target;
 			
-			// look at each other
+			// start communicating
 			
-			this.look_at( this.targetInteract );
-			this.targetInteract.look_at( this );
-			
-			console.log( 'Hi ', this.targetInteract.name );
-			
-			// TODO: communicate should be two way so if one stops, both stop
-			this.targetInteract.actions.execute( 'communicate', 'greeting' );
+			this.actions.execute( 'communicate', 'greeting', { target: this.targetInteract } );
 			
 		}
+		
+	}
+	
+	/*===================================================
+    
+    communicate
+    
+    =====================================================*/
+	
+	function silence () {
+		
+		_Player.Instance.prototype.supr.silence.apply( this, arguments );
+		
+		this.targetInteract = undefined;
 		
 	}
 	
