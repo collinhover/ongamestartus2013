@@ -139,8 +139,8 @@
 					
 					<section id="errorWebGLBrowser" class="status-item hidden">
 						<div class="menu-section error">
-							<h2 class="error-header logo-type">Oops, we need WebGL!</h2>
-							<p class="error-body">We're sorry, but it appears that your browser does not support WebGL. For more information visit <a href='http://get.webgl.org' target='_blank'>Get WebGL</a> or try upgrading to one of these friendly browsers:</p>
+							<h2 class="error-header logo-type">Oops, we can't find WebGL!</h2>
+							<p class="error-body">Sorry, but it appears that your <span class="underline">browser</span> does not support WebGL. For more information visit <a href='http://get.webgl.org' target='_blank'>Get WebGL</a> or try upgrading to one of these friendly browsers:</p>
 							<ul class="nav nav-inline nav-transparent browsers">
 								<li>
 									<a href="http://www.google.com/chrome/" target="_blank" class="chrome">Chrome</a>
@@ -148,19 +148,20 @@
 								<li>
 									<a href="http://www.mozilla.org/firefox/" target="_blank" class="firefox">Firefox</a>
 								</li>
-								<li>
+								<!-- safari doesn't enable webgl by default -->
+								<!--<li>
 									<a href="http://www.apple.com/safari/" target="_blank" class="safari">Safari</a>
-								</li>
+								</li>-->
 							</ul>
-							<p><small>(you can also try to <a href='index.html'>refresh</a> to fix the problem)</small></p>
+							<p><small>(We'll try not to remind you again! <a>Click anywhere</a> to continue...)</small></p>
 						</div>
 					</section>
 					
 					<section id="errorWebGLComputer" class="status-item hidden">
 						<div class="menu-section error">
-							<h2 class="error-header logo-type">Oops, we need WebGL!</h2>
-							<p class="error-body">Although your browser seems to support WebGL, it appears as if your computer does not. For more information visit the <a href='http://get.webgl.org/troubleshooting/' target='_blank'>WebGL troubleshooting</a> page.</p>
-							<p><small>(you can also try to <a href='index.html'>refresh</a> to fix the problem)</small></p>
+							<h2 class="error-header logo-type">Oops, we can't find WebGL!</h2>
+							<p class="error-body">Sorry, but it appears that your <span class="underline">device</span> does not support WebGL. For more information visit the <a href='http://get.webgl.org/troubleshooting/' target='_blank'>WebGL troubleshooting</a> page.</p>
+							<p><small>(We'll try not to remind you again! <a>Click anywhere</a> to continue...)</small></p>
 						</div>
 					</section>
 					
@@ -251,10 +252,10 @@
 										<li>
 											<a href="https://docs.google.com/spreadsheet/viewform?formkey=dG94UXdDS2ZBVjRrWnlMUUZMWU96M1E6MQ" target="_blank">Preregister <small>(external)</small></a>
 										</li>
-										<li class="ignore-pointer disabled dim">
+										<li class="disabled dim">
 											<a href="#about">About</a>
 										</li>
-										<li class="ignore-pointer disabled dim">
+										<li class="disabled dim">
 											<a href="#speakers">Speakers</a>
 										</li>
 									</ul>

@@ -12,6 +12,10 @@ var KAIOPUA = (function (main) {
 	
     var shared = main.shared = main.shared || {};
 	
+	shared.domElements = shared.domElements || {};
+	shared.supports = shared.supports || {};
+	shared.throttled = {};
+	
 	shared.pointers = [];
 	shared.originLink = window.location.pathname.toString();
 	
@@ -32,6 +36,11 @@ var KAIOPUA = (function (main) {
 	shared.throttleTimeLong = 250;
 	shared.throttleTimeLong = 250;
 	shared.focused = true;
+	
+	shared.errorString = 'error';
+	shared.errorTypeGeneral = 'General';
+    shared.errorTypes = [ shared.errorTypeGeneral, 'WebGLBrowser', 'WebGLComputer' ];
+    shared.errorTypesOnlyOnce = [ 'WebGLBrowser', 'WebGLComputer' ];
 	
 	shared.fadeBetweenSections = false;
 	
@@ -127,13 +136,9 @@ var KAIOPUA = (function (main) {
     
     function init () {
 		
-		shared.domElements = shared.domElements || {};
 		shared.domElements.$game = $('#game');
 		
-		shared.supports = shared.supports || {};
 		shared.supports.pointerEvents = css_property_supported( 'pointer-events' );
-		
-		shared.throttled = {};
        
         shared.signals = {
 			
@@ -369,8 +374,12 @@ var KAIOPUA = (function (main) {
 			
             _ErrorHandler.process();
 			
+			shared.signals.onGameReady.dispatch();
+			
         }
         else {
+			
+			shared.supports.webGL = true;
 			
 			load_game_foundation();
 			
@@ -761,7 +770,7 @@ var KAIOPUA = (function (main) {
     
     function resume () {
 		
-        if ( paused === true && _ErrorHandler.errorState !== true ) {
+        if ( paused === true && ( _ErrorHandler.errorState !== true || started !== true ) ) {
 			console.log('GAME: RESUME');
 			paused = false;
 			
