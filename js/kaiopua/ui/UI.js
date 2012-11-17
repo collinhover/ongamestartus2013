@@ -691,7 +691,6 @@
 					left: -( $tip.outerWidth() + 5 )
 				} )
 				.appendTo( $disableTarget );
-				
 			
 		}
 		

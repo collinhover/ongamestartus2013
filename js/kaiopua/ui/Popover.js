@@ -10,7 +10,11 @@
     
     var shared = main.shared = main.shared || {},
 		assetPath = "js/kaiopua/ui/Popover.js",
-		_Popover = {};
+		_Popover = {},
+		placementsClockwise = [ 'top', 'topright', 'right', 'bottomright', 'bottom', 'bottomleft', 'left', 'topleft' ],
+		placementsCounterclockwise = [],
+		indicesClockwise = {},
+		indicesCounterclockwise = {};
 	
 	/*===================================================
     
@@ -32,13 +36,27 @@
 	
 	function init_internal () {
 		console.log('internal Popover', _Popover);
+		var i, il, placement;
+		
+		// generate placements and indices
+		
+		for( i = 0, il = placementsClockwise.length; i < il; i++ ) {
+			
+			placement = placementsClockwise[ i ];
+			indicesClockwise[ placement ] = i;
+			indicesCounterclockwise[ placement ] = ( placementsClockwise.length - 1 ) - i;
+			placementsCounterclockwise[ indicesCounterclockwise[ placement ] ] = placement;
+			
+		}
 		
 		// properties
 		
 		_Popover.options = {
 			placement: 'top',
 			template: '<div></div>',
-			animate: false
+			animate: false,
+			checkBoundsClockwise: true,
+			normalThreshold: 0.5
 		};
 		
 		// instance
@@ -58,8 +76,10 @@
 		_Popover.Instance.prototype.remove_complete = remove_complete;
 		
 		_Popover.Instance.prototype.reposition = reposition;
+		_Popover.Instance.prototype.check_bounds = check_bounds;
 		_Popover.Instance.prototype.update_placement = update_placement;
 		_Popover.Instance.prototype.update_position = update_position;
+		_Popover.Instance.prototype.normal_to_placement = normal_to_placement;
 		
 	}
 	
@@ -298,10 +318,12 @@
 	
 	function reposition ( position ) {
 		
-		var placement = this.options.placement,
-			placementBounded,
-			positionChanged,
-			outHorizontal;
+		var i, il,
+			placements,
+			placement,
+			indices,
+			index,
+			positionChanged;
 		
 		if ( typeof position !== 'undefined' ) {
 			
@@ -343,74 +365,53 @@
 			
 			if ( positionChanged === true ) {
 				
-				if ( this.placementCurrent !== placement ) {
+				// handle bounds by checking each placement possibility until one found
+				
+				if ( this.options.checkBoundsClockwise !== true ) {
 					
-					this.update_placement( placement );
+					placements = placementsCounterclockwise;
+					indices = indicesCounterclockwise;
+					
+				}
+				else {
+					
+					placements = placementsClockwise;
+					indices = indicesClockwise;
 					
 				}
 				
-				this.update_position();
+				placement = this.options.placement;
+				index = indices[ placement ];
 				
-				// top / bottom bounds
-				
-				placementBounded = '';
-				
-				if ( this.position.top < 0 ) {
+				for ( i = 0, il = placements.length; i < il; i++ ) {
 					
-					placementBounded += 'bottom';
+					placement = placements[ index ];
 					
-				}
-				else if ( this.position.top + this.elementHeight > shared.screenViewableHeight ) {
+					// change
 					
-					placementBounded += 'top';
-					
-				}
-				
-				if ( this.placementCurrent !== placementBounded && placementBounded.length > 0 ) {
-					
-					this.update_placement( placementBounded ).update_position();
-					
-				}
-				
-				// left / right bounds
-				
-				if ( this.position.left < 0 ) {
-					
-					placementBounded += 'right';
-					outHorizontal = 'right';
-					
-				}
-				else if ( this.position.left + this.elementWidth > shared.screenViewableWidth ) {
-					
-					placementBounded += 'left';
-					outHorizontal = 'left';
-					
-				}
-				
-				if ( this.placementCurrent !== placementBounded && placementBounded.length > 0 ) {
-					
-					this.update_placement( placementBounded ).update_position();
-					
-				}
-				
-				// redo top/bottom check if horizontal placement changed
-				
-				if ( typeof outHorizontal === 'string' ) {
-					
-					if ( this.position.top < 0 ) {
+					if ( this.placementCurrent !== placement ) {
 						
-						placementBounded = 'bottom' + outHorizontal;
-						
-					}
-					else if ( this.position.top + this.elementHeight > shared.screenViewableHeight ) {
-						
-						placementBounded = 'top' + outHorizontal;
+						this.update_placement( placement );
 						
 					}
 					
-					if ( this.placementCurrent !== placementBounded ) {
+					this.update_position();
+					
+					// test
+					
+					if ( this.check_bounds() ) {
 						
-						this.update_placement( placementBounded ).update_position();
+						break;
+						
+					}
+					
+					// update index
+					
+					index++;
+					
+					if ( index === il ) {
+						
+						index = 0;
 						
 					}
 					
@@ -423,6 +424,18 @@
 		}
 		
 		return this;
+		
+	}
+	
+	function check_bounds () {
+		
+		if ( this.position.top < 0 ) return false;
+		else if ( this.position.top + this.elementHeight > shared.screenViewableHeight ) return false;
+		
+		if ( this.position.left < 0 ) return false;
+		else if ( this.position.left + this.elementWidth > shared.screenViewableWidth ) return false;
+		
+		return true;
 		
 	}
 	
@@ -463,9 +476,33 @@
 			this.position.top = this.positionBase.top - this.elementHeight + this.offset.top;
 			
 		}
+		else if ( placementCurrent === 'topright' ) {
+			
+			this.position.left = Math.max( this.positionBase.left + this.offset.left, 0 );
+			this.position.top = this.positionBase.top - this.elementHeight + this.offset.top;
+			
+		}
+		else if ( placementCurrent === 'right' ) {
+			
+			this.position.left = this.positionBase.left + this.offset.left;
+			this.position.top = this.positionBase.top - this.elementHeight * 0.5 + this.offset.top;
+			
+		}
+		else if ( placementCurrent === 'bottomright' ) {
+			
+			this.position.left = Math.max( this.positionBase.left + this.offset.left, 0 );
+			this.position.top = this.positionBase.top + this.offset.top;
+			
+		}
 		else if ( placementCurrent === 'bottom' ) {
 			
 			this.position.left = this.positionBase.left - this.elementWidth * 0.5 + this.offset.left;
+			this.position.top = this.positionBase.top + this.offset.top;
+			
+		}
+		else if ( placementCurrent === 'bottomleft' ) {
+			
+			this.position.left = Math.min( this.positionBase.left - this.elementWidth + this.offset.left, shared.screenViewableWidth - this.elementWidth );
 			this.position.top = this.positionBase.top + this.offset.top;
 			
 		}
@@ -475,34 +512,107 @@
 			this.position.top = this.positionBase.top - this.elementHeight * 0.5 + this.offset.top;
 			
 		}
-		else if ( placementCurrent === 'right' ) {
-			
-			this.position.left = this.positionBase.left + this.offset.left;
-			this.position.top = this.positionBase.top - this.elementHeight * 0.5 + this.offset.top;
-			
-		}
-		else if ( placementCurrent === 'bottomleft' ) {
-			
-			this.position.left = Math.min( this.positionBase.left - this.elementWidth + this.offset.left, shared.screenViewableWidth - this.elementWidth );
-			this.position.top = this.positionBase.top + this.offset.top;
-			
-		}
-		else if ( placementCurrent === 'bottomright' ) {
-			
-			this.position.left = Math.max( this.positionBase.left + this.offset.left, 0 );
-			this.position.top = this.positionBase.top + this.offset.top;
-			
-		}
 		else if ( placementCurrent === 'topleft' ) {
 			
 			this.position.left = Math.min( this.positionBase.left - this.elementWidth + this.offset.left, shared.screenViewableWidth - this.elementWidth );
 			this.position.top = this.positionBase.top - this.elementHeight + this.offset.top;
 			
 		}
-		else if ( placementCurrent === 'topright' ) {
+		
+		return this;
+		
+	}
+	
+	function normal_to_placement ( normal ) {
+		
+		var nx = normal.x,
+			ny = normal.y,
+			threshold = this.options.normalThreshold,
+			difference;
+		
+		// left
+		
+		if ( nx < 0 ) {
 			
-			this.position.left = Math.max( this.positionBase.left + this.offset.left, 0 );
-			this.position.top = this.positionBase.top - this.elementHeight + this.offset.top;
+			// top
+			
+			if ( ny < 0 ) {
+				
+				difference = nx - ny;
+				
+				if ( difference < -threshold ) {
+					this.options.placement = 'left';
+				}
+				else if ( difference > threshold ) {
+					this.options.placement = 'top';
+				}
+				else {
+					this.options.placement = 'topleft';
+				}
+				
+				this.options.checkBoundsClockwise = false;
+				
+			}
+			// bottom
+			else {
+				
+				difference = ny + nx;
+				
+				if ( difference < -threshold ) {
+					this.options.placement = 'left';
+				}
+				else if ( difference > threshold ) {
+					this.options.placement = 'bottom';
+				}
+				else {
+					this.options.placement = 'bottomleft';
+				}
+				
+				this.options.checkBoundsClockwise = true;
+				
+			}
+			
+		}
+		// right
+		else {
+			
+			// top
+			
+			if ( ny < 0 ) {
+				
+				difference = nx + ny;
+				
+				if ( difference < -threshold ) {
+					this.options.placement = 'top';
+				}
+				else if ( difference > threshold ) {
+					this.options.placement = 'right';
+				}
+				else {
+					this.options.placement = 'topright';
+				}
+				
+				this.options.checkBoundsClockwise = true;
+				
+			}
+			// bottom
+			else {
+				
+				difference = nx - ny;
+				
+				if ( difference < -threshold ) {
+					this.options.placement = 'bottom';
+				}
+				else if ( difference > threshold ) {
+					this.options.placement = 'right';
+				}
+				else {
+					this.options.placement = 'bottomright';
+				}
+				
+				this.options.checkBoundsClockwise = false;
+				
+			}
 			
 		}
 		

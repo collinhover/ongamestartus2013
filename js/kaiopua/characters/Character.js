@@ -128,8 +128,9 @@
 			},
 			communication: {
 				delayEnd: 500,
+				boundRadiusPctAway: 0.4,
 				boundRadiusPctX: 0,
-				boundRadiusPctY: 0.75,
+				boundRadiusPctY: 0.4,
 				boundRadiusPctZ: 0,
 				distanceMovedMax: 100,
 				distanceOutsideScreenMax: 50
@@ -158,6 +159,7 @@
 		
 		_Character.Instance.prototype.add_dialogue = add_dialogue;
 		_Character.Instance.prototype.communicate = communicate;
+		_Character.Instance.prototype.communicate_start = communicate_start;
 		_Character.Instance.prototype.communicate_update = communicate_update;
 		_Character.Instance.prototype.communicate_next = communicate_next;
 		_Character.Instance.prototype.communicate_pause = communicate_pause;
@@ -295,6 +297,9 @@
 		this.utilVec31Look = new THREE.Vector3();
 		this.utilVec32Look = new THREE.Vector3();
 		this.utilVec33Look = new THREE.Vector3();
+		this.utilVec34Look = new THREE.Vector3();
+		this.utilVec35Look = new THREE.Vector3();
+		this.utilVec36Look = new THREE.Vector3();
 		
 		// handle parameters
 		
@@ -707,6 +712,8 @@
 			
 			this.look_at( this.targetCommunication );
 			
+			this.targetCommunication.communicate_start();
+			
 		}
 		
 		// handle dialogue
@@ -817,8 +824,6 @@
 			
 			if ( message.length > 0 ) {
 				
-				this.communicating = true;
-				
 				conversations.activeCount++;
 				conversations.active = dialogueName;
 				conversations.paused = false;
@@ -867,18 +872,10 @@
 				textbubbleOptions.disableAdvanceByUser = textbubbleOptions.disableAdvanceByUser || false;
 				textbubbleOptions.delayAdvanced = textbubbleOptions.delayAdvanced || 0;
 				textbubbleOptions.animateAlways = textbubbleOptions.animateAlways || false;
-				console.log( this.name, ' message: ', message );
+				
 				conversations.textbubble.content( message ).show( textbubbleOptions );
 				
-				// record initial position when conversation started
-				// if we move too much, cancel the conversation
-				
-				conversations.positionStart.copy( this.position );
-				
-				// also make sure we update textbubble as camera moves
-				
-				shared.cameraControls.onCameraMoved.add( this.communicate_update, this );
-				this.communicate_update();
+				this.communicate_start();
 				
 			}
 			
@@ -886,7 +883,30 @@
 		
 	}
 	
-	function communicate_update () {
+	function communicate_start () {
+		
+		var conversations = this.conversations;
+		
+		if ( this.communicating !== true ) {
+			
+			this.communicating = true;
+			
+			// record initial position when conversation started
+			// if we move too much, cancel the conversation
+			
+			conversations.positionStart.copy( this.position );
+			
+			// also make sure we update textbubble as camera moves
+			
+			shared.cameraControls.onCameraMoved.add( this.communicate_update, this );
+			
+		}
+		
+		this.communicate_update();
+		
+	}
+	
+	function communicate_update ( force ) {
 		
 		var options = this.options,
 			communication = options.communication,
@@ -898,30 +918,49 @@
 			distanceMoved,
 			distanceProjectedToScreen,
 			projectedPosition = conversations.projectedPosition,
-			screenPosition = conversations.screenPosition;
+			screenPosition = conversations.screenPosition,
+			screenPositionTarget,
+			normal;
 		
-		if ( this.communicating === true ) {
+		if ( this.communicating === true || force === true ) {
 			
 			// compare current local position to start local position to find moved
 			
-			distanceMoved = _VectorHelper.distance_between( conversations.positionStart, this.position );
+			if ( force === true ) {
+				
+				distanceMoved = 0;
+				
+			}
+			else {
+				
+				distanceMoved = _VectorHelper.distance_between( conversations.positionStart, this.position );
+				
+			}
 			
 			if ( distanceMoved > communication.distanceMovedMax ) {
 				
 				this.silence();
 				
 			}
-			else {//if ( conversations.paused !== true ) {
+			else {
 				
 				// find position and offset
 				
 				position.copy( this.matrixWorld.getPosition() );
 				
 				positionOffset.set( communication.boundRadiusPctX, communication.boundRadiusPctY, communication.boundRadiusPctZ ).multiplyScalar( this.boundRadius );
-				
 				this.matrixRotationWorld.extractRotation( this.matrixWorld ).multiplyVector3( positionOffset );
 				
 				position.addSelf( positionOffset );
+				
+				// offset away from target
+				
+				if ( target instanceof Character ) {
+					
+					positionOffset = _VectorHelper.normal_between( target.matrixWorld.getPosition(), position ).multiplyScalar( this.boundRadius * communication.boundRadiusPctAway );
+					position.addSelf( positionOffset );
+					
+				}
 				
 				// project total position
 				
@@ -942,11 +981,18 @@
 					this.silence();
 					
 				}
-				else {
+				else if ( conversations.paused !== true && conversations.textbubble instanceof _Textbubble.Instance ) {
 				
-					// TODO: adjust placement of textbubble based on screen position of target's textbubble
+					// adjust placement of textbubble to keep it away from target screen position
 					
-					console.log( 'this screenPosition ', screenPosition.x, ', ', screenPosition.y, ' vs target screenPosition', target.conversations.screenPosition.x, ', ', target.conversations.screenPosition.y );
+					if ( target instanceof Character ) {
+						
+						screenPositionTarget = target.conversations.screenPosition;
+						normal = _VectorHelper.normal_between( screenPositionTarget, screenPosition );
+						
+						conversations.textbubble.normal_to_placement( normal );
+						
+					}
 					
 					conversations.textbubble.reposition( screenPosition );
 					
@@ -1028,7 +1074,11 @@
 			
 			conversations.paused = true;
 			
-			conversations.textbubble.hide();
+			if ( conversations.textbubble instanceof _Textbubble.Instance ) {
+				
+				conversations.textbubble.hide();
+				
+			}
 			
 		}
 		
@@ -1100,7 +1150,7 @@
 			target = this.targetCommunication;
 		
 		if ( this.communicating !== false ) {
-			console.log( this.name, ' SILENCE!' );
+			
 			this.communicating = false;
 			
 			shared.cameraControls.onCameraMoved.remove( this.communicate_update, this );
@@ -1108,7 +1158,13 @@
 			conversations.ending = conversations.paused = false;
 			conversations.active = conversations.next = '';
 			conversations.activeCount = 0;
-			conversations.textbubble.remove();
+			
+			if ( conversations.textbubble instanceof _Textbubble.Instance ) {
+				
+				conversations.textbubble.remove();
+				delete conversations.textbubble;
+				
+			}
 			
 			// handle communication target
 			
@@ -1254,18 +1310,34 @@
 			movement = options.movement,
 			rotate = movement.rotate,
 			axis = rotate.axis,
+			axisWorld = this.utilVec31Look.copy( axis ),
+			forwardWorld = this.utilVec32Look.copy( rotate.facingDirectionBase ),
 			rotateDelta = rotate.delta,
-			difference = _VectorHelper.vector_between( this.position, object.position ),
-			diffDotAxis= difference.dot( axis ),
-			axisToObjPosition = this.utilVec31Look.copy( axis ).multiplyScalar( diffDotAxis ),
-			projectedPosition = this.utilVec32Look.sub( object.position, axisToObjPosition ),
-			normal = _VectorHelper.normal_between( this.position, projectedPosition ),
-			forward = this.utilVec33Look.copy( rotate.facingDirectionBase ),
+			position = this.utilVec33Look.copy( this.matrixWorld.getPosition() ),
+			objectPosition = this.utilVec34Look.copy( object.matrixWorld.getPosition() ),
+			differenceNormal,
+			diffCrossUp = this.utilVec35Look,
+			forwardWorldTarget = this.utilVec36Look,
 			angle;
 		
-		rotate.turn.multiplyVector3( forward );
-		rotate.facing.multiplyVector3( forward );
-		angle = _VectorHelper.signed_angle_between_coplanar_vectors( forward, normal, axis );
+		// get world axis and forward
+		
+		this.matrixWorld.rotateAxis( axisWorld );
+		this.matrixWorld.rotateAxis( forwardWorld );
+		
+		// find normal from this to object
+		
+		differenceNormal = _VectorHelper.normal_between( position, objectPosition );
+		
+		// double cross difference with up to find direction to object around up
+		// we want to look in object's direction while keeping our up intact
+		
+		diffCrossUp.cross( differenceNormal, axisWorld );
+		forwardWorldTarget.cross( axisWorld, diffCrossUp );
+		
+		// get signed angle delta and and multiply this quaternion by delta
+		
+		angle = _VectorHelper.signed_angle_between_coplanar_vectors( forwardWorld, forwardWorldTarget, axis );
 		
 		rotateDelta.setFromAxisAngle( axis, angle );
 				

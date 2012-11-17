@@ -96,7 +96,8 @@ var KAIOPUA = (function (main) {
 		],
         assetsGameCompatibility = [
 			"js/kaiopua/utils/ErrorHandler.js",
-			"js/kaiopua/ui/UI.js"
+			"js/kaiopua/ui/UI.js",
+			"js/kaiopua/utils/KeyHelper.js"
         ],
         assetsGameFoundation = [
             "js/lib/three/three.min.js",
@@ -112,8 +113,7 @@ var KAIOPUA = (function (main) {
 		],
 		assetsGameCore = [
 			"js/kaiopua/core/Scene.js",
-			"js/kaiopua/core/CameraControls.js",
-			"js/kaiopua/utils/KeyHelper.js"
+			"js/kaiopua/core/CameraControls.js"
 		],
         assetsGameLauncher = [
             "js/kaiopua/sections/Launcher.js"
@@ -363,10 +363,11 @@ var KAIOPUA = (function (main) {
     
     =====================================================*/
 	
-	function compatibility_check ( err, ui ) {
+	function compatibility_check ( err, ui, kh ) {
 		console.log('GAME: compatiblity check');
 		_ErrorHandler = err;
 		_UI = ui;
+		_KeyHelper = kh;
 		
 		// check for errors
         
@@ -456,13 +457,12 @@ var KAIOPUA = (function (main) {
     
     =====================================================*/
     
-    function init_setup ( sc, cc, kh ) {
+    function init_setup ( sc, cc ) {
 		console.log('GAME: setup');
 		// utility
 		
 		_Scene = sc;
 		_CameraControls = cc;
-		_KeyHelper = kh;
 		
 		// spawns
 		

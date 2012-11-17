@@ -580,7 +580,6 @@
 			velocityGravityRotatedProjected = this.utilVec34GravityBody,
 			velocityMovementRotatedProjected = this.utilVec35GravityBody,
 			mesh = this.mesh,
-			meshPosition,
 			meshPositionProjected = this.utilVec36GravityBody;
 		
 		// get velocity collisions
@@ -677,12 +676,10 @@
 				
 				// project mesh position along combined rotated recent max velocity
 				
-				meshPosition = mesh.matrixWorld.getPosition();
-				
 				mesh.quaternion.multiplyVector3( velocityGravityRotatedProjected.copy( velocityGravity.forceRecentMax ).multiplyScalar( this.gravityBodyChangeGravityProjectionMod ) );
 				mesh.quaternion.multiplyVector3( velocityMovementRotatedProjected.copy( velocityMovement.forceRecentMax ).multiplyScalar( this.gravityBodyChangeMovementProjectionMod ) );
 				
-				meshPositionProjected.copy( meshPosition ).addSelf( velocityGravityRotatedProjected ).addSelf( velocityMovementRotatedProjected );
+				meshPositionProjected.copy( mesh.matrixWorld.getPosition() ).addSelf( velocityGravityRotatedProjected ).addSelf( velocityMovementRotatedProjected );
 				
 				// get all gravity bodies that overlap this with gravity radius
 				
