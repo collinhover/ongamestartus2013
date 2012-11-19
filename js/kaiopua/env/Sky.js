@@ -45,7 +45,6 @@
     =====================================================*/
 	
 	function init_internal ( m, cld, mh, sh, oh, ph ) {
-		console.log('internal sky', _Sky);
 		
 		_Model = m;
 		_Cloud = cld;
@@ -396,7 +395,7 @@
 			
 			// zone / angles
 			
-			zone = this.zones[ Math.round( Math.random() * ( this.zones.length - 1 ) ) ];
+			zone = main.array_random_value( this.zones );
 			zpolar = ( zone.polar && main.is_number( zone.polar.min ) && main.is_number( zone.polar.max ) ) ? zone.polar : _Sky.zonePolar;
 			zazimuth = ( zone.azimuth && main.is_number( zone.azimuth.min ) && main.is_number( zone.azimuth.max ) ) ? zone.azimuth : _Sky.zoneAzimuth;
 			

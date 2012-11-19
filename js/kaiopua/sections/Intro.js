@@ -25,7 +25,7 @@
 		data: _Intro,
 		requirements: [
 			"js/kaiopua/core/Model.js",
-			"js/kaiopua/core/Player.js",
+			"js/kaiopua/characters/Player.js",
 			"js/kaiopua/utils/ObjectHelper.js",
             { path: shared.pathToAssets + "spawn_main.js", type: 'model' },
             { path: shared.pathToAssets + "hero.js", type: 'model' }
@@ -41,7 +41,6 @@
     =====================================================*/
 	
 	function init_internal ( m, pl, oh, gSpawnMain, gHero ) {
-		console.log('internal intro', _Intro);
 		
 		// assets
 		
@@ -62,11 +61,10 @@
 			geometry: gSpawnMain,
 			center: true
 		} );
-		shared.spawns.main.copy( spawnMain.position );
+		shared.spawns.main = spawnMain.position.clone();
 		
 		shared.player = new _Player.Instance( {
 			geometry: gHero,
-			material: new THREE.MeshFaceMaterial(),
 			options: {
 				animation: {
 					names: {
@@ -82,7 +80,6 @@
 				}
 			}
 		} );
-		shared.player.controllable = true;
 		
 	}
     
@@ -96,7 +93,7 @@
 		
 		shared.sceneBG.add( shared.skybox );
 		
-		shared.world.show();
+		shared.scene.add( shared.world );
 		
 		shared.player.respawn( shared.scene, shared.spawns.main );
 		
@@ -119,7 +116,7 @@
 		
 		shared.scene.remove( shared.player );
 		
-		shared.world.hide();
+		shared.scene.remove( shared.world );
 		
 		shared.sceneBG.remove( shared.skybox );
         

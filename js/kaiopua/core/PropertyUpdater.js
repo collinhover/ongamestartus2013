@@ -34,7 +34,6 @@
     =====================================================*/
 	
 	//function init_internal ( o ) {
-		console.log('internal property updater', _PropertyUpdater);
 		
 		_PropertyUpdater.Instance = PropertyUpdater;
 		

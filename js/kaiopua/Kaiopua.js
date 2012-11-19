@@ -12,6 +12,11 @@ var KAIOPUA = (function (main) {
 	
     var shared = main.shared = main.shared || {};
 	
+	shared.domElements = shared.domElements || {};
+	shared.supports = shared.supports || {};
+	shared.throttled = {};
+	shared.spawns = {};
+	
 	shared.pointers = [];
 	shared.originLink = window.location.pathname.toString();
 	
@@ -26,20 +31,24 @@ var KAIOPUA = (function (main) {
 	shared.timeDeltaModDec = Math.pow( 10, 2 );
 	shared.pointerWheelSpeed = 120;
 	shared.pointerHoldPositionShift = 10;
+	shared.pointerInGame = true;
 	shared.throttleTimeShort = shared.timeDeltaExpected * 3;
 	shared.throttleTimeMedium = 100;
 	shared.throttleTimeLong = 250;
 	shared.throttleTimeLong = 250;
 	shared.focused = true;
 	
+	shared.errorString = 'error';
+	shared.errorTypeGeneral = 'General';
+    shared.errorTypes = [ shared.errorTypeGeneral, 'WebGLBrowser', 'WebGLComputer' ];
+    shared.errorTypesOnlyOnce = [ 'WebGLBrowser', 'WebGLComputer' ];
+	
 	shared.fadeBetweenSections = false;
 	
-	shared.domFadeTime = 500;
-	shared.domCollapseTime = 500;
-	shared.domScrollTime = 500;
+	shared.domFadeDuration = 500;
+	shared.domCollapseDuration = 500;
 	shared.domFadeEasing = 'easeInOutCubic';
 	shared.domCollapseEasing = 'easeInOutCubic';
-	shared.domScrollEasing = 'easeInOutCubic';
 	
 	shared.screenWidth = 0;
 	shared.screenHeight = 0;
@@ -66,7 +75,7 @@ var KAIOPUA = (function (main) {
 		started = false,
         paused = false,
 		focusLost = false,
-		transitionTime = 500,
+		transitionDuration = 500,
         libsPrimaryList = [
             "js/lib/RequestAnimationFrame.js",
             "js/lib/RequestInterval.js",
@@ -88,7 +97,8 @@ var KAIOPUA = (function (main) {
 		],
         assetsGameCompatibility = [
 			"js/kaiopua/utils/ErrorHandler.js",
-			"js/kaiopua/ui/UI.js"
+			"js/kaiopua/ui/UI.js",
+			"js/kaiopua/utils/KeyHelper.js"
         ],
         assetsGameFoundation = [
             "js/lib/three/three.min.js",
@@ -104,8 +114,7 @@ var KAIOPUA = (function (main) {
 		],
 		assetsGameCore = [
 			"js/kaiopua/core/Scene.js",
-			"js/kaiopua/core/CameraControls.js",
-			"js/kaiopua/utils/KeyHelper.js"
+			"js/kaiopua/core/CameraControls.js"
 		],
         assetsGameLauncher = [
             "js/kaiopua/sections/Launcher.js"
@@ -128,10 +137,8 @@ var KAIOPUA = (function (main) {
     
     function init () {
 		
-		shared.domElements = shared.domElements || {};
 		shared.domElements.$game = $('#game');
 		
-		shared.supports = shared.supports || {};
 		shared.supports.pointerEvents = css_property_supported( 'pointer-events' );
        
         shared.signals = {
@@ -168,6 +175,8 @@ var KAIOPUA = (function (main) {
 			onGameStopped : new signals.Signal(),
 			onGameStoppedCompleted : new signals.Signal(),
 			
+			onGamePointerLeft : new signals.Signal(),
+			onGamePointerEntered : new signals.Signal(),
 			onGamePointerMoved : new signals.Signal(),
 			onGamePointerTapped : new signals.Signal(),
 			onGamePointerDoubleTapped : new signals.Signal(),
@@ -186,10 +195,14 @@ var KAIOPUA = (function (main) {
 			.on( 'keydown', on_key_pressed )
 			.on( 'keyup', on_key_released );
 		
+		shared.throttled.reposition_pointer = $.throttle( shared.throttleTimeShort, reposition_pointer );
+		shared.throttled.on_window_resized = $.throttle( shared.throttleTimeLong, on_window_resized );
+		
 		$( window )
+			.on( 'mousemove', shared.throttled.reposition_pointer )
 			.on( 'blur', on_focus_lost )
 			.on( 'focus', on_focus_gained )
-			.on( 'resize', $.throttle( shared.throttleTimeLong, on_window_resized ) );
+			.on( 'resize', shared.throttled.on_window_resized );
 		
 		window.onerror = on_error;
 		
@@ -263,6 +276,8 @@ var KAIOPUA = (function (main) {
 		main.ensure_not_array = ensure_not_array;
 		main.array_cautious_add = array_cautious_add;
 		main.array_cautious_remove = array_cautious_remove;
+		main.array_random_value = array_random_value;
+		main.array_random_value_remove = array_random_value_remove;
 		main.index_of_value = index_of_value;
 		main.last_index_of_value = last_index_of_value;
 		main.indices_of_value = indices_of_value;
@@ -350,10 +365,11 @@ var KAIOPUA = (function (main) {
     
     =====================================================*/
 	
-	function compatibility_check ( err, ui ) {
+	function compatibility_check ( err, ui, kh ) {
 		console.log('GAME: compatiblity check');
 		_ErrorHandler = err;
 		_UI = ui;
+		_KeyHelper = kh;
 		
 		// check for errors
         
@@ -361,8 +377,12 @@ var KAIOPUA = (function (main) {
 			
             _ErrorHandler.process();
 			
+			shared.signals.onGameReady.dispatch();
+			
         }
         else {
+			
+			shared.supports.webGL = true;
 			
 			load_game_foundation();
 			
@@ -424,7 +444,7 @@ var KAIOPUA = (function (main) {
 		
 		// renderer
 		
-        shared.renderer = new THREE.WebGLRenderer( { clearColor: 0x000000, clearAlpha: 0, maxLights: 4 } );
+        shared.renderer = new THREE.WebGLRenderer( { clearColor: 0x000000, clearAlpha: 0, maxLights: 8 } );
         shared.renderer.setSize( shared.gameWidth, shared.gameHeight );
         shared.renderer.autoClear = false;
 		
@@ -439,19 +459,12 @@ var KAIOPUA = (function (main) {
     
     =====================================================*/
     
-    function init_setup ( sc, cc, kh ) {
+    function init_setup ( sc, cc ) {
 		console.log('GAME: setup');
 		// utility
 		
 		_Scene = sc;
 		_CameraControls = cc;
-		_KeyHelper = kh;
-		
-		// spawns
-		
-		shared.spawns = {
-			main: new THREE.Vector3()
-		};
 		
 		// scenes
 		
@@ -475,6 +488,11 @@ var KAIOPUA = (function (main) {
 		// camera controls
 		
 		shared.cameraControls = new _CameraControls.Instance( { camera: shared.camera } );
+		shared.cameraControls.onCameraMoved.add( $.throttle( shared.throttleTimeMedium, function () {
+			
+			shared.domElements.$game.triggerHandler( 'mousemove' );
+			
+		} ) );
 		
 		// passes
         
@@ -501,15 +519,20 @@ var KAIOPUA = (function (main) {
 		
 		// events
 		
+		shared.throttled.on_game_pointer_moved = $.throttle( shared.throttleTimeShort, on_game_pointer_moved );
+		shared.throttled.on_game_pointer_dragged = $.throttle( shared.throttleTimeShort, true, on_game_pointer_dragged );
+		
 		shared.domElements.$game
-			.on( 'mousemove', $.throttle( shared.throttleTimeShort, on_pointer_moved ) )
-			.on( 'tap', on_pointer_tapped )
-			.on( 'doubletap', on_pointer_doubletapped )
-			.on( 'hold', on_pointer_held )
-			.on( 'dragstart', on_pointer_dragstarted )
-			.on( 'drag', $.throttle( shared.throttleTimeShort, true, on_pointer_dragged ) )
-			.on( 'dragend', on_pointer_dragended )
-			.on( 'mousewheel DOMMouseScroll', on_pointer_wheel )
+			.on( 'mouseleave', on_game_pointer_left )
+			.on( 'mouseenter', on_game_pointer_entered )
+			.on( 'mousemove', shared.throttled.on_game_pointer_moved )
+			.on( 'tap', on_game_pointer_tapped )
+			.on( 'doubletap', on_game_pointer_doubletapped )
+			.on( 'hold', on_game_pointer_held )
+			.on( 'dragstart', on_game_pointer_dragstarted )
+			.on( 'drag', shared.throttled.on_game_pointer_dragged )
+			.on( 'dragend', on_game_pointer_dragended )
+			.on( 'mousewheel DOMMouseScroll', on_game_pointer_wheel )
 			.on( 'contextmenu', on_context_menu );
 		
 		setup = true;
@@ -642,7 +665,7 @@ var KAIOPUA = (function (main) {
 					
 					newSectionCallback();
 					
-				}, transitionTime );
+				}, transitionDuration );
 			
 			}
 			// no previous section, create new immediately
@@ -743,7 +766,7 @@ var KAIOPUA = (function (main) {
     
     function resume () {
 		
-        if ( paused === true && _ErrorHandler.errorState !== true ) {
+        if ( paused === true && ( _ErrorHandler.errorState !== true || started !== true ) ) {
 			console.log('GAME: RESUME');
 			paused = false;
 			
@@ -1088,6 +1111,18 @@ var KAIOPUA = (function (main) {
 		
 	}
 	
+	function array_random_value ( array ) {
+		
+		return array[ Math.round( Math.random() * ( array.length - 1 ) ) ];
+		
+	}
+	
+	function array_random_value_remove ( array ) {
+		
+		return array.splice( Math.round( Math.random() * ( array.length - 1 ) ), 1 )[ 0 ];
+		
+	}
+	
 	function index_of_value( array, value ) {
 		
 		for ( var i = 0, l = array.length; i < l; i++ ) {
@@ -1240,14 +1275,13 @@ var KAIOPUA = (function (main) {
 		
 		shared.timeSinceInteraction = 0;
 		
-		var pointer,
+		var pointer= main.get_pointer( e ),
 			position,
 			d,
 			b;
 		
 		if ( e ) {
 			
-			pointer = main.get_pointer( e );
 			position = e.position;
 			
 			if ( is_array( position ) && position[ pointer.id ] ) {
@@ -1262,9 +1296,15 @@ var KAIOPUA = (function (main) {
 				b = d.body;
 				
 				position = {
-					x: e.pageX || e.clientX + ( d && d.scrollLeft || b && b.scrollLeft || 0 ) - ( d && d.clientLeft || b && b.clientLeft || 0 ),
-					y: e.pageY || e.clientY + ( d && d.scrollTop || b && b.scrollTop || 0 ) - ( d && d.clientTop || b && b.clientTop || 0 )
+					x: pointer.x,
+					y: pointer.y
 				 };
+				 
+				 if (  typeof e.pageX !== 'undefined' ) position.x = e.pageX;
+				 else if ( typeof e.clientX !== 'undefined' ) position.x = e.clientX + ( d && d.scrollLeft || b && b.scrollLeft || 0 ) - ( d && d.clientLeft || b && b.clientLeft || 0 );
+				 
+				  if (  typeof e.pageY !== 'undefined' ) position.y = e.pageY;
+				 else if ( typeof e.clientY !== 'undefined' ) position.y = e.clientY + ( d && d.scrollTop || b && b.scrollTop || 0 ) - ( d && d.clientTop || b && b.clientTop || 0 );
 				
 			}
 			
@@ -1296,15 +1336,40 @@ var KAIOPUA = (function (main) {
     
     =====================================================*/
 	
-	function on_pointer_moved ( e ) {
+	function on_game_pointer_left ( e ) {
 		
-		shared.signals.onGamePointerMoved.dispatch( e, reposition_pointer( e ) );
+		shared.pointerInGame = false;
 		
-		on_game_input( e );
+		shared.signals.onGamePointerLeft.dispatch( e );
 		
 	}
 	
-	function on_pointer_tapped ( e ) {
+	function on_game_pointer_entered ( e ) {
+		
+		shared.pointerInGame = true;
+		
+		shared.signals.onGamePointerEntered.dispatch( e );
+		
+	}
+	
+	function on_game_pointer_moved ( e ) {
+		
+		// check if pointer is in game
+		// throttling can cause pointer move to fire after pointer leaves
+		
+		if ( shared.pointerInGame === true ) {
+			
+			// no need to reposition, handled by window mousemove
+			
+			shared.signals.onGamePointerMoved.dispatch( e );
+			
+			on_game_input( e );
+			
+		}
+		
+	}
+	
+	function on_game_pointer_tapped ( e ) {
 		
 		shared.signals.onGamePointerTapped.dispatch( e, reposition_pointer( e ) );
 		
@@ -1312,7 +1377,7 @@ var KAIOPUA = (function (main) {
 		
 	}
 	
-	function on_pointer_doubletapped ( e ) {
+	function on_game_pointer_doubletapped ( e ) {
 		
 		shared.signals.onGamePointerDoubleTapped.dispatch( e, reposition_pointer( e ) );
 		
@@ -1320,7 +1385,7 @@ var KAIOPUA = (function (main) {
 		
 	}
 	
-	function on_pointer_held ( e ) {
+	function on_game_pointer_held ( e ) {
 			
 		shared.signals.onGamePointerHeld.dispatch( e, reposition_pointer( e ) );
 		
@@ -1328,7 +1393,7 @@ var KAIOPUA = (function (main) {
 		
 	}
 	
-	function on_pointer_dragstarted ( e ) {
+	function on_game_pointer_dragstarted ( e ) {
 		
 		shared.signals.onGamePointerDragStarted.dispatch( e, main.get_pointer( e ) );
 		
@@ -1336,7 +1401,7 @@ var KAIOPUA = (function (main) {
 		
 	}
     
-    function on_pointer_dragged( e ) {
+    function on_game_pointer_dragged( e ) {
 		
 		// no reposition because pointer move takes care of it
 		
@@ -1346,7 +1411,7 @@ var KAIOPUA = (function (main) {
 		
     }
 	
-	function on_pointer_dragended ( e ) {
+	function on_game_pointer_dragended ( e ) {
 		
 		shared.signals.onGamePointerDragEnded.dispatch( e, main.get_pointer( e ) );
 		
@@ -1354,7 +1419,7 @@ var KAIOPUA = (function (main) {
 		
 	}
 	
-	function on_pointer_wheel ( e ) {
+	function on_game_pointer_wheel ( e ) {
 		
 		var eo = e.originalEvent || e;
 		
@@ -1404,7 +1469,7 @@ var KAIOPUA = (function (main) {
 		
 		// check for meta keys
 		
-		if ( e.metaKey || e.ctrlKey || e.shiftKey || e.altKey ) {
+		if ( typeof e === 'undefined' || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey ) {
 			return;
 		}
 		
@@ -1695,64 +1760,67 @@ var KAIOPUA = (function (main) {
 	
 	function dom_fade( parameters ) {
 		
-		var $element,
-			actions,
-			time,
+		var $elements,
+			duration,
 			opacity,
 			easing,
-			callback,
-			isHidden,
-			isCollapsed,
-			fadeComplete = function () {
-				
-				$element.removeClass( 'hiding' );
-				
-				// if faded out completely, hide
-				
-				if ( opacity === 0 ) {
-					
-					$element.addClass( 'hidden' ).css( 'opacity', '' ).trigger( 'hidden' );
-					
-					// reenable all buttons and links
-					
-					dom_ignore_pointer( actions, false );
-					
-				}
-				else {
-					
-					$element.trigger( 'shown' );
-					
-					if ( opacity === 1 ) {
-						
-						$element.css( 'opacity', '' );
-						
-					}
-					
-				}
-				
-				// do callback
-				
-				if ( typeof callback === 'function' ) {
-					
-					callback();
-					
-				}
-				
-			};
+			callback;
 		
 		// handle parameters
 		
 		parameters = parameters || {};
 		
-		$element = $( parameters.element );
+		$elements = $( parameters.element );
+		duration = is_number( parameters.duration ) ? parameters.duration : shared.domFadeDuration;
+		opacity = is_number( parameters.opacity ) ? parameters.opacity : 0;
+		easing = typeof parameters.easing === 'string' ? parameters.easing : shared.domFadeEasing;
+		callback = parameters.callback;
 		
-		if ( $element.length > 0 ) {
+		// for each element
+		
+		$elements.each( function () {
 			
-			time = is_number( parameters.time ) ? parameters.time : shared.domFadeTime;
-			opacity = is_number( parameters.opacity ) ? parameters.opacity : 0;
-			easing = typeof parameters.easing === 'string' ? parameters.easing : shared.domFadeEasing;
-			callback = parameters.callback;
-			
+			var $element = $( this ),
+				$ignore,
+				isCollapsed,
+				isHidden,
+				fadeComplete = function () {
+					
+					$element.removeClass( 'hiding' );
+					
+					// if faded out completely, hide
+					
+					if ( opacity === 0 ) {
+						
+						$element.addClass( 'hidden' ).css( 'opacity', '' ).trigger( 'hidden' );
+						
+						// reenable all buttons and links
+						
+						dom_ignore_pointer( $ignore, false );
+						
+					}
+					else {
+						
+						$element.trigger( 'shown' );
+						
+						if ( opacity === 1 ) {
+							
+							$element.css( 'opacity', '' );
+							
+						}
+						
+					}
+					
+					// do callback
+					
+					if ( typeof callback === 'function' ) {
+						
+						callback();
+						
+					}
+					
+				};
+				
 			isHidden = $element.is( '.hidden' );
 			isCollapsed = $element.is( '.collapsed' );
 			
@@ -1760,9 +1828,7 @@ var KAIOPUA = (function (main) {
 			
 			$element.stop( true ).removeClass( 'hiding hidden collapsed' );
 			
-			actions = $element.find( 'a, button' );
-			
-			dom_ignore_pointer( actions, false );
+			$ignore = $element.find( 'a, button' ).add( $element );
 			
 			// if should start at 0 opacity
 			
@@ -1780,25 +1846,27 @@ var KAIOPUA = (function (main) {
 				
 				// temporarily disable all buttons and links
 				
-				dom_ignore_pointer( actions, true );
+				dom_ignore_pointer( $ignore, true );
 				
 			}
 			else {
+				
+				dom_ignore_pointer( $ignore, false );
 				
 				$element.trigger( 'show' );
 				
 			}
 			
-			$element.fadeTo( time, opacity, easing, fadeComplete );
-			
-		}
+			$element.animate( { opacity: opacity }, { duration: duration, easing: easing, complete: fadeComplete } );
+				
+		} );
 		
 	}
 	
 	function dom_collapse( parameters ) {
 		
 		var $elements,
-			time,
+			duration,
 			show,
 			easing,
 			callback;
@@ -1809,7 +1877,7 @@ var KAIOPUA = (function (main) {
 		
 		$elements = $( parameters.element );
 		show = typeof parameters.show === 'boolean' ? parameters.show : false;
-		time = is_number( parameters.time ) ? parameters.time : shared.domCollapseTime;
+		duration = is_number( parameters.duration ) ? parameters.duration : shared.domCollapseDuration;
 		easing = typeof parameters.easing === 'string' ? parameters.easing : shared.domCollapseEasing;
 		callback = parameters.callback;
 		
@@ -1818,6 +1886,7 @@ var KAIOPUA = (function (main) {
 		$elements.each( function () {
 			
 			var $element = $( this ),
+				$ignore,
 				isCollapsed,
 				isHidden,
 				heightCurrent,
@@ -1837,7 +1906,7 @@ var KAIOPUA = (function (main) {
 						
 						// enable pointer
 						
-						dom_ignore_pointer( $element, false );
+						dom_ignore_pointer( $ignore, false );
 						
 					}
 					
@@ -1871,6 +1940,8 @@ var KAIOPUA = (function (main) {
 				
 				$element.stop( true ).removeClass( 'hiding hidden collapsed' );
 				
+				$ignore = $element.find( 'a, button' ).add( $element );
+				
 				if ( show === true ) {
 					
 					// find correct current height and target height
@@ -1886,7 +1957,7 @@ var KAIOPUA = (function (main) {
 					
 					// enable pointer
 					
-					dom_ignore_pointer( $element, false );
+					dom_ignore_pointer( $ignore, false );
 					
 					// show
 					
@@ -1897,7 +1968,7 @@ var KAIOPUA = (function (main) {
 					
 					// temporarily ignore pointer
 					
-					dom_ignore_pointer( $element, true );
+					dom_ignore_pointer( $ignore, true );
 					
 					$element.addClass( 'collapsed' ).trigger( 'hide' );
 					
@@ -1905,7 +1976,7 @@ var KAIOPUA = (function (main) {
 				
 				// animate
 				
-				$element.animate( { height: heightTarget }, { duration: time, easing: easing, complete: collapseComplete } );
+				$element.animate( { height: heightTarget }, { duration: duration, easing: easing, complete: collapseComplete } );
 				
 			}
 			
@@ -3138,7 +3209,7 @@ var KAIOPUA = (function (main) {
 	}
 	
 	GameAsset.prototype.on_ready = function () {
-		
+		console.log( '[ KAIOPUA ] Module / Asset Ready: ' + this.path );
 		asset_ready( this.path, this );
 		
 	}

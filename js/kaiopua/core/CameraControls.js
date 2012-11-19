@@ -41,7 +41,7 @@
     =====================================================*/
 	
 	function init_internal ( mh, vh, oh, ph ) {
-		console.log('internal cameracontrols');
+		
 		// assets
 		
 		_MathHelper = mh;
@@ -124,6 +124,12 @@
 				if ( this._target !== this.targetLast ) {
 					
 					this.targetTransitioned = false;
+					this.targetNew = true;
+					this.distanceThresholdPassed = false;
+					this.distanceSpeedPctWhenNew = 0;
+					this.cameraLerpDeltaWhenNew = 0;
+					this.distanceSpeed = 0;
+					this.distanceSpeedPct = this.options.distanceSpeedPctMin;
 					
 				}
 				
@@ -192,6 +198,7 @@
 		this.utilVec32Update = new THREE.Vector3();
 		this.utilQ31Update = new THREE.Quaternion();
 		this.utilQ32Update = new THREE.Quaternion();
+		this.utilQ31Rotate = new THREE.Quaternion();
 		
 		// options
 		
@@ -238,6 +245,9 @@
 		this.boundRadiusPct = this.options.boundRadiusPctMax;
 		this.boundRadiusMod = this.options.boundRadiusModMax;
 		
+		this.moved = true;
+		this.onCameraMoved = new signals.Signal();
+		
 		this.camera = parameters.camera;
 		this.target = parameters.target;
 		
@@ -281,9 +291,10 @@
 	function rotate_update () {
 		
 		var target = this._target,
-			targetRotateAxis;
+			targetRotateDeltaQ;
 		
 		this.rotationConstrained.copy( this.rotationBase );
+		this.rotationRotatedLast.copy( this.rotationRotated );
 		
 		// while moving, return to 0 rotation offset
 		
@@ -294,8 +305,6 @@
 			
 		}
 		else {
-			
-			this.rotationRotatedLast.copy( this.rotationRotated );
 			
 			this.rotationRotated.x = _MathHelper.clamp( _MathHelper.rad_between_PI( this.rotationRotated.x + this.rotationDeltaTotal.x ), this.options.rotationMinX, this.options.rotationMaxX );
 			this.rotationRotated.y = _MathHelper.clamp( _MathHelper.rad_between_PI( this.rotationRotated.y + this.rotationDeltaTotal.y ), this.options.rotationMinY, this.options.rotationMaxY );
@@ -308,23 +317,28 @@
 				
 				// rotation axis
 				
-				if ( target.options && target.options.movement && target.options.movement.rotate ) {
+				if ( typeof target.turn_by === 'function' ) {
 					
-					targetRotateAxis = target.options.movement.rotate.axis;
-					
-				}
-				else if ( target.rigidBody ) {
-					
-					targetRotateAxis = target.rigidBody.axes.up;
+					target.turn_by( this.rotationRotatedDelta.y );
 					
 				}
 				else {
 					
-					targetRotateAxis = this.up;
+					if ( target.rigidBody ) {
+						
+						targetRotateAxis = target.rigidBody.axes.up;
+						
+					}
+					else {
+						
+						targetRotateAxis = this.up;
+						
+					}
+					
+					targetRotateDeltaQ = this.utilQ31Rotate.setFromAxisAngle( targetRotateAxis, this.rotationRotatedDelta.y );
+					target.quaternion.multiplySelf( targetRotateDeltaQ );
 					
 				}
-				
-				target.quaternion.multiplySelf( new THREE.Quaternion().setFromAxisAngle( targetRotateAxis, this.rotationRotatedDelta.y ) );
 				
 				// since we add the rotation delta y to the target, we only add the rotation delta x to the constrained / offset
 				
@@ -336,7 +350,7 @@
 				this.rotationConstrained.addSelf( this.rotationRotated );
 				
 			}
-		
+			
 		}
 		
 		this.rotationConstrained.x = _MathHelper.clamp( _MathHelper.rad_between_PI( this.rotationConstrained.x ), this.options.rotationMinX, this.options.rotationMaxX );
@@ -381,7 +395,6 @@
 		
 		this.positionOffset.lerpSelf( this.positionOffsetTarget, this.targetNew === true ? this.options.positionOffsetSpeedWhenNew : this.options.positionOffsetSpeed );
 		
-		
 	}
 	
 	/*===================================================
@@ -402,18 +415,19 @@
 			distanceSpeedPctAlphaShrink,
 			qToNew,
 			positionOffsetScaled = this.utilVec31Update,
+			positionFinal = this.utilVec32Update,
 			rotationTargetNew = this.utilQ32Update,
 			cameraLerpDelta = this.cameraLerpDelta;
 		
 		if ( this.enabled === true ) {
 			
-			// first time target is new
+			// moved since last update
+			// dispatch before updating, not after, otherwise raycasting/projection will be messed up
 			
-			if ( this.targetNew !== true && this.targetTransitioned !== true  ) {
+			if ( this.moved === true ) {
 				
-				this.targetNew = true;
-				this.distanceSpeedPctWhenNew = 0;
-				this.cameraLerpDeltaWhenNew = 0;
+				this.moved = false;
+				this.onCameraMoved.dispatch();
 				
 			}
 			
@@ -430,19 +444,9 @@
 				scale = Math.max( target.scale.x, target.scale.y, target.scale.z );
 				positionOffsetScaled.copy( this.positionOffset ).multiplyScalar( scale );
 				
-				/*
-				// make sure camera and target parents are same
-				
-				if ( this.camera.parent !== target.parent ) {
-					
-					target.parent.add( this.camera );
-					
-				}
-				*/
-				
 				// get distance to target position
 				
-				distance = _VectorHelper.distance_to( this.position, target.position );
+				distance = _VectorHelper.distance_between( this.position, target.position );
 				
 				if ( this.targetNew === true && distance - this.options.distanceThresholdMin <= this.distanceThresholdMax ) {
 					
@@ -563,15 +567,23 @@
 			
 			this.rotationCamera.copy( this.rotationTarget ).multiplySelf( this.rotationOffset );
 			
+			this.moved = _VectorHelper.different( this.rotationCamera, this.camera.quaternion );
+			
 			this.camera.quaternion.copy( this.rotationCamera );
 			
-			// adjust position
+			// get final position
 			
 			this.camera.quaternion.multiplyVector3( positionOffsetScaled );
 			
-			// apply position
+			positionFinal.add( this.position, positionOffsetScaled );
 			
-			this.camera.position.copy( this.position ).addSelf( positionOffsetScaled );
+			if ( this.moved !== true ) {
+				
+				this.moved = _VectorHelper.different( this.camera.position, positionFinal );
+				
+			}
+			
+			this.camera.position.copy( positionFinal );
 			
 		}
 		

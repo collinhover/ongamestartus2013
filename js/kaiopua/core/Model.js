@@ -13,6 +13,7 @@
 		assetPath = "js/kaiopua/core/Model.js",
 		_Model = {},
 		_Morphs,
+		_Actions,
 		_RigidBody,
 		_SceneHelper,
 		_ObjectHelper,
@@ -28,6 +29,7 @@
 		data: _Model,
 		requirements: [
 			"js/kaiopua/core/Morphs.js",
+			"js/kaiopua/core/Actions.js",
 			"js/kaiopua/physics/RigidBody.js",
 			"js/kaiopua/utils/SceneHelper.js",
 			"js/kaiopua/utils/ObjectHelper.js"
@@ -42,9 +44,10 @@
     
     =====================================================*/
 	
-	function init_internal ( m, rb, sh, oh ) {
-		console.log('internal model', _Model);
+	function init_internal ( m, ac, rb, sh, oh ) {
+		
 		_Morphs = m;
+		_Actions = ac;
 		_RigidBody = rb;
 		_SceneHelper = sh;
 		_ObjectHelper = oh;
@@ -55,6 +58,9 @@
 			interactive: false,
 			dynamic: false,
 			intersectable: true,
+			actionTypes: {
+				interactive: 'action_interactive'
+			},
 			morphs: {
 				duration: 1000
 			}
@@ -67,18 +73,23 @@
 		_Model.Instance.prototype.constructor = _Model.Instance;
 		_Model.Instance.prototype.clone = clone;
 		
+		_Model.Instance.prototype.set_dynamic = set_dynamic;
 		_Model.Instance.prototype.set_intersectable = set_intersectable;
+		_Model.Instance.prototype.set_option_and_refresh = set_option_and_refresh;
 		
 		Object.defineProperty( _Model.Instance.prototype, 'interactive', { 
-			get : function () { return this.options.interactive; }
+			get : function () { return this.options.interactive; },
+			set: function ( interactive ) { this.options.interactive = interactive; }
 		} );
 		
 		Object.defineProperty( _Model.Instance.prototype, 'dynamic', { 
-			get : function () { return this.options.dynamic || ( this.rigidBody && this.rigidBody.dynamic ); }
+			get : function () { return this.options.dynamic || ( this.rigidBody && this.rigidBody.dynamic ); },
+			set: set_dynamic
 		} );
 		
 		Object.defineProperty( _Model.Instance.prototype, 'intersectable', { 
-			get : function () { return this.options.intersectable; }
+			get : function () { return this.options.intersectable; },
+			set: set_intersectable
 		} );
 		
 		Object.defineProperty( _Model.Instance.prototype, 'gravityBody', { 
@@ -169,7 +180,7 @@
 		
 		this.id = objectCount++;
 		
-		this.options = $.extend( true, this.options || {}, _Model.options, parameters.options );
+		this.options = $.extend( true, {}, _Model.options, parameters.options );
 		
 		// geometry
 		
@@ -191,7 +202,22 @@
 		
 		// materials
 		
-		material = main.ensure_not_array( parameters.material || new THREE.MeshLambertMaterial( { vertexColors: THREE.VertexColors, shading: THREE.SmoothShading } ) );
+		material = main.ensure_not_array( parameters.material || parameters.materials );
+		
+		if ( material instanceof THREE.Material !== true ) {
+			
+			if ( geometry.materials && geometry.materials.length > 0 ) {
+				
+				material = new THREE.MeshFaceMaterial();
+				
+			}
+			else {
+				
+				material = new THREE.MeshLambertMaterial( { vertexColors: THREE.VertexColors, shading: THREE.SmoothShading } )
+				
+			}
+			
+		}
 		
 		materials = [ material ];
 		
@@ -328,6 +354,11 @@
 			
 		}
 		
+		// actions
+		
+		this.actions = new _Actions.Instance();
+		this.actions.add( parameters.actions );
+		
 	}
 	
 	/*===================================================
@@ -444,20 +475,32 @@
 	
 	/*===================================================
 	
-	intersectable
+	setters
 	
 	=====================================================*/
 	
-	function set_intersectable ( intersectable, cascade ) {
+	function set_dynamic ( state, cascade ) {
+		
+		this.set_option_and_refresh( 'dynamic', state, cascade );
+		
+	}
+	
+	function set_intersectable ( state, cascade ) {
+		
+		this.set_option_and_refresh( 'intersectable', state, cascade );
+		
+	}
+	
+	function set_option_and_refresh ( property, value, cascade ) {
 		
 		var i, l,
-			intersectablePrev = this.options.intersectable,
+			valuePrev = this.options[ property ],
 			child,
 			parent;
 		
-		// when in scene, remove from parent and add again to account for intersectable change
+		// when in scene, remove from parent and add again to account for change
 		
-		if( intersectablePrev !== intersectable ) {
+		if( valuePrev !== intersectable ) {
 			
 			parent = this.parent;
 			
@@ -471,7 +514,7 @@
 		
 		// modify value
 		
-		this.options.intersectable = intersectable;
+		this.options[ property ] = value;
 		
 		if ( cascade === true ) {
 			
@@ -485,12 +528,12 @@
 				
 				if ( child instanceof Model ) {
 					
-					child.options.intersectable = intersectable;
+					child.options[ property ] = value;
 					
 				}
 				else {
 					
-					child.intersectable = intersectable;
+					child[ property ] = value;
 					
 				}
 				

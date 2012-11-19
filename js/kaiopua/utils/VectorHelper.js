@@ -14,7 +14,12 @@
 		_MathHelper,
 		utilVec31Rotated,
 		utilVec31Axis,
-		utilVec31Distance,
+		utilVec31DistanceTo,
+		utilVec31VectorTo,
+		utilVec31NormalTo,
+		utilVec31LinePoint,
+		utilVec32LinePoint,
+		utilVec33LinePoint,
 		utilQ1Axis,
 		utilQ1Relative,
 		utilMat41Relative;
@@ -41,14 +46,19 @@
     =====================================================*/
 	
 	function init_internal ( mh ) {
-		console.log('internal vector helper', _VectorHelper);
+		
 		_MathHelper = mh;
 		
 		// utility
 		
 		utilVec31Rotated = new THREE.Vector3();
 		utilVec31Axis = new THREE.Vector3();
-		utilVec31Distance = new THREE.Vector3();
+		utilVec31DistanceTo = new THREE.Vector3();
+		utilVec31VectorTo = new THREE.Vector3();
+		utilVec31NormalTo = new THREE.Vector3();
+		utilVec31LinePoint = new THREE.Vector3();
+		utilVec32LinePoint = new THREE.Vector3();
+		utilVec33LinePoint = new THREE.Vector3();
 		utilQ1Axis = new THREE.Quaternion();
 		utilQ1Relative= new THREE.Quaternion();
 		utilMat41Relative = new THREE.Matrix4();
@@ -59,13 +69,18 @@
 		_VectorHelper.clamp_scalar = clamp_scalar;
 		_VectorHelper.clamp_length = clamp_length;
 		_VectorHelper.different = different;
-		_VectorHelper.distance_to = distance_to;
+		_VectorHelper.distance_between = distance_between;
+		_VectorHelper.distance_sq_between = distance_sq_between;
+		_VectorHelper.vector_between = vector_between;
+		_VectorHelper.normal_between = normal_between;
+		_VectorHelper.closest_point_on_line_to_point = closest_point_on_line_to_point;
 		_VectorHelper.degree_to_rad = degree_to_rad;
 		_VectorHelper.rotate_relative_to = rotate_relative_to;
 		_VectorHelper.retrieve_relative_to = retrieve_relative_to;
 		_VectorHelper.angle_between_vectors = angle_between_vectors;
 		_VectorHelper.signed_angle_between_coplanar_vectors = signed_angle_between_coplanar_vectors;
 		_VectorHelper.axis_between_vectors = axis_between_vectors;
+		_VectorHelper.angle_from_q = angle_from_q;
 		_VectorHelper.q_to_axis = q_to_axis;
 		_VectorHelper.get_orthonormal_vectors = get_orthonormal_vectors;
 		_VectorHelper.get_rotation_to_normal = get_rotation_to_normal;
@@ -120,7 +135,7 @@
 	
 	function different ( va, vb ) {
 		
-		if ( va.x !== vb.x || va.y !== vb.y || va.z !== vb.z || ( va.hasOwnProperty( 'w' ) && va.w !== vb.w ) ) {
+		if ( va.x !== vb.x || va.y !== vb.y || va.z !== vb.z || va.w !== vb.w ) {
 			return true;
 		}
 		
@@ -134,10 +149,59 @@
     
     =====================================================*/
 	
-	function distance_to ( vecFrom, vecTo ) {
+	function distance_between ( vecFrom, vecTo ) {
 		
-		return Math.sqrt( utilVec31Distance.sub( vecTo, vecFrom ).lengthSq() );
+		return Math.sqrt( utilVec31DistanceTo.sub( vecTo, vecFrom ).lengthSq() );
 		
+	}
+	
+	function distance_sq_between ( vecFrom, vecTo ) {
+		
+		return utilVec31DistanceTo.sub( vecTo, vecFrom ).lengthSq();
+		
+	}
+	
+	function vector_between ( vecFrom, vecTo ) {
+		
+		return utilVec31VectorTo.sub( vecTo, vecFrom );
+		
+	}
+	
+	function normal_between ( vecFrom, vecTo ) {
+		
+		return utilVec31NormalTo.sub( vecTo, vecFrom ).normalize();
+		
+	}
+	
+	function closest_point_on_line_to_point ( point, origin, direction, length ) {
+		
+		var dot,
+			dotClamped,
+			originToPoint = utilVec31LinePoint.sub( this.position, origin ),
+			directionMagnitude = utilVec32LinePoint.copy( direction ).normalize(),
+			pointClosest = utilVec33LinePoint;
+
+		dot = originToPoint.dot( direction );
+
+		// if line segment
+
+		if( main.is_number( length ) && length > 0 ) {
+
+			dotClamped = _MathHelper.clamp( dot / length, 0, 1 );
+
+		}
+		// else infinite ray
+		else {
+
+			length = 1;
+			dotClamped = Math.max( 0, dot );
+
+		}
+
+		pointClosest.add( origin, directionMagnitude.multiplyScalar( dotClamped * length ) );
+
+		return pointClosest;
+
 	}
 	
 	/*===================================================
@@ -230,6 +294,19 @@
 	function axis_between_vectors ( vFrom, vTo ) {
 		
 		return utilVec31Axis.cross( vFrom, vTo ).normalize();
+		
+	}
+	
+	function angle_from_q ( q ) {
+		
+		// if w>1 acos and sqrt will produce errors, this cant happen if quaternion is normalised
+		if (q.w > 1) {
+			
+			q.normalize();
+			
+		}
+		
+		return 2 * Math.acos( q.w );
 		
 	}
 	

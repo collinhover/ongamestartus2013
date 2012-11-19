@@ -38,7 +38,7 @@
     =====================================================*/
 	
 	function init_internal ( m, oh, wavesImage ) {
-		console.log('internal water');
+		
 		// assets
 		
 		_Model = m;

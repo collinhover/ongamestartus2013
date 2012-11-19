@@ -13,10 +13,7 @@
         _ErrorHandler = {},
         errorState = false,
         errorCurrent = {},
-        errorStringBase = 'error',
-		errorStringSearch = errorStringBase + '=',
-		errorTypeGeneral = 'General',
-        errorTypes = [ errorTypeGeneral, 'WebGLBrowser', 'WebGLComputer' ],
+		errorStringSearch = shared.errorString + '=',
         webGLNames = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
 	
     /*===================================================
@@ -34,7 +31,14 @@
 		get : function () { return errorState; }
 	} );
 	
-	main.asset_register( assetPath, { data: _ErrorHandler } );
+	main.asset_register( assetPath, {
+		data: _ErrorHandler,
+		requirements: [
+			"js/kaiopua/ui/UI.js"
+		], 
+		callbacksOnReqs: init_internal,
+		wait: true
+	} );
     
     /*===================================================
     
@@ -42,7 +46,7 @@
     
     =====================================================*/
 	
-	( function () {
+	function init_internal ( ui ) {
 		
 		var i, l,
 			errorName,
@@ -50,23 +54,14 @@
 			context, 
 			errorType;
 		
+		
+		_UI = ui;
+		
 		// signals
 		
 		shared.signals = shared.signals || {};
 		
 		shared.signals.onError = new signals.Signal();
-		
-		// ui
-		
-		shared.domElements = shared.domElements || {};
-		
-		for ( i = 0, l = errorTypes.length; i < l; i++ ) {
-			
-			errorName = errorStringBase + errorTypes[ i ];
-			
-			shared.domElements[ '$' + errorName ] = $( '#' + errorName );
-			
-		}
 		
 		// clean url
 		
@@ -119,7 +114,7 @@
 			
 		}
 		
-	}() );
+	}
     
     /*===================================================
     
@@ -143,13 +138,6 @@
     // remove error state
     function clear () {
 		
-        if ( typeof errorCurrent.$element !== 'undefined' ) {
-			
-			main.dom_collapse( {
-				element: errorCurrent.$element
-			} );
-			
-		}
         errorCurrent = {};
         errorState = false;
 		
@@ -214,7 +202,7 @@
 			
             // show current
 			
-            show( errorCurrent.type, origin, lineNumber );
+            _UI.error( errorCurrent.type, origin, lineNumber );
             
             // set url back to origin link with history states
             // always hide unnecessary information from users
@@ -227,64 +215,6 @@
 			
         }
 		
-    }
-    
-    // show error to user
-    function show ( error, origin, lineNumber ) {
-		
-        var errorType, $element;
-        
-        // if error type in list
-		
-        if ( main.index_of_value( errorTypes, error ) !== -1 ) {
-			
-			errorType = error;
-			
-        }
-		// else use general type
-		else {
-			
-			errorType = errorTypeGeneral;
-			
-		}
-		
-		// find dom element
-		
-		errorCurrent.$element = shared.domElements[ '$' + errorStringBase + errorType ];
-		
-		// add error info if general error
-		
-		if ( errorType === errorTypeGeneral ) {
-			
-			// format origin
-			
-			if ( typeof origin === 'string' ) {
-				
-				index = origin.search( /\/(?![\s\S]*\/)/ );
-				if ( index !== -1 ) {
-					origin = origin.slice( index + 1 );
-				}
-				
-				index = origin.search( /\?(?![\s\S]*\?)/ );
-				if ( index !== -1 ) {
-					origin = origin.slice( 0, index );
-				}
-				
-			}
-			
-			errorCurrent.$element.find( "#errorMessage" ).html( error );
-			errorCurrent.$element.find( "#errorFile" ).html( origin );
-			errorCurrent.$element.find( "#errorLine" ).html( lineNumber );
-			
-		}
-		
-		// show
-		
-		main.dom_collapse( {
-			element: errorCurrent.$element,
-			show: true
-		} );
-        
     }
     
 } ( KAIOPUA ) );

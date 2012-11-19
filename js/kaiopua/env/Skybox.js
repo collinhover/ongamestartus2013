@@ -35,7 +35,7 @@
     =====================================================*/
 	
 	function init_internal ( m ) {
-		console.log('internal Skybox');
+		
 		_Model = m;
 		
 		_Skybox.Instance = Skybox;

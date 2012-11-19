@@ -31,7 +31,6 @@
     =====================================================*/
 	
 	function init_internal () {
-		console.log('internal scene helper', _SceneHelper);
 		
 		// functions
 		

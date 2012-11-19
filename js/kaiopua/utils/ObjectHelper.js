@@ -14,7 +14,6 @@
 		_MathHelper,
 		_SceneHelper,
 		_VectorHelper,
-		_RayHelper,
 		utilVec31Follow,
 		utilVec32Follow,
 		utilVec31Orbit,
@@ -57,8 +56,7 @@
 		requirements: [
 			"js/kaiopua/utils/MathHelper.js",
 			"js/kaiopua/utils/SceneHelper.js",
-			"js/kaiopua/utils/VectorHelper.js",
-			"js/kaiopua/utils/RayHelper.js"
+			"js/kaiopua/utils/VectorHelper.js"
 		],
 		callbacksOnReqs: init_internal,
 		wait: true
@@ -70,8 +68,8 @@
     
     =====================================================*/
 	
-	function init_internal ( mh, sh, vh, rh ) {
-		console.log('internal object helper', _ObjectHelper);
+	function init_internal ( mh, sh, vh ) {
+		
 		var len = Math.sqrt( 1 / 2 ),
 			ca = shared.cardinalAxes,
 			right = ca.right,
@@ -82,7 +80,6 @@
 		_MathHelper = mh;
 		_SceneHelper = sh;
 		_VectorHelper = vh;
-		_RayHelper = rh;
 		
 		// utility
 		

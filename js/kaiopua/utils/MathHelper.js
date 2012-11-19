@@ -35,8 +35,6 @@
 	
 	function init_internal() {
 		
-		console.log( "internal MathHelper", _MathHelper );
-		
 	}
 	
 	/*===================================================

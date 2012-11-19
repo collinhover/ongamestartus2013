@@ -37,7 +37,7 @@
     =====================================================*/
 	
 	function init_internal ( ob, oh ) {
-		console.log('internal ObstacleDamaging', _ObstacleDamaging);
+		
 		// modules
 		
 		_Obstacle = ob;

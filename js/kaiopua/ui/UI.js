@@ -14,7 +14,8 @@
 		_UIQueue,
 		paused = false,
 		workerCollapseDelay = 1000,
-		workerCollapseTimeoutHandle;
+		workerCollapseTimeoutHandle,
+		$error;
     
     /*===================================================
     
@@ -38,7 +39,6 @@
     =====================================================*/
 	
 	function init_internal ( uiq ) {
-		console.log('internal UI', _UI);
 		
 		// modules
 		
@@ -49,6 +49,7 @@
 		_UI.pause = pause;
 		_UI.resume = resume;
 		_UI.resize = resize;
+		_UI.error = error;
 		
 		// dom elements
 		
@@ -62,6 +63,7 @@
 		shared.domElements.$uiHeader = $( '#uiHeader' );
 		shared.domElements.$uiBody = $( '#uiBody' );
 		shared.domElements.$uiInGame = $( '#uiInGame' );
+		shared.domElements.$uiOverGame = $( '#uiOverGame' );
 		shared.domElements.$uiOutGame = $( '#uiOutGame' );
 		shared.domElements.$uiFooter = $( '#uiFooter' );
 		
@@ -147,6 +149,18 @@
 		if ( shared.supports.pointerEvents === false ) {
 			
 			main.dom_ignore_pointer( $(".ignore-pointer, .disabled"), true );
+			
+		}
+		
+		// errors
+		
+		shared.domElements = shared.domElements || {};
+		
+		for ( i = 0, l = shared.errorTypes.length; i < l; i++ ) {
+			
+			errorName = shared.errorString + shared.errorTypes[ i ];
+			
+			shared.domElements[ '$' + errorName ] = $( '#' + errorName );
 			
 		}
 		
@@ -362,7 +376,7 @@
 				
 				main.dom_fade( {
 					element: $menu,
-					time: 0
+					duration: 0
 				} );
 				
 			};
@@ -481,8 +495,6 @@
 			
 		} );
 		
-		shared.domElements.$buttonsGameStart.on( 'tap', main.start );
-		shared.domElements.$buttonsGameStop.on( 'tap', main.stop );
 		shared.domElements.$buttonsGamePause.on( 'tap', pause_consider_started );
 		shared.domElements.$buttonsGameResume.on( 'tap', resume_consider_started );
 		
@@ -538,10 +550,7 @@
 		
 		// block ui
 		
-		main.dom_fade( {
-			element: shared.domElements.$uiBlocker,
-			opacity: 0.75
-		} );
+		pause_consider_started( true );
 		
 		// show if hidden
 		
@@ -588,9 +597,9 @@
 			main.dom_collapse( {
 				element: shared.domElements.$worker,
 				callback: function () {
-					main.dom_fade( {
-						element: shared.domElements.$uiBlocker
-					} );
+					
+					resume_consider_started();
+					
 				}
 			} );
 			
@@ -606,11 +615,15 @@
 	
 	function ready () {
 		
+		var $disableButtons,
+			$disableTarget,
+			$tip;
+		
 		// hide preloader
 		
 		main.dom_fade( {
 			element: shared.domElements.$preloader,
-			time: 0
+			duration: 0
 		} );
 		
 		// show main menu
@@ -625,6 +638,60 @@
 		main.dom_fade( {
 			element: shared.domElements.$uiGameDimmer
 		} );
+		
+		// enable game start if supports webGL
+		
+		if ( shared.supports.webGL === true ) {
+			
+			shared.domElements.$buttonsGameStart.on( 'tap', main.start );
+			shared.domElements.$buttonsGameStop.on( 'tap', main.stop );
+			
+		}
+		// disable game
+		else {
+			
+			$disableButtons = $()
+				.add(shared.domElements.$buttonsGameStart )
+				.add( shared.domElements.$buttonsGameStop );
+			
+			$disableTarget = $disableButtons.closest( 'li' );
+			
+			if ( $disableTarget.length === 0 ) {
+				
+				$disableTarget = $disableButtons;
+				
+			}
+			
+			$disableTarget.addClass( 'disabled dim' );
+			
+			// add tooltip to start button
+			
+			shared.domElements.$buttonsGameStart
+				.tooltip( {
+					title: 'We need WebGL!',
+					trigger: 'manual',
+					placement: 'left',
+					selector: shared.domElements.$buttonsGameStart
+				} )
+				.tooltip( 'show' );
+			
+			$disableTarget = shared.domElements.$buttonsGameStart.closest( 'li' );
+			
+			if ( $disableTarget.length === 0 ) {
+				
+				$disableTarget = shared.domElements.$buttonsGameStart;
+				
+			}
+			
+			$tip = shared.domElements.$buttonsGameStart.data('tooltip').$tip;
+			
+			$tip.css( {
+					top: ( $disableTarget.height() - $tip.height() ) * 0.5,
+					left: -( $tip.outerWidth() + 5 )
+				} )
+				.appendTo( $disableTarget );
+			
+		}
 		
 	}
 	
@@ -742,7 +809,7 @@
 		
 		main.dom_fade( {
 			element: shared.domElements.$buttonsGamePause,
-			time: 0
+			duration: 0
 		} );
 		
 		// block ui
@@ -809,7 +876,7 @@
 		
 	}
 	
-	function resume ( fromFocus ) {
+	function resume () {
 		
 		paused = false;
 		
@@ -817,7 +884,7 @@
 		
 		main.dom_fade( {
 			element: shared.domElements.$buttonsGameResume,
-			time: 0
+			duration: 0
 		} );
 		
 		// unblock ui
@@ -850,6 +917,125 @@
 		else {
 			
 			open_default_menu();
+			
+		}
+		
+	}
+	
+	/*===================================================
+    
+    error
+    
+    =====================================================*/
+	
+    function error ( error, origin, lineNumber ) {
+		
+        var errorType;
+		
+		// clear existing
+		
+		error_clear();
+        
+        // if error type in list
+		
+        if ( main.index_of_value( shared.errorTypes, error ) !== -1 ) {
+			
+			errorType = error;
+			
+        }
+		// else use general type
+		else {
+			
+			errorType = shared.errorTypeGeneral;
+			
+		}
+		
+		// if should only show error type once to a user
+		
+		if( main.index_of_value( shared.errorTypesOnlyOnce, errorType ) !== -1 ) {
+			
+			if ( window.localStorage ) {
+				
+				// already shown
+				
+				if ( typeof window.localStorage[ errorType ] !== 'undefined' ) {
+					
+					return;
+					
+				}
+				// mark as shown
+				else {
+					
+					window.localStorage[ errorType ] = 'shown';
+					
+				}
+				
+			}
+			
+		}
+		
+		// find dom element
+		
+		$error = shared.domElements[ '$' + shared.errorString + errorType ];
+		
+		// add error info if general error
+		
+		if ( errorType === shared.errorTypeGeneral ) {
+			
+			// format origin
+			
+			if ( typeof origin === 'string' ) {
+				
+				index = origin.search( /\/(?![\s\S]*\/)/ );
+				if ( index !== -1 ) {
+					origin = origin.slice( index + 1 );
+				}
+				
+				index = origin.search( /\?(?![\s\S]*\?)/ );
+				if ( index !== -1 ) {
+					origin = origin.slice( 0, index );
+				}
+				
+			}
+			
+			$error.find( "#errorMessage" ).html( error );
+			$error.find( "#errorFile" ).html( origin );
+			$error.find( "#errorLine" ).html( lineNumber );
+			
+		}
+		
+		// show
+		
+		pause_consider_started( true );
+		
+		main.dom_collapse( {
+			element: $error,
+			show: true
+		} );
+		
+		// if not yet started, allow click to clear error
+		
+		if ( main.started !== true ) {
+			
+			$( window ).one( 'click.errorclear', function () {
+				
+				error_clear();
+				
+				resume_consider_started();
+				
+			} );
+			
+		}
+        
+    }
+	
+	function error_clear () {
+		
+		if ( typeof $error !== 'undefined') {
+			
+			main.dom_collapse( {
+				element: $error
+			} );
 			
 		}
 		
