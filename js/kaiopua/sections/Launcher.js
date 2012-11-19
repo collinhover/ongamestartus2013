@@ -357,7 +357,9 @@
 				spawnsUnused,
 				speakersData = [
 					{ name: "Michal Budzynski", assets: { path: shared.pathToAssets + "speaker_budzynski_michal.js", type: 'model' } },
-					{ name: "Collin Hover", assets: { path: shared.pathToAssets + "speaker_hover_collin.js", type: 'model' } }
+					{ name: "Collin Hover", assets: { path: shared.pathToAssets + "speaker_hover_collin.js", type: 'model' } },
+					{ name: "Jesse Freeman", assets: { path: shared.pathToAssets + "speaker_freeman_jesse.js", type: 'model' } },
+					{ name: "Pascal Rettig", assets: { path: shared.pathToAssets + "speaker_rettig_pascal.js", type: 'model' } }
 				],
 				data;
 			
