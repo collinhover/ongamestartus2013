@@ -35,7 +35,7 @@
     =====================================================*/
 	
 	function init_internal ( c ) {
-		console.log('internal Speaker', _Speaker);
+		
 		// modules
 		
 		_Character = c;
@@ -52,12 +52,22 @@
 			stats: {
 				invincible: true
 			},
+			animation: {
+				options: {
+					idle: {
+						startDelay: true,
+						loopDelayPct: 1,
+						loopDelayRandom: true,
+						loopChance: 0.2
+					}
+				}
+			},
 			dialogues: {
 				greeting: {
 					responses: [
 						{
-							message: "Hi!",
-							next: 'about'
+							message: "Nice to meet you!",
+							next: 'name'
 						},
 						{
 							message: "Sup son?",
@@ -68,11 +78,18 @@
 							next: 'unsaid'
 						},
 						{
-							message: "Check it out:",
+							message: "Hi!",
 							next: 'random'
 						},
 						"Hey friend!"
 					],
+					randomable: false
+				},
+				name: {
+					responses: {
+						message: function () { return ( Math.random() > 0.5 ? "I'm " : "My name is " ) + this.name + "."; },
+						next: 'about'
+					},
 					randomable: false
 				},
 				about: {

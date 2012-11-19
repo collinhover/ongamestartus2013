@@ -35,7 +35,7 @@
     =====================================================*/
 	
 	function init_internal ( m ) {
-		console.log('internal Obstacle', _Obstacle);
+		
 		// modules
 		
 		_Model = m;

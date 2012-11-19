@@ -39,7 +39,6 @@
     =====================================================*/
 	
 	function init_internal () {
-		console.log('internal UIQueue', _UIQueue);
 		
 		// public properties
 		

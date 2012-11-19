@@ -37,7 +37,7 @@
     =====================================================*/
 	
 	function init_internal ( po, mh ) {
-		console.log('internal Textbubble', _Textbubble);
+		
 		_Popover = po;
 		_MathHelper = mh;
 		
@@ -45,7 +45,7 @@
 		
 		_Textbubble.options = {
 			placement: 'topleft',
-			template: '<div class="textbubble"><div class="textbubble-arrow"></div><div class="textbubble-status"><div class="textbubble-status-inner">...</div></div><div class="textbubble-close"><div class="textbubble-close-inner">&times;</div></div><div class="textbubble-inner"><div class="textbubble-content"><div class="textbubble-content-inner"></div></div></div></div>',
+			template: '<div class="textbubble"><div class="textbubble-arrow"></div><div class="textbubble-inner"><div class="textbubble-content"><div class="textbubble-content-inner"></div></div></div><div class="textbubble-status"><div class="textbubble-status-inner">...</div></div><div class="textbubble-close"><div class="textbubble-close-inner">&times;</div></div></div>',
 			inner: '.textbubble-content-inner',
 			close: '.textbubble-close',
 			status: '.textbubble-status',
@@ -332,6 +332,12 @@
 			
 			hidden = messages.shift();
 			
+			if ( typeof hidden === 'function' ) {
+				
+				hidden = hidden();
+				
+			}
+			
 		}
 		
 		if ( hidden.length > 0 ) {
@@ -468,7 +474,7 @@
 		
 		clear_content_events.call( this );
 		
-		this.$close.on( 'tap.textbubbleClose', $.proxy( this.hide, this ) );
+		this.$close.on( 'tap.textbubbleClose', $.proxy( this.remove, this ) );
 		
 		// restart message
 		

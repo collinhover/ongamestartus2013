@@ -35,7 +35,7 @@
     =====================================================*/
 	
 	function init_internal ( po ) {
-		console.log('internal Tooltip', _Tooltip);
+		
 		_Popover = po;
 		
 		// properties

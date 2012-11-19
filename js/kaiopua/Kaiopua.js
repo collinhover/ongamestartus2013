@@ -15,6 +15,7 @@ var KAIOPUA = (function (main) {
 	shared.domElements = shared.domElements || {};
 	shared.supports = shared.supports || {};
 	shared.throttled = {};
+	shared.spawns = {};
 	
 	shared.pointers = [];
 	shared.originLink = window.location.pathname.toString();
@@ -276,6 +277,7 @@ var KAIOPUA = (function (main) {
 		main.array_cautious_add = array_cautious_add;
 		main.array_cautious_remove = array_cautious_remove;
 		main.array_random_value = array_random_value;
+		main.array_random_value_remove = array_random_value_remove;
 		main.index_of_value = index_of_value;
 		main.last_index_of_value = last_index_of_value;
 		main.indices_of_value = indices_of_value;
@@ -442,7 +444,7 @@ var KAIOPUA = (function (main) {
 		
 		// renderer
 		
-        shared.renderer = new THREE.WebGLRenderer( { clearColor: 0x000000, clearAlpha: 0, maxLights: 4 } );
+        shared.renderer = new THREE.WebGLRenderer( { clearColor: 0x000000, clearAlpha: 0, maxLights: 8 } );
         shared.renderer.setSize( shared.gameWidth, shared.gameHeight );
         shared.renderer.autoClear = false;
 		
@@ -463,12 +465,6 @@ var KAIOPUA = (function (main) {
 		
 		_Scene = sc;
 		_CameraControls = cc;
-		
-		// spawns
-		
-		shared.spawns = {
-			main: new THREE.Vector3()
-		};
 		
 		// scenes
 		
@@ -1118,6 +1114,12 @@ var KAIOPUA = (function (main) {
 	function array_random_value ( array ) {
 		
 		return array[ Math.round( Math.random() * ( array.length - 1 ) ) ];
+		
+	}
+	
+	function array_random_value_remove ( array ) {
+		
+		return array.splice( Math.round( Math.random() * ( array.length - 1 ) ), 1 )[ 0 ];
 		
 	}
 	
@@ -3207,7 +3209,7 @@ var KAIOPUA = (function (main) {
 	}
 	
 	GameAsset.prototype.on_ready = function () {
-		
+		console.log( '[ KAIOPUA ] Module / Asset Ready: ' + this.path );
 		asset_ready( this.path, this );
 		
 	}

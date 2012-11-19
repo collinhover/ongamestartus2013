@@ -45,7 +45,7 @@
     =====================================================*/
 	
 	function init_internal ( m, ac, rb, sh, oh ) {
-		console.log('internal model', _Model);
+		
 		_Morphs = m;
 		_Actions = ac;
 		_RigidBody = rb;
@@ -58,6 +58,9 @@
 			interactive: false,
 			dynamic: false,
 			intersectable: true,
+			actionTypes: {
+				interactive: 'action_interactive'
+			},
 			morphs: {
 				duration: 1000
 			}
@@ -199,7 +202,22 @@
 		
 		// materials
 		
-		material = main.ensure_not_array( parameters.material || new THREE.MeshLambertMaterial( { vertexColors: THREE.VertexColors, shading: THREE.SmoothShading } ) );
+		material = main.ensure_not_array( parameters.material || parameters.materials );
+		
+		if ( material instanceof THREE.Material !== true ) {
+			
+			if ( geometry.materials && geometry.materials.length > 0 ) {
+				
+				material = new THREE.MeshFaceMaterial();
+				
+			}
+			else {
+				
+				material = new THREE.MeshLambertMaterial( { vertexColors: THREE.VertexColors, shading: THREE.SmoothShading } )
+				
+			}
+			
+		}
 		
 		materials = [ material ];
 		

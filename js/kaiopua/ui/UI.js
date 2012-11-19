@@ -39,7 +39,6 @@
     =====================================================*/
 	
 	function init_internal ( uiq ) {
-		console.log('internal UI', _UI);
 		
 		// modules
 		

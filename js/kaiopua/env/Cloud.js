@@ -37,7 +37,6 @@
     =====================================================*/
 	
 	function init_internal ( m, cloudBase1, cloudBase2 ) {
-		console.log('internal cloud', _Cloud);
 		
 		_Model = m;
 		

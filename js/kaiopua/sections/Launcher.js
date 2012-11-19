@@ -15,7 +15,8 @@
 		_Skybox,
 		_ObjectHelper,
 		_ObstacleSlippery,
-		_ObstacleDamaging;
+		_ObstacleDamaging,
+		_Speaker;
     
     /*===================================================
     
@@ -31,6 +32,7 @@
 			"js/kaiopua/utils/ObjectHelper.js",
 			"js/kaiopua/physics/ObstacleSlippery.js",
 			"js/kaiopua/physics/ObstacleDamaging.js",
+			"js/kaiopua/characters/Speaker.js",
             { path: shared.pathToAssets + "asteroid.js", type: 'model' },
 			shared.pathToAssets + "skybox.jpg",
 		],
@@ -44,8 +46,7 @@
     
     =====================================================*/
 	
-	function init_internal ( m, sb, oh, obs, obd, gAsteroid ) {
-		console.log('internal Launcher', _Launcher);
+	function init_internal ( m, sb, oh, obs, obd, spk, gAsteroid ) {
 		
 		// assets
 		
@@ -54,6 +55,7 @@
 		_ObjectHelper = oh;
 		_ObstacleSlippery = obs;
 		_ObstacleDamaging = obd;
+		_Speaker = spk;
 		
 		// properties
 		
@@ -62,24 +64,68 @@
 		_Launcher.remove = remove;
 		_Launcher.update = update;
 		
-		// environment
+		// world
 		
 		shared.skybox = new _Skybox.Instance( shared.pathToAssets + "skybox", { repeat: 2, oneForAll: true } );
 		
-		shared.world = new _Model.Instance( {
+		shared.world = new _Model.Instance();
+		shared.world.parts = {};
+		
+		// seems as if lights must be in world before world is added for the first time to scene
+		
+		shared.world.parts.ambientLight = new THREE.AmbientLight( 0x777777 );
+		shared.world.add( shared.world.parts.ambientLight );
+		
+		// asteroid
+		
+		shared.world.parts.asteroidMoonLight = new THREE.PointLight( 0xffffff, 1 );
+		shared.world.add( shared.world.parts.asteroidMoonLight );
+		
+		shared.world.parts.asteroid = new _Model.Instance( {
 			geometry: gAsteroid,
-			material: new THREE.MeshFaceMaterial(),
 			physics:  {
 				bodyType: 'mesh',
 				gravitySource: true
-			}
+			},
+			center: true
 		} );
-		shared.world.parts = {};
-        
-		main.asset_require( { path: shared.pathToAssets + "asteroid_colliders.js", type: 'model' }, function ( geometry ) {
+		shared.world.add( shared.world.parts.asteroid );
+		
+		main.asset_require( { path: shared.pathToAssets + "asteroid_moon.js", type: 'model' }, function ( g ) {
 			var model = new _Model.Instance( {
-				geometry: geometry,
-				material: new THREE.MeshFaceMaterial(),
+				geometry: g,
+				physics:  {
+					bodyType: 'mesh'
+				},
+				center: true
+			} );
+			shared.world.add( model );
+			
+			shared.world.parts.asteroidMoonLight.distance = model.boundRadius * 10;
+			model.add( shared.world.parts.asteroidMoonLight );
+			
+		} );
+		main.asset_require( { path: shared.pathToAssets + "asteroid_colliders.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g,
+				physics:  {
+					bodyType: 'mesh'
+				}
+			} );
+			shared.world.add( model );
+		} );
+		main.asset_require( { path: shared.pathToAssets + "asteroid_noncolliders.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g
+			} );
+			shared.world.add( model );
+		} );
+		
+		// landing
+        
+		main.asset_require( { path: shared.pathToAssets + "landing_colliders.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g,
 				physics:  {
 					bodyType: 'mesh'
 				}
@@ -87,109 +133,282 @@
 			shared.world.add( model );
 		} );
 		
-		main.asset_require( { path: shared.pathToAssets + "asteroid_noncolliders.js", type: 'model' }, function ( geometry ) {
+		main.asset_require( { path: shared.pathToAssets + "landing_noncolliders.js", type: 'model' }, function ( g ) {
 			var model = new _Model.Instance( {
-				geometry: geometry,
-				material: new THREE.MeshFaceMaterial()
+				geometry: g
 			} );
 			shared.world.add( model );
 		} );
 		
-		main.asset_require( { path: shared.pathToAssets + "moon.js", type: 'model' }, function ( gMoon ) {
-			shared.world.parts.moon = new _Model.Instance( {
-				geometry: gMoon,
-				material: new THREE.MeshFaceMaterial(),
-				center: true
-			} );
-			
-			shared.world.parts.moonLight.distance = shared.world.parts.moon.boundRadius * 10;
-			shared.world.parts.moon.add( shared.world.parts.moonLight );
-			
-			shared.world.add( shared.world.parts.moon );
-			
-		} );
-		main.asset_require( { path: shared.pathToAssets + "ship.js", type: 'model' }, function ( gShip ) {
-			var ship = new _Model.Instance( {
-				geometry: gShip,
-				material: new THREE.MeshFaceMaterial(),
+		// gem forest
+		
+		shared.world.parts.gemLight = new THREE.PointLight( 0xE1FB64, 1 );
+		shared.world.add( shared.world.parts.gemLight );
+		
+		main.asset_require( { path: shared.pathToAssets + "gem.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g,
 				physics:  {
 					bodyType: 'mesh'
 				},
 				center: true
 			} );
-			shared.world.add( ship );
+			shared.world.add( model );
+			
+			shared.world.parts.gemLight.distance = model.boundRadius * 10;
+			model.add( shared.world.parts.gemLight );
+		} );
+		main.asset_require( { path: shared.pathToAssets + "gemforest_colliders.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g,
+				physics:  {
+					bodyType: 'mesh'
+				}
+			} );
+			shared.world.add( model );
+		} );
+		main.asset_require( { path: shared.pathToAssets + "gemforest_noncolliders.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g
+			} );
+			shared.world.add( model );
 		} );
 		
-		// lights, seems as if lights must be in world before world is added for the first time to scene
+		// snow
 		
-		shared.world.parts.ambientLight = new THREE.AmbientLight( 0x777777 );
-		shared.world.add( shared.world.parts.ambientLight );
+		main.asset_require( { path: shared.pathToAssets + "snow_colliders.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g,
+				physics:  {
+					bodyType: 'mesh'
+				}
+			} );
+			shared.world.add( model );
+		} );
+		main.asset_require( { path: shared.pathToAssets + "snow_noncolliders.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g
+			} );
+			shared.world.add( model );
+		} );
+		main.asset_require( { path: shared.pathToAssets + "snow_obstacles_slippery.js", type: 'model' }, function ( g ) {
+			var model = new _ObstacleSlippery.Instance( {
+				geometry: g,
+				physics:  {
+					bodyType: 'mesh'
+				}
+			} );
+			shared.world.add( model );
+		} );
 		
-		shared.world.parts.moonLight = new THREE.PointLight( 0xffffff, 1 );
-		shared.world.add( shared.world.parts.moonLight );
+		// TODO: allow alternate geometry in physics
+		main.asset_require( [
+			{ path: shared.pathToAssets + "snow_obstacles_damaging.js", type: 'model' },
+			//{ path: shared.pathToAssets + "snow_obstacles_damaging_colliders.js", type: 'model' }
+		], function ( g, gphys ) {
+			var model = new _ObstacleDamaging.Instance( {
+				geometry: g,
+				physics:  {
+					//geometry: gphys,
+					bodyType: 'mesh'
+				},
+				options: {
+					damage: 25
+				}
+			} );
+			shared.world.add( model );
+		} );
+		
+		// iceplanet
+		
+		shared.world.parts.iceplanetMoonLight = new THREE.PointLight( 0xAEE4FE, 1 );
+		shared.world.add( shared.world.parts.iceplanetMoonLight );
+		
+		main.asset_require( { path: shared.pathToAssets + "iceplanet.js", type: 'model' }, function ( g ) {
+			var model = new _ObstacleSlippery.Instance( {
+				geometry: g,
+				physics:  {
+					bodyType: 'mesh',
+					//TODO: make it possible to get off planet
+					// gravitySource: true
+				},
+				center: true
+			} );
+			shared.world.add( model );
+		} );
+		main.asset_require( { path: shared.pathToAssets + "iceplanet_moon.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g,
+				physics:  {
+					bodyType: 'mesh',
+					gravitySource: true
+				},
+				center: true
+			} );
+			shared.world.add( model );
+			
+			shared.world.parts.iceplanetMoonLight.distance = model.boundRadius * 10;
+			model.add( shared.world.parts.iceplanetMoonLight );
+		} );
+		main.asset_require( { path: shared.pathToAssets + "iceplanet_noncolliders.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g
+			} );
+			shared.world.add( model );
+		} );
+		
+		// lava
+		
+		main.asset_require( { path: shared.pathToAssets + "lava_colliders.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g,
+				physics:  {
+					bodyType: 'mesh'
+				}
+			} );
+			shared.world.add( model );
+		} );
+		
+		// TODO: allow alternate geometry in physics
+		main.asset_require( [
+			{ path: shared.pathToAssets + "lava_obstacles_damaging.js", type: 'model' },
+			//{ path: shared.pathToAssets + "snow_obstacles_damaging_colliders.js", type: 'model' }
+		], function ( g, gphys ) {
+			var model = new _ObstacleDamaging.Instance( {
+				geometry: g,
+				physics:  {
+					//geometry: gphys,
+					bodyType: 'mesh'
+				},
+				options: {
+					damage: 50
+				}
+			} );
+			shared.world.add( model );
+		} );
+		
+		// star cluster
+		
+		shared.world.parts.starclusterLight = new THREE.PointLight( 0xFFED66, 1 );
+		shared.world.add( shared.world.parts.starclusterLight );
+		
+		main.asset_require( { path: shared.pathToAssets + "starcluster_core.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g,
+				physics:  {
+					bodyType: 'mesh',
+					gravitySource: true
+				},
+				center: true
+			} );
+			shared.world.add( model );
+			
+			shared.world.parts.starclusterLight.distance = model.boundRadius * 10;
+			model.add( shared.world.parts.starclusterLight );
+		} );
+		main.asset_require( { path: shared.pathToAssets + "starcluster_1.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g,
+				physics:  {
+					bodyType: 'mesh',
+					gravitySource: true
+				},
+				center: true
+			} );
+			shared.world.add( model );
+		} );
+		main.asset_require( { path: shared.pathToAssets + "starcluster_2.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g,
+				physics:  {
+					bodyType: 'mesh',
+					gravitySource: true
+				},
+				center: true
+			} );
+			shared.world.add( model );
+		} );
+		main.asset_require( { path: shared.pathToAssets + "starcluster_3.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g,
+				physics:  {
+					bodyType: 'mesh',
+					gravitySource: true
+				},
+				center: true
+			} );
+			shared.world.add( model );
+		} );
+		main.asset_require( { path: shared.pathToAssets + "starcluster_noncolliders.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g
+			} );
+			shared.world.add( model );
+		} );
+		
+		// speakers
+		
+		main.asset_require( { path: shared.pathToAssets + "spawn_random.js", type: 'model' }, function ( g ) {
+			
+			var i, il,
+				vertices,
+				vertex,
+				spawns,
+				spawnsUnused,
+				speakersData = [
+					{ name: "Collin Hover", assets: { path: shared.pathToAssets + "speaker_hover_collin.js", type: 'model' } }
+				],
+				data;
+			
+			// process random spawns
+			
+			spawns = shared.spawns.random = shared.spawns.random || [];
+			
+			vertices = g.vertices;
+			
+			for ( i = 0, il = vertices.length; i < il; i++ ) {
+				
+				vertex = vertices[ i ];
+				
+				spawns.push( vertex.clone() );
+				
+			}
+			
+			// copy random spawns
+			
+			spawnsUnused = spawns.slice( 0 );
+			
+			// create all speakers
+			
+			for ( i = 0, il = speakersData.length; i < il; i++ ) {
+				
+				data = speakersData[ i ];
+				data.spawn = main.array_random_value_remove( spawnsUnused );
+				
+				load_speaker( data );
+				
+			}
+			
+		} );
+		
+	}
 	
+	function load_speaker ( data ) {
 		
-		/*
-		// secondary gravity sources
-		
-		var moon1 = new _Model.Instance( {
-			geometry: asteroidGeometry,
-			physics: {
-				bodyType: 'mesh',
-				gravitySource: true
-			}
+		main.asset_require( data.assets, function ( g ) {
+			
+			var speaker = new _Speaker.Instance( {
+				name: data.name,
+				geometry: g
+			} );
+			shared.world.add( speaker );
+			
+			speaker.face_local_direction( new THREE.Vector3( Math.random() * 2 - 1, 0, Math.random() * 2 - 1 ).normalize() );
+			
+			speaker.respawn( shared.scene, data.spawn );
+			
 		} );
-		moon1.position.set( 1000, 1200, 1000 );
-		moon1.scale.set( 0.35, 0.35, 0.35 );
-		shared.world.add( moon1 );
 		
-		var moon2 = new _Model.Instance( {
-			geometry: asteroidGeometry,
-			physics: {
-				bodyType: 'mesh',
-				gravitySource: true
-			}
-		} );
-		moon2.position.set( 1800, 1700, 1000 );
-		moon2.scale.set( 0.15, 0.15, 0.15 );
-		shared.world.add( moon2 );
-		
-		var moon3 = new _Model.Instance( {
-			geometry: asteroidGeometry,
-			physics: {
-				bodyType: 'mesh',
-				gravitySource: true
-			}
-		} );
-		moon3.position.set( 1800, 2200, 1200 );
-		moon3.scale.set( 0.1, 0.1, 0.1 );
-		shared.world.add( moon3 );
-		
-		// obstacle tests
-		
-		var ice = new _ObstacleSlippery.Instance( {
-			geometry: new THREE.CubeGeometry( 500, 300, 500 ),
-			material: new THREE.MeshLambertMaterial( { color: 0xBAFEFF, ambient: 0xE3FFFF } ),
-			physics: {
-				bodyType: 'box'
-			}
-		} );
-		ice.position.set( 0, 1400, 0 );
-		shared.world.add( ice );
-		
-		var lava = new _ObstacleDamaging.Instance( {
-			geometry: new THREE.CubeGeometry( 500, 300, 500 ),
-			material: new THREE.MeshLambertMaterial( { color: 0xE01B3C, ambient: 0xFF9742 } ),
-			physics: {
-				bodyType: 'box'
-			},
-			options: {
-				damage: 25
-			}
-		} );
-		lava.position.set( -600, 1300, 0 );
-		shared.world.add( lava );
-		*/
 	}
     
     /*===================================================
@@ -205,7 +424,7 @@
 		shared.scene.add( shared.world );
 		
 		_ObjectHelper.revert_change( shared.cameraControls.options, true );
-		shared.cameraControls.target = shared.world;
+		shared.cameraControls.target = shared.world.parts.asteroid;
 		shared.cameraControls.enabled = true;
 		shared.cameraControls.controllable = true;
 		

@@ -44,7 +44,7 @@
     =====================================================*/
 	
 	function init_internal ( m, tb, mh, vh, oh ) {
-		console.log('internal Character', _Character);
+		
 		// modules
 		
 		_Model = m;
@@ -66,7 +66,7 @@
 			stats: {
 				healthMax: 100,
 				invincible: false,
-				invulnerabilityDuration: 1000,
+				invulnerabilityDuration: 1500,
 				invulnerabilityOpacityPulses: 3,
 				invulnerabilityOpacityMin: 0.5,
 				respawnOnDeath: false
@@ -104,7 +104,8 @@
 					hurt: 'hurt',
 					die: 'die',
 					decay: 'decay',
-					respawn: 'respawn'
+					respawn: 'respawn',
+					greeting: 'greeting'
 				},
 				durations: {
 					walk: 750,
@@ -118,16 +119,19 @@
 					die: 1000,
 					decay: 500,
 					respawn: 1000,
+					greeting: 1000,
 					clear: 125,
 					clearSolo: 125
 				},
 				delays: {
 					decay: 500,
 					idleAlt: 5000
-				}
+				},
+				options: {}
 			},
 			communication: {
 				delayEnd: 500,
+				activeCountMinEnd: 2,
 				boundRadiusPctAway: 0.4,
 				boundRadiusPctX: 0,
 				boundRadiusPctY: 0.4,
@@ -159,6 +163,7 @@
 		
 		_Character.Instance.prototype.add_dialogue = add_dialogue;
 		_Character.Instance.prototype.communicate = communicate;
+		_Character.Instance.prototype.communicate_target = communicate_target;
 		_Character.Instance.prototype.communicate_start = communicate_start;
 		_Character.Instance.prototype.communicate_update = communicate_update;
 		_Character.Instance.prototype.communicate_next = communicate_next;
@@ -215,14 +220,14 @@
 				
 				if ( state.invulnerable === true ) {
 					
-					this.material.transparent = true;
+					this.materialAffect.transparent = true;
 					
-					tweenShow = _ObjectHelper.tween( this.material, { opacity: 1 }, {
+					tweenShow = _ObjectHelper.tween( this.materialAffect, { opacity: 1 }, {
 						start: false,
 						duration: durationPerTween
 					} );
 					
-					tweenHide = _ObjectHelper.tween( this.material, { opacity: stats.invulnerabilityOpacityMin }, {
+					tweenHide = _ObjectHelper.tween( this.materialAffect, { opacity: stats.invulnerabilityOpacityMin }, {
 						start: false,
 						duration: durationPerTween
 					} );
@@ -233,7 +238,7 @@
 				// tween opacity back to normal
 				else {
 					
-					_ObjectHelper.tween( this.material, { opacity: 1 }, {
+					_ObjectHelper.tween( this.materialAffect, { opacity: 1 }, {
 						duration: durationPerTween,
 						onComplete: function () {
 							
@@ -354,6 +359,17 @@
 		this.name = parameters.name || characterName;
 		this.state = {};
 		
+		if ( this.material instanceof THREE.MeshFaceMaterial ) {
+			
+			this.materialAffect = this.geometry.materials[ 0 ];
+			
+		}
+		else {
+			
+			this.materialAffect = this.material;
+			
+		}
+		
 		this.communicating = false;
 		conversations = this.conversations = {};
 		conversations.activeCount = 0;
@@ -381,7 +397,10 @@
 			names: 'communicate',
 			eventCallbacks: communicateCallbacks,
 			deactivateCallbacks: 'silence',
-			activeCheck: $.proxy( function () { return this.communicating; }, this )
+			activeCheck: $.proxy( function () { return this.communicating; }, this ),
+			options: {
+				type: this.options.actionTypes.interactive
+			}
 		} );
 		
 		this.onHurt = new signals.Signal();
@@ -535,9 +554,9 @@
 			
 			// opacity to 0
 			
-			this.material.transparent = true;
+			this.materialAffect.transparent = true;
 			
-			_ObjectHelper.tween( this.material, { opacity: 0 }, { 
+			_ObjectHelper.tween( this.materialAffect, { opacity: 0 }, { 
 				duration: animationDurations.decay,
 				delay: animationDelays.decay,
 				onComplete: function () {
@@ -598,8 +617,8 @@
 		
 		if ( state.spawnParent instanceof THREE.Object3D ) {
 			
-			this.material.transparent = true;
-			this.material.opacity = 0;
+			this.materialAffect.transparent = true;
+			this.materialAffect.opacity = 0;
 			
 			// add and position
 			
@@ -691,6 +710,9 @@
 		parameters = parameters || {};
 		
 		var i, il,
+			animation = this.options.animation,
+			animationNames = animation.names,
+			animationDurations = animation.durations,
 			conversations = this.conversations,
 			dialogueData = conversations.dialogueData,
 			dialogueName = parameters.dialogueName,
@@ -708,11 +730,8 @@
 		
 		if ( parameters.target instanceof Character && parameters.target !== this ) {
 			
-			this.targetCommunication = parameters.target;
-			
-			this.look_at( this.targetCommunication );
-			
-			this.targetCommunication.communicate_start();
+			this.communicate_target( parameters.target );
+			this.targetCommunication.communicate_target( this );
 			
 		}
 		
@@ -749,14 +768,14 @@
 			
 			// responses
 		
-			if ( typeof dialogue === 'string' || main.is_array( dialogue ) ) {
+			if ( typeof dialogue === 'string' ) {
 				
 				responses = dialogue;
 				
 			}
 			else {
 				
-				responses = dialogue.responses;
+				responses = main.to_array( dialogue.responses || dialogue );
 				
 			}
 			
@@ -811,6 +830,12 @@
 				
 			}
 			
+			if ( typeof message === 'function' ) {
+				
+				message = message.call( this );
+				
+			}
+			
 			// dialogue has now been said
 			
 			main.array_cautious_add( conversations.said, dialogueName );
@@ -827,6 +852,17 @@
 				conversations.activeCount++;
 				conversations.active = dialogueName;
 				conversations.paused = false;
+				conversations.ending = parameters.ending || false;
+				
+				if ( conversations.greeted !== true ) {
+					
+					conversations.greeted = true;
+					
+					this.morphs.play( animationNames.greeting, {
+						duration: animationDurations.greeting
+					} );
+					
+				}
 				
 				// handle next
 			
@@ -875,7 +911,28 @@
 				
 				conversations.textbubble.content( message ).show( textbubbleOptions );
 				
-				this.communicate_start();
+			}
+			
+		}
+		
+		// handle start
+		
+		this.communicate_start();
+		this.targetCommunication.communicate_start();
+		
+	}
+	
+	function communicate_target ( target ) {
+		
+		if ( this.targetCommunication !== target ) {
+			
+			this.targetCommunication = target;
+			
+			// new target
+			
+			if ( target instanceof Character ) {
+				
+				this.look_at( this.targetCommunication );
 				
 			}
 			
@@ -1099,7 +1156,7 @@
 			
 			conversations.ending = true;
 			
-			if ( conversations.activeCount > 1 ) {
+			if ( conversations.activeCount > communication.activeCountMinEnd ) {
 				
 				if ( target instanceof Character ) {
 					
@@ -1115,10 +1172,19 @@
 					
 					this.communicate( {
 						dialogueName: dialogueName,
+						ending: true,
 						textbubble: {
 							disableAdvanceByUser: true,
 							delayAdvanced: communication.delayEnd,
-							oneAdvanced: $.proxy( this.silence, this )
+							oneAdvanced: $.proxy( function () {
+								
+								if ( conversations.ending === true ) {
+									
+									this.silence();
+									
+								}
+							
+							}, this )
 						}
 					} );
 					
@@ -1146,7 +1212,10 @@
 	
 	function silence () {
 		
-		var conversations = this.conversations,
+		var animation = this.options.animation,
+			animationNames = animation.names,
+			animationDurations = animation.durations,
+			conversations = this.conversations,
 			target = this.targetCommunication;
 		
 		if ( this.communicating !== false ) {
@@ -1155,9 +1224,11 @@
 			
 			shared.cameraControls.onCameraMoved.remove( this.communicate_update, this );
 			
-			conversations.ending = conversations.paused = false;
+			conversations.greeted = conversations.ending = conversations.paused = false;
 			conversations.active = conversations.next = '';
 			conversations.activeCount = 0;
+			
+			this.morphs.clear( animationNames.greeting, { duration: animationDurations.clear } );
 			
 			if ( conversations.textbubble instanceof _Textbubble.Instance ) {
 				
@@ -1373,6 +1444,9 @@
 			animationNames = animation.names,
 			animationDurations = animation.durations,
 			animationDelays = animation.delays,
+			animationOptions = animation.options,
+			animationParameters,
+			animationNamesToClear,
 			moveDir = move.direction,
 			moveSpeed = move.speed * timeDeltaMod,
 			jumpSpeedStart,
@@ -1410,322 +1484,371 @@
 			
 		}
 		
-		// set moving
-				
-		if ( state.forward === 1 || state.back === 1 || state.left === 1 || state.right === 1 ) {
+		if ( state.dead !== true ) {
 			
-			state.movingHorizontal = true;
-			
-		}
-		else {
-			
-			state.movingHorizontal = false;
-			
-		}
-		
-		if ( state.movingHorizontal || state.up === 1 || state.down === 1 ) {
-			
-			state.moving = true;
-			
-		}
-		else {
-			
-			state.moving = false;
-			
-		}
-		
-		// update movement
-		
-		moveDir.z = state.movingHorizontal ? 1 : 0;
-		
-		// if moving
-		
-		if ( state.movingHorizontal === true ) {
-			
-			// rotate by turn angle change
-			
-			this.turn_by( ( state.right === 1 ? -state.right : state.left ) * rotate.turnSpeed );
-			
-			// rotate to face direction
-			
-			this.face_local_direction( rotate.facingDirection, _MathHelper.clamp( rotate.lerpDelta * timeDeltaMod, 0, 1 ) );
-			
-		}
-		
-		// velocity
-		
-		if ( typeof rigidBody !== 'undefined' ) {
-			
-			// properties
-			
-			jumpTime = jump.time;
-			jumpDuration = jump.duration;
-			jumpDelayNotGrounded = jump.delayNotGrounded;
-			jumpDelayFalling = jump.delayFalling;
-			jumpSpeedStart = jump.speedStart * timeDeltaMod;
-			jumpSpeedEnd = jump.speedEnd * timeDeltaMod;
-			jumpAirControl = jump.airControl;
-			jumpMoveDamping = jump.moveDamping;
-			
-			velocityMovement = rigidBody.velocityMovement;
-			velocityMovementForceDelta = velocityMovement.forceDelta;
-			velocityMovementForceRotatedLength = velocityMovement.forceRotated.length() / timeDeltaMod;
-			velocityGravity = rigidBody.velocityGravity;
-			velocityGravityForceDelta = velocityGravity.forceDelta;
-			
-			// jumping
-			
-			grounded = rigidBody.grounded;
-			sliding = rigidBody.sliding;
-			
-			jumpTimeNotGrounded = jump.timeNotGrounded += timeDelta;
-			
-			// air control
-			
-			if ( grounded === false && jumpTimeNotGrounded >= jumpDelayNotGrounded ) {
-				
-				if ( typeof jump.movementChangeLayer === 'undefined' ) {
+			// set moving
 					
-					jump.movementChangeLayer = _ObjectHelper.temporary_change( velocityMovement, {
-						damping: new THREE.Vector3(  jumpMoveDamping, jumpMoveDamping, jumpMoveDamping ),
-						speedDelta: new THREE.Vector3(  jumpAirControl, jumpAirControl, jumpAirControl )
-					} );
-					
-				}
+			if ( state.forward === 1 || state.back === 1 || state.left === 1 || state.right === 1 ) {
+				
+				state.movingHorizontal = true;
 				
 			}
-			else if ( typeof jump.movementChangeLayer !== 'undefined' ) {
+			else {
 				
-				_ObjectHelper.revert_change( velocityMovement, jump.movementChangeLayer );
-				
-				jump.movementChangeLayer = undefined;
+				state.movingHorizontal = false;
 				
 			}
 			
-			// if falling but not jumping
+			if ( state.movingHorizontal || state.up === 1 || state.down === 1 ) {
+				
+				state.moving = true;
+				
+			}
+			else {
+				
+				state.moving = false;
+				
+			}
 			
-			if ( jump.active === false && grounded === false && jumpTimeNotGrounded >= jumpDelayFalling ) {
+			// update movement
+			
+			moveDir.z = state.movingHorizontal ? 1 : 0;
+			
+			// if moving
+			
+			if ( state.movingHorizontal === true ) {
 				
-				jump.ready = false;
+				// rotate by turn angle change
 				
-				morphs.play( animationNames.jump, {
-					duration: animationDurations.jump,
-					loop: true,
-					solo: true, 
-					durationClear: animationDurations.clearSolo,
-					startAt: 0,
-					startAtMax: false,
-				} );
+				this.turn_by( ( state.right === 1 ? -state.right : state.left ) * rotate.turnSpeed );
 				
-			}
-			// do jump
-			else if ( state.up !== 0 && ( ( grounded === true && sliding === false ) || jumpTimeNotGrounded < jumpDelayNotGrounded ) && jump.ready === true ) {
+				// rotate to face direction
 				
-				jump.time = 0;
-				
-				jump.ready = false;
-				
-				jump.active = true;
-				
-				jump.starting = true;
-				jump.started = false;
-				
-				jump.holding = true;
+				this.face_local_direction( rotate.facingDirection, _MathHelper.clamp( rotate.lerpDelta * timeDeltaMod, 0, 1 ) );
 				
 			}
-			else if ( jump.holding === true && jump.active === true && jump.time < jumpDuration ) {
+			
+			// velocity
+			
+			if ( typeof rigidBody !== 'undefined' ) {
 				
-				if ( state.up === 0 && jump.time >= jump.durationMin ) {
-					
-					jump.holding = false;
-					
-				}
+				// properties
 				
-				// play jump start
+				jumpTime = jump.time;
+				jumpDuration = jump.duration;
+				jumpDelayNotGrounded = jump.delayNotGrounded;
+				jumpDelayFalling = jump.delayFalling;
+				jumpSpeedStart = jump.speedStart * timeDeltaMod;
+				jumpSpeedEnd = jump.speedEnd * timeDeltaMod;
+				jumpAirControl = jump.airControl;
+				jumpMoveDamping = jump.moveDamping;
 				
-				if ( jump.starting === true ) {
+				velocityMovement = rigidBody.velocityMovement;
+				velocityMovementForceDelta = velocityMovement.forceDelta;
+				velocityMovementForceRotatedLength = velocityMovement.forceRotated.length() / timeDeltaMod;
+				velocityGravity = rigidBody.velocityGravity;
+				velocityGravityForceDelta = velocityGravity.forceDelta;
+				
+				// jumping
+				
+				grounded = rigidBody.grounded;
+				sliding = rigidBody.sliding;
+				
+				jumpTimeNotGrounded = jump.timeNotGrounded += timeDelta;
+				
+				// air control
+				
+				if ( grounded === false && jumpTimeNotGrounded >= jumpDelayNotGrounded ) {
 					
-					// start jump when stationary
-					
-					if ( velocityMovementForceRotatedLength === 0 ) {
+					if ( typeof jump.movementChangeLayer === 'undefined' ) {
 						
-						morphs.play( animationNames.jumpStart, {
-							duration: animationDurations.jumpStart,
-							loop: false,
-							solo: true,
-							durationClear: animationDurations.clearSolo,
-							oneComplete: function () {
-								
-								jump.started = true;
-								jump.starting = false;
-								velocityGravity.reset();
-								
-							}
+						jump.movementChangeLayer = _ObjectHelper.temporary_change( velocityMovement, {
+							damping: new THREE.Vector3(  jumpMoveDamping, jumpMoveDamping, jumpMoveDamping ),
+							speedDelta: new THREE.Vector3(  jumpAirControl, jumpAirControl, jumpAirControl )
 						} );
 						
 					}
-					else {
-						
-						jump.starting = false;
-						velocityGravity.reset();
-						
-					}
 					
 				}
-				else {
+				else if ( typeof jump.movementChangeLayer !== 'undefined' ) {
 					
-					// play jump
+					_ObjectHelper.revert_change( velocityMovement, jump.movementChangeLayer );
 					
-					morphs.clear( animationNames.jumpStart );
+					jump.movementChangeLayer = undefined;
 					
-					morphs.play( animationNames.jump, {
+				}
+				
+				// if falling but not jumping
+				
+				if ( jump.active === false && grounded === false && jumpTimeNotGrounded >= jumpDelayFalling ) {
+					
+					jump.ready = false;
+					
+					animationParameters = {
 						duration: animationDurations.jump,
 						loop: true,
 						solo: true, 
 						durationClear: animationDurations.clearSolo,
 						startAt: 0,
-						startAtMax: jump.started
-					} );
+						startAtMax: false,
+					};
+					if ( animationOptions.jump ) $.extend( animationParameters, animationOptions.jump );
 					
-					// properties
-					
-					jumpTimeRatio = jumpTime / jumpDuration;
-					
-					// update time total
-					
-					jump.time += timeDelta;
-					
-					// add speed to gravity velocity delta
-					
-					velocityGravityForceDelta.y += jumpSpeedStart * ( 1 - jumpTimeRatio) + jumpSpeedEnd * jumpTimeRatio;
+					morphs.play( animationNames.jump, animationParameters );
 					
 				}
-				
-			}
-			else {
-				
-				if ( grounded === true && jump.active !== false ) {
+				// do jump
+				else if ( state.up !== 0 && ( ( grounded === true && sliding === false ) || jumpTimeNotGrounded < jumpDelayNotGrounded ) && jump.ready === true ) {
 					
-					this.stop_jumping();
+					jump.time = 0;
 					
-					// end jump when not moving
+					jump.ready = false;
 					
-					if ( jumpTimeNotGrounded >= jumpDelayNotGrounded && velocityMovementForceRotatedLength === 0 ) {
+					jump.active = true;
+					
+					jump.starting = true;
+					jump.started = false;
+					
+					jump.holding = true;
+					
+				}
+				else if ( jump.holding === true && jump.active === true && jump.time < jumpDuration ) {
+					
+					if ( state.up === 0 && jump.time >= jump.durationMin ) {
 						
-						morphs.clear( animationNames.jump );
-						
-						morphs.play( animationNames.jumpEnd, { 
-							duration: animationDurations.jumpEnd,
-							loop: false,
-							interruptable: false,
-							startAt: 0,
-							startAtMax: true,
-							oneComplete: function () {
-								morphs.clear( animationNames.jumpEnd, { duration: animationDurations.clear } );
-							}
-						} );
+						jump.holding = false;
 						
 					}
 					
-				}
-				
-				if ( grounded === true && sliding === false && state.up === 0 ) {
+					// play jump start
 					
-					jump.timeNotGrounded = 0;
-					
-					jump.ready = true;
-					
-				}
-				
-			}
-			
-			// movement
-			
-			if ( sliding !== true ) {
-				
-				moveDir.multiplyScalar( moveSpeed );
-				
-				if ( state.movingHorizontal && jump.active === true ) {
-					
-					moveDir.z += jumpSpeedStart * jump.moveSpeedMod;
-					
-				}
-				
-				velocityMovementForceDelta.addSelf( moveDir );
-				
-				// moving backwards?
-				
-				if ( moveDir.z < 0 ) {
-					
-					state.movingBack = true;
-					
-				}
-				else if ( moveDir.z > 0 ) {
-					
-					state.movingBack = false;
-					
-				}
-				
-			}
-			
-			// walk/run/idle
-			
-			if ( jump.active === false && state.grounded === true ) {
-				
-				// walk / run cycles
-				
-				if ( velocityMovementForceRotatedLength > 0 || sliding === true ) {
-					
-					// get approximate terminal velocity based on acceleration (moveVec) and damping
-					// helps morphs play faster if character is moving faster, or slower if moving slower
-					// drag coefficient of 0.083 assumes damping of 0.5
-					
-					terminalVelocity = Math.round( Math.sqrt( ( 2 * Math.abs( velocityMovement.force.z * 0.5 ) ) / 0.083 ) ) * 0.5;
-					playSpeedModifier = terminalVelocity / Math.round( velocityMovementForceRotatedLength );
-					
-					if ( main.is_number( playSpeedModifier ) !== true ) {
+					if ( jump.starting === true ) {
 						
-						playSpeedModifier = 1;
+						// start jump when stationary
 						
-					}
-					
-					if ( velocityMovementForceRotatedLength >= move.runThreshold ) {
-						
-						this.morphs.play( animationNames.run, { duration: animationDurations.run * playSpeedModifier, loop: true, solo: true, durationClear: animationDurations.clearSolo, reverse: state.movingBack } );
+						if ( velocityMovementForceRotatedLength === 0 ) {
+							
+							animationParameters = {
+								duration: animationDurations.jumpStart,
+								loop: false,
+								solo: true,
+								durationClear: animationDurations.clearSolo,
+								oneComplete: function () {
+									
+									jump.started = true;
+									jump.starting = false;
+									velocityGravity.reset();
+									
+								}
+							};
+							if ( animationOptions.jumpStart ) $.extend( animationParameters, animationOptions.jumpStart );
+							
+							morphs.play( animationNames.jumpStart, animationParameters );
+							
+						}
+						else {
+							
+							jump.starting = false;
+							velocityGravity.reset();
+							
+						}
 						
 					}
 					else {
 						
-						this.morphs.play( animationNames.walk, { duration: animationDurations.walk * playSpeedModifier, loop: true, solo: true, durationClear: animationDurations.clearSolo, reverse: state.movingBack } );
+						// play jump
+						
+						morphs.clear( animationNames.jumpStart );
+						
+						animationParameters = {
+							duration: animationDurations.jump,
+							loop: true,
+							solo: true, 
+							durationClear: animationDurations.clearSolo,
+							startAt: 0,
+							startAtMax: jump.started
+						};
+						if ( animationOptions.jump ) $.extend( animationParameters, animationOptions.jump );
+						
+						morphs.play( animationNames.jump, animationParameters );
+						
+						// properties
+						
+						jumpTimeRatio = jumpTime / jumpDuration;
+						
+						// update time total
+						
+						jump.time += timeDelta;
+						
+						// add speed to gravity velocity delta
+						
+						velocityGravityForceDelta.y += jumpSpeedStart * ( 1 - jumpTimeRatio) + jumpSpeedEnd * jumpTimeRatio;
 						
 					}
 					
 				}
-				// idle cycle
 				else {
 					
-					this.morphs.play( animationNames.idle, {
-						duration: animationDurations.idle,
-						loop: true,
-						solo: true,
-						durationClear: animationDurations.clearSolo,
-						alternate: animationNames.idleAlt,
-						alternateDelay: animationDelays.idleAlt,
-						alternateParameters: {
-							duration: animationDurations.idleAlt,
-							solo: true,
-							durationClear: animationDurations.clearSolo
+					if ( grounded === true && jump.active !== false ) {
+						
+						this.stop_jumping();
+						
+						// end jump when not moving
+						
+						if ( jumpTimeNotGrounded >= jumpDelayNotGrounded && velocityMovementForceRotatedLength === 0 ) {
+							
+							morphs.clear( animationNames.jump );
+							
+							animationParameters = { 
+								duration: animationDurations.jumpEnd,
+								loop: false,
+								interruptable: false,
+								startAt: 0,
+								startAtMax: true,
+								oneComplete: function () {
+									morphs.clear( animationNames.jumpEnd, { duration: animationDurations.clear } );
+								}
+							};
+							if ( animationOptions.jumpEnd ) $.extend( animationParameters, animationOptions.jumpEnd );
+							
+							morphs.play( animationNames.jumpEnd, animationParameters );
+							
 						}
-					} );
+						
+					}
+					
+					if ( grounded === true && sliding === false && state.up === 0 ) {
+						
+						jump.timeNotGrounded = 0;
+						
+						jump.ready = true;
+						
+					}
 					
 				}
 				
+				// movement
+				
+				if ( sliding !== true ) {
+					
+					moveDir.multiplyScalar( moveSpeed );
+					
+					if ( state.movingHorizontal && jump.active === true ) {
+						
+						moveDir.z += jumpSpeedStart * jump.moveSpeedMod;
+						
+					}
+					
+					velocityMovementForceDelta.addSelf( moveDir );
+					
+					// moving backwards?
+					
+					if ( moveDir.z < 0 ) {
+						
+						state.movingBack = true;
+						
+					}
+					else if ( moveDir.z > 0 ) {
+						
+						state.movingBack = false;
+						
+					}
+					
+				}
+				
+				// walk/run/idle
+				
+				if ( jump.active === false && state.grounded === true ) {
+					
+					// walk / run cycles
+					
+					if ( velocityMovementForceRotatedLength > 0 || sliding === true ) {
+						
+						/*
+						// get approximate terminal velocity based on acceleration (moveVec) and damping
+						// helps morphs play faster if character is moving faster, or slower if moving slower
+						// drag coefficient of 0.083 assumes damping of 0.5
+						
+						terminalVelocity = Math.round( Math.sqrt( ( 2 * Math.abs( velocityMovement.force.z * 0.5 ) ) / 0.083 ) ) * 0.5;
+						playSpeedModifier = terminalVelocity / Math.round( velocityMovementForceRotatedLength );
+						
+						if ( main.is_number( playSpeedModifier ) !== true ) {
+							
+							playSpeedModifier = 1;
+							
+						}
+						*/
+						if ( velocityMovementForceRotatedLength >= move.runThreshold ) {
+							
+							animationParameters = {
+								duration: animationDurations.run,// * playSpeedModifier,
+								loop: true,
+								solo: true,
+								durationClear: animationDurations.clearSolo,
+								reverse: state.movingBack
+							};
+							if ( animationOptions.run ) $.extend( animationParameters, animationOptions.run );
+							
+							this.morphs.play( animationNames.run, animationParameters );
+							
+						}
+						else {
+							
+							animationParameters = {
+								duration: animationDurations.walk,// * playSpeedModifier,
+								loop: true,
+								solo: true,
+								durationClear: animationDurations.clearSolo,
+								reverse: state.movingBack
+							};
+							if ( animationOptions.walk ) $.extend( animationParameters, animationOptions.walk );
+							
+							this.morphs.play( animationNames.walk, animationParameters );
+							
+						}
+						
+					}
+					// idle cycle
+					else {
+						
+						animationNamesToClear = [ animationNames.run, animationNames.walk, animationNames.jump ];
+						
+						// only idle when not doing something interactive
+						
+						if ( this.actions.is_active( this.options.actionTypes.interactive ) !== true ) {
+							
+							animationParameters = {
+								duration: animationDurations.idle,
+								loop: true,
+								alternate: animationNames.idleAlt,
+								alternateDelay: animationDelays.idleAlt,
+								alternateParameters: {
+									duration: animationDurations.idleAlt
+								}
+							};
+							if ( animationOptions.idle ) $.extend( animationParameters, animationOptions.idle );
+							
+							this.morphs.play( animationNames.idle, animationParameters );
+							
+						}
+						else {
+							
+							animationNamesToClear = animationNamesToClear.concat( [ animationNames.idle, animationNames.idleAlt ] );
+							
+						}
+						
+						this.morphs.clear_only( animationNamesToClear, { duration: animationDurations.clear } );
+						
+					}
+					
+				}
+				
+				// record grounded state
+				// this helps avoid minor issues when grounded on a slope and suddenly running the other direction, becoming ungrounded
+				
+				state.grounded = grounded;
+				
 			}
-			
-			// record grounded state
-			// this helps avoid minor issues when grounded on a slope and suddenly running the other direction, becoming ungrounded
-			
-			state.grounded = grounded;
 			
 		}
 		

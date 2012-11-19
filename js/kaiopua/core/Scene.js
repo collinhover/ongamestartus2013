@@ -41,7 +41,6 @@
     =====================================================*/
 	
 	function init_internal ( mdl, mph, physx, rb ) {
-		console.log('internal scene', _Scene);
 		
 		// utility
 		
@@ -105,6 +104,12 @@
 			object.scene = this;
 			
 			if ( object instanceof _Model.Instance ) {
+				
+				if ( object.morphs instanceof _Morphs.Instance ) {
+					
+					object.morphs.play( 'idle', { loop: true, startDelay: true } );
+					
+				}
 				
 				if ( object.intersectable === true ) {
 					

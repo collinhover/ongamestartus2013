@@ -37,7 +37,6 @@
     =====================================================*/
 	
 	function init_internal ( ma ) {
-		console.log('internal Morphs', _Morphs);
 		
 		// utility
 		
@@ -58,6 +57,7 @@
 		_Morphs.Instance.prototype.stop = stop;
 		_Morphs.Instance.prototype.stop_all = stop_all;
 		_Morphs.Instance.prototype.clear = clear;
+		_Morphs.Instance.prototype.clear_only = clear_only;
 		_Morphs.Instance.prototype.clear_all = clear_all;
 		_Morphs.Instance.prototype.remove = remove;
 		
@@ -274,6 +274,34 @@
 		if ( animator instanceof _MorphAnimator.Instance ) {
 			
 			animator.clear( parameters );
+			
+		}
+		
+		return this;
+		
+	}
+	
+	function clear_only ( names, parameters ) {
+		
+		var i, l,
+			animatingNames = this.animatingNames,
+			name;
+		
+		if ( animatingNames.length > 0 ) {
+			
+			names = main.to_array( names );
+			
+			for ( i = 0, l = animatingNames.length; i < l; i++ ) {
+				
+				name = animatingNames[ i ];
+				
+				if ( main.index_of_value( names, name ) !== -1 ) {
+					
+					this.clear( name, parameters );
+					
+				}
+				
+			}
 			
 		}
 		

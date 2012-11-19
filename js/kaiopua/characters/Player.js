@@ -47,7 +47,6 @@
     =====================================================*/
 	
 	function init_internal ( c, tt, mh, vh, kh, oh, rh ) {
-		console.log('internal player');
 		
 		// assets
 		
@@ -64,6 +63,11 @@
 		_Player.options = {
 			physics: {
 				volumetric: true
+			},
+			actionTypes: {
+				movement: 'action_movement',
+				targetting: 'action_targetting',
+				ui: 'action_ui'
 			},
 			stats: {
 				respawnOnDeath: true
@@ -228,7 +232,10 @@
 						me.move_state_change( 'forward', true );
 					}
 				},
-				deactivateCallbacks: 'up'
+				deactivateCallbacks: 'up',
+				options: {
+					type: this.options.actionTypes.movement
+				}
 			},
 			{
 				names: 's down_arrow',
@@ -240,7 +247,10 @@
 						me.move_state_change( 'back', true );
 					}
 				},
-				deactivateCallbacks: 'up'
+				deactivateCallbacks: 'up',
+				options: {
+					type: this.options.actionTypes.movement
+				}
 			},
 			{
 				names: 'a left_arrow',
@@ -252,7 +262,10 @@
 						me.move_state_change( 'left', true );
 					}
 				},
-				deactivateCallbacks: 'up'
+				deactivateCallbacks: 'up',
+				options: {
+					type: this.options.actionTypes.movement
+				}
 			},
 			{
 				names: 'd right_arrow',
@@ -264,7 +277,10 @@
 						me.move_state_change( 'right', true );
 					}
 				},
-				deactivateCallbacks: 'up'
+				deactivateCallbacks: 'up',
+				options: {
+					type: this.options.actionTypes.movement
+				}
 			},
 			// jump
 			{
@@ -277,7 +293,10 @@
 						me.move_state_change( 'up', true );
 					}
 				},
-				deactivateCallbacks: 'up'
+				deactivateCallbacks: 'up',
+				options: {
+					type: this.options.actionTypes.movement
+				}
 			},
 			{
 				names: 'escape',
@@ -289,6 +308,9 @@
 						
 					}
 				},
+				options: {
+					type: this.options.actionTypes.targetting
+				}
 			},
 			// hovering
 			{
@@ -299,7 +321,10 @@
 				activeCheck: function () {
 					return me.targetHover instanceof THREE.Object3D;
 				},
-				deactivateCallbacks: 'mousemove'
+				deactivateCallbacks: 'mousemove',
+				options: {
+					type: this.options.actionTypes.targetting
+				}
 			},
 			// selection
 			{
@@ -311,7 +336,10 @@
 				activeCheck: function () {
 					return me.target instanceof THREE.Object3D;
 				},
-				deactivateCallbacks: 'tap'
+				deactivateCallbacks: 'tap',
+				options: {
+					type: this.options.actionTypes.targetting
+				}
 			},
 			{
 				names: 'pointer',
@@ -365,7 +393,6 @@
 			shared.signals.onGamePaused.remove( this.pause, this );
 			shared.signals.onGamePointerLeft.remove( this.pause, this );
 			this.controllable = false;
-			this.target = undefined;
 			
 		}
 		
@@ -380,6 +407,8 @@
 	function die () {
 		
 		_Player.Instance.prototype.supr.die.apply( this, arguments );
+		
+		this.controllable = false;
 		
 		// TODO: ui changes
 		

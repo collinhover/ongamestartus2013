@@ -45,7 +45,6 @@
     =====================================================*/
 	
 	function init_internal ( m, cld, mh, sh, oh, ph ) {
-		console.log('internal sky', _Sky);
 		
 		_Model = m;
 		_Cloud = cld;

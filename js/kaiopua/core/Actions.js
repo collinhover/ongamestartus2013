@@ -15,7 +15,8 @@
 		actionOptions = {
 			priority: 0,
 			blocking: false,
-			silencing: false
+			silencing: false,
+			type: 'action_untyped'
 		};
 	
 	/*===================================================
@@ -37,7 +38,6 @@
     =====================================================*/
 	
 	function init_internal() {
-		console.log( 'internal Actions' );
 		
 		// functions
 		
@@ -63,6 +63,7 @@
 		
 		this.map = {};
 		this.actionNames = [];
+		this.actionsByType = {};
 		
 	}
 	
@@ -114,7 +115,8 @@
 			namesList,
 			name,
 			nameActions,
-			action;
+			action,
+			type;
 		
 		actions = main.to_array( actions );
 		
@@ -140,6 +142,15 @@
 				nameActions = this.map[ name ] = this.map[ name ] || [];
 				
 				action = new Action( parameters );
+				type = action.options.type;
+				
+				if ( typeof this.actionsByType[ type ] === 'undefined' ) {
+					
+					this.actionsByType[ type ] = [];
+					
+				}
+				
+				main.array_cautious_add( this.actionsByType[ type ], action );
 				
 				nameActions.push( action );
 				nameActions.sort( sort_priority );
@@ -160,6 +171,7 @@
 			name,
 			nameActions,
 			action,
+			type,
 			index;
 		
 		// for each name
@@ -179,6 +191,15 @@
 					action = nameActions[ j ];
 					
 					action.deactivate();
+					type = action.options.type;
+					
+					main.array_cautious_remove( this.actionsByType[ type ], action );
+					
+					if ( this.actionsByType[ type ].length === 0 ) {
+						
+						delete this.actionsByType[ type ];
+						
+					}
 					
 				}
 				
@@ -232,9 +253,74 @@
     
     =====================================================*/
 	
-	function is_active ( name ) {
+	function is_active ( names ) {
 		
-		return ( this.map.hasOwnProperty( name ) && this.map[ name ].active ) || false;
+		var i, il,
+			j, jl,
+			name,
+			nameActions,
+			typeActions;
+		
+		if ( typeof names !== 'undefined' ) {
+			
+			names = main.to_array( names );
+			
+			for ( i = 0, il = names.length; i < il; i++ ) {
+				
+				name = names[ i ];
+				
+				// try name in map
+				
+				if ( this.map.hasOwnProperty( name ) && this.map[ name ].active ) {
+				
+					return true;
+					
+				}
+				
+				// try name as type
+				
+				if ( this.actionsByType.hasOwnProperty( name ) ) {
+					
+					typeActions = this.actionsByType[ name ];
+					
+					for ( j = 0, jl = typeActions.length; j < jl; j++ ) {
+						
+						if ( typeActions[ j ].active ) {
+							
+							return true;
+							
+						}
+						
+					}
+					
+				}
+				
+			}
+			
+		}
+		else {
+			
+			// for each action name
+			
+			for ( i = 0, il = this.actionNames.length; i < il; i++ ) {
+				
+				nameActions = this.map[ this.actionNames[ i ] ];
+				
+				for ( j = 0, jl = nameActions.length; j < jl; j++ ) {
+					
+					if ( nameActions[ j ].active) {
+						
+						return true;
+						
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+		return false;
 		
 	}
 	
@@ -268,7 +354,7 @@
 	
 	function Action ( parameters ) {
 		
-		var eventName,
+		var name,
 			deactivateCallbacks,
 			deactivateCallback,
 			index;
@@ -285,78 +371,20 @@
 		
 		this.id = actionCount++;
 		this.eventCallbacks = parameters.eventCallbacks || {};
-		
-		deactivateCallbacks = parameters.deactivateCallbacks;
-		this.deactivateCallbacks = {};
+		this.deactivateCallbacks = main.to_array( parameters.deactivateCallbacks );
 		
 		this.eventsActive = [];
-		this.active = false; 
 		this.activeCheck = parameters.activeCheck || {};
 		
 		// for each list of eventCallbacks
 		
-		for ( eventName in this.eventCallbacks ) {
+		for ( name in this.eventCallbacks ) {
 			
-			if ( this.eventCallbacks.hasOwnProperty( eventName ) ) {
+			if ( this.eventCallbacks.hasOwnProperty( name ) ) {
 				
 				// ensure is array
 				
-				this.eventCallbacks[ eventName ] = main.to_array( this.eventCallbacks[ eventName ] );
-				
-				// check deactivateCallbacks
-				if ( deactivateCallbacks ) {
-					
-					// all deactivates same
-					if ( typeof deactivateCallbacks === 'function' ) {
-						
-						this.deactivateCallbacks[ eventName ] = deactivateCallbacks;
-						
-					}
-					// all deactivates same event callback
-					else if ( typeof deactivateCallbacks === 'string' && this.eventCallbacks.hasOwnProperty( deactivateCallbacks ) ) {
-						
-						this.deactivateCallbacks[ eventName ] = this.eventCallbacks[ deactivateCallbacks ];
-						
-					}
-					// unique deactivate
-					else {
-						
-						if ( deactivateCallbacks.hasOwnProperty( eventName ) ) {
-							
-							deactivateCallback = deactivateCallbacks[ eventName ];
-							
-						}
-						else if ( main.is_array( deactivateCallbacks ) ) {
-							
-							index = main.index_of_value( deactivateCallbacks, eventName );
-							
-							if ( index !== -1 ) {
-								
-								deactivateCallback = deactivateCallbacks[ index ];
-								
-							}
-							
-						}
-						
-						// unique deactivate is event callback
-						if ( typeof deactivateCallback === 'string' && this.eventCallbacks.hasOwnProperty( deactivateCallback ) ) {
-							
-							this.deactivateCallbacks[ eventName ] = this.eventCallbacks[ deactivateCallback ];
-							
-						}
-						else if ( typeof deactivateCallback === 'function' ) {
-							
-							this.deactivateCallbacks[ eventName ] = deactivateCallback;
-						
-						}
-						
-					}
-					
-					// ensure is array
-					
-					this.deactivateCallbacks[ eventName ] = main.to_array( this.deactivateCallbacks[ eventName ] );
-					
-				}
+				this.eventCallbacks[ name ] = main.to_array( this.eventCallbacks[ name ] );
 				
 			}
 			
@@ -370,13 +398,15 @@
 			
 			var i, l,
 				eventCallbacks,
-				executable = this.eventCallbacks.hasOwnProperty( eventName );
+				callback,
+				executable = this.eventCallbacks.hasOwnProperty( eventName ),
+				isDeactivate;
 			
 			if ( executable ) {
 				
 				parameters = parameters || {};
 				
-				main.array_cautious_add( this.eventsActive, eventName );
+				isDeactivate = this.is_deactivate_callback( eventName );
 				
 				// execute each eventCallback
 				
@@ -384,7 +414,11 @@
 				
 				for ( i = 0, l = eventCallbacks.length; i < l; i++ ) {
 					
-					eventCallbacks[ i ]( parameters );
+					callback = eventCallbacks[ i ];
+					
+					if ( isDeactivate !== true ) isDeactivate = this.is_deactivate_callback( callback );
+					
+					callback( parameters );
 					
 				}
 				
@@ -396,6 +430,17 @@
 					
 				}
 				
+				if ( isDeactivate === true ) {
+					
+					this.reset();
+					
+				}
+				else {
+					
+					main.array_cautious_add( this.eventsActive, eventName );
+					
+				}
+				
 			}
 			
 			return executable;
@@ -404,52 +449,53 @@
 		
 		deactivate: function () {
 			
-			var i, l,
-				j, k,
-				eventName,
-				callbacks,
-				callbacksCalled,
+			var i, il,
+				callbacks = this.deactivateCallbacks,
 				callback;
 			
-			// if has current event
-			
-			if ( this.active && this.eventsActive.length > 0 ) {
+			for ( i = 0, il = callbacks.length; i < il; i++ ) {
 				
-				callbacksCalled = [];
+				callback = callbacks[ i ];
 				
-				// execute each deactivate callback only once
-				
-				for ( i = 0, l = this.eventsActive.length; i < l; i++ ) {
-				
-					eventName = this.eventsActive[ i ];
+				if ( typeof callback === 'function' ) {
 					
-					if ( this.deactivateCallbacks.hasOwnProperty( eventName ) ) {
-						
-						callbacks = this.deactivateCallbacks[ eventName ];
+					callback();
 					
-						for ( j = 0, k = callbacks.length; j < k; j++ ) {
-							
-							callback = callbacks[ j ];
-							
-							if ( main.index_of_value( callbacksCalled, callback ) === -1 ) {
-								
-								callback();
-								
-								callbacksCalled.push( callback );
-								
-							}
-							
-						}
-						
-					}
+				}
+				else if ( typeof callback === 'string' && this.eventCallbacks.hasOwnProperty( callback ) ) {
+					
+					this.execute( callback );
 					
 				}
 				
-				// clear eventName
+			}
+			
+			this.reset();
+			
+		},
+		
+		is_deactivate_callback: function ( callback ) {
+			
+			var i, il,
+				callbacks = this.deactivateCallbacks;
+			
+			for ( i = 0, il = callbacks.length; i < il; i++ ) {
 				
-				this.eventsActive = [];
+				if ( callback === callbacks[ i ] ) {
+					
+					return true;
+					
+				}
 				
 			}
+			
+			return false;
+			
+		},
+		
+		reset: function () {
+			
+			this.eventsActive = [];
 			
 		}
 		

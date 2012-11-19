@@ -48,7 +48,6 @@
     =====================================================*/
 	
 	function init_internal ( rb, ob, mh, vh, rh, oh, ph ) {
-		console.log('internal physics');
 		
 		_RigidBody = rb;
 		_Obstacle = ob;
@@ -174,7 +173,6 @@
 				if ( rigidBody.gravitySource === true ) {
 					
 					main.array_cautious_add( this.bodiesGravity, rigidBody );
-					rigidBody.mesh.morphs.play( 'idle', { loop: true, startDelay: true } );
 					
 				}
 				
@@ -188,7 +186,7 @@
 				// static colliders in octree and split by faces if collider is mesh
 				else {
 					
-					this.octree.add( object, collider instanceof _RayHelper.MeshCollider ? true : false );
+					this.octree.add( object, collider instanceof _RigidBody.MeshCollider ? true : false );
 					
 				}
 				
@@ -273,7 +271,7 @@
 		var i, l,
 			j, k,
 			rigidBody,
-			mesh,
+			object,
 			gravityBody,
 			gravityMesh,
 			gravityOrigin = this.utilVec31Update,
@@ -291,7 +289,7 @@
 			
 			// properties
 			
-			mesh = rigidBody.mesh;
+			object = rigidBody.object;
 			
 			velocityGravity = rigidBody.velocityGravity;
 			
@@ -303,7 +301,7 @@
 			
 			if ( gravityBody instanceof _RigidBody.Instance ) {
 				
-				gravityMesh = gravityBody.mesh;
+				gravityMesh = gravityBody.object;
 				
 				gravityOrigin.copy( gravityMesh.matrixWorld.getPosition() );
 				
@@ -339,7 +337,7 @@
 				
 			}
 			
-			_PhysicsHelper.rotate_relative_to_source( mesh.quaternion, mesh.position, gravityOrigin, rigidBody.axes.up, rigidBody.axes.forward, lerpDelta, rigidBody );
+			_PhysicsHelper.rotate_relative_to_source( object.quaternion, object.position, gravityOrigin, rigidBody.axes.up, rigidBody.axes.forward, lerpDelta, rigidBody );
 			
 			// movement velocity
 			
@@ -347,7 +345,7 @@
 			
 			// find up direction and set relative rotation of gravity
 			
-			gravityUp.sub( mesh.position, gravityOrigin ).normalize();
+			gravityUp.sub( object.position, gravityOrigin ).normalize();
 			
 			velocityGravity.relativeTo = gravityUp;
 			
@@ -372,8 +370,8 @@
 	function handle_velocity ( rigidBody, velocity ) {
 		
 		var forGravity = velocity == rigidBody.velocityGravity,
-			mesh = rigidBody.mesh,
-			position = mesh.position,
+			object = rigidBody.object,
+			position = object.position,
 			force = velocity.force,
 			forceRotated = velocity.forceRotated,
 			forceLength,
@@ -437,7 +435,7 @@
 			direction: forceRotated,
 			offsets: velocity.offsetsRotated,
 			far: forceLength + ( velocity === rigidBody.velocityMovement ? rigidBody.radius : boundingRadius ),
-			ignore: mesh
+			ignore: object
 		};
 		
 		intersection = _RayHelper.raycast( intersectionParameters );
@@ -446,7 +444,7 @@
 			
 			// jumping needs a pre-application check in opposite direction of velocity to ensure the intersection application does not force rigid body through ground
 			
-			if ( mesh.jumping === true ) {
+			if ( object.jumping === true ) {
 				
 				// reverse force
 				
@@ -581,7 +579,7 @@
 		
 		if ( ( obstacle || forGravity !== true ) && velocity.obstacle instanceof _Obstacle.Instance && velocity.obstacle !== obstacle ) {
 			
-			velocity.obstacle.unaffect( mesh );
+			velocity.obstacle.unaffect( object );
 			delete velocity.obstacle;
 			
 		}
@@ -590,7 +588,7 @@
 			
 			velocity.obstacle = obstacle;
 			
-			obstacle.affect( mesh, { velocity: velocity } );
+			obstacle.affect( object, { velocity: velocity } );
 			
 		}
 		

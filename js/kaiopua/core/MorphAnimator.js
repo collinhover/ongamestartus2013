@@ -35,7 +35,6 @@
     =====================================================*/
 	
 	function init_internal ( mh ) {
-		console.log('internal MorphAnimator', _MorphAnimator);
 		
 		// utility
 		
@@ -49,15 +48,20 @@
 			direction: 1,
 			interpolationDirection: 1,
 			loop: false,
-			loopDelay: 0,
+			loopDelayPct: 0,
+			loopDelayRandom: false,
 			loopChance: 1,
 			reverseOnComplete: false,
+			clearOnComplete: true,
 			startDelay: 0,
 			startAt: -1,
 			startAtMax: false,
 			alternate: false,
 			alternateDelay: 0,
+			alternateDelayRandom: true,
 			solo: false,
+			clearOnly: false,
+			clearExceptions: false,
 			interruptable: true,
 			prepare: true
 		};
@@ -218,6 +222,20 @@
 			
 		}
 		
+		// clear only and exceptions
+		
+		if ( changes.clearOnly ) {
+			
+			changes.clearOnly = main.to_array( changes.clearOnly );
+			
+		}
+		
+		if ( changes.clearExceptions ) {
+			
+			changes.clearExceptions = main.to_array( changes.clearExceptions );
+			
+		}
+		
 		// merge changes
 		
 		this.options = $.extend( this.options || {}, changes );
@@ -234,7 +252,8 @@
 	
 	function play ( parameters ) {
 		
-		var clearExceptions;
+		var clearExceptions,
+			startDelay;
 		
 		if ( this.clearing === true ) {
 			
@@ -258,15 +277,32 @@
 				
 			}
 			
-			clearExceptions = [ this.name ];
+			// clear only or exceptions
 			
-			if ( this.alternating === true ) {
+			if ( this.options.clearOnly ) {
 				
-				clearExceptions.push ( this.options.alternate );
+				this.morphs.clear_only( this.options.clearOnly, { duration: this.options.durationClear } );
 				
 			}
-			
-			this.morphs.clear_all( { duration: this.options.durationClear }, clearExceptions );
+			else {
+				
+				clearExceptions = [ this.name ];
+				
+				if ( this.options.clearExceptions ) {
+					
+					clearExceptions = clearExceptions.concat( this.options.clearExceptions );
+					
+				}
+				
+				if ( this.alternating === true ) {
+					
+					clearExceptions.push( this.options.alternate );
+					
+				}
+				
+				this.morphs.clear_all( { duration: this.options.durationClear }, clearExceptions );
+				
+			}
 			
 		}
 		
@@ -291,15 +327,34 @@
 				
 			}
 			
-			if ( main.is_number( this.options.startDelay ) !== true ) {
+			if ( this.options.startDelay === true ) {
 				
-				this.options.startDelay = Math.round( Math.random() * this.durationOriginal );
+				startDelay = Math.round( Math.random() * this.options.duration );
+				
+			}
+			else if ( main.is_number( this.options.startDelay ) ) {
+				
+				startDelay = this.options.startDelay;
+				
+			}
+			else {
+				
+				startDelay = 0;
 				
 			}
 			
 			// resume
 			
-			this.startTimeoutHandle = window.requestTimeout( $.proxy( this.resume, this ), this.options.startDelay );
+			if ( startDelay > 0 ) {
+				
+				this.startTimeoutHandle = window.requestTimeout( $.proxy( this.resume, this ), startDelay );
+				
+			}
+			else {
+				
+				this.resume();
+				
+			}
 		
 		}
 		
@@ -358,12 +413,17 @@
 				
 			}
 			
-			// loop or stop
-			
+			// stop when not looping
 			
 			if ( this.options.loop !== true ) {
 				
 				this.stop().prepare();
+				
+				if ( this.options.clearOnComplete === true ) {
+					
+					this.clear( { duration: this.options.durationClear } );
+					
+				}
 				
 			}
 			
@@ -390,18 +450,29 @@
 			
 			if ( typeof alternate === 'string' && alternate !== this.name ) {
 				
-				index = main.index_of_value( this.morphs.names, alternate );
+				this.alternateDelay = this.options.alternateDelay;
 				
-				if ( index !== -1 ) {
+				if ( this.options.alternateDelayRandom ) {
 					
-					this.alternateTime += this.options.duration;
+					this.alternateDelay += Math.round( Math.random() * this.options.alternateDelay );
 					
-					if ( this.alternateTime >= this.options.alternateDelay ) {
+				}
+				
+				this.alternateTime += this.options.duration;
+				
+				if ( this.alternateTime >= this.alternateDelay ) {
+					
+					this.alternateTime = 0;
+					
+					index = main.index_of_value( this.morphs.names, alternate );
+					
+					if ( index !== -1 ) {
 						
 						alternateParameters = $.extend( true, {}, this.options.alternateParameters );
+						alternateParameters.clearOnly = alternateParameters.clearOnly || this.options.clearOnly;
+						alternateParameters.clearExceptions = alternateParameters.clearExceptions || this.options.clearExceptions;
 						alternating = true;
 						
-						this.alternateTime = 0;
 						this.alternateLoopDelay = alternateParameters.duration || 0;
 						
 						this.morphs.play( alternate, alternateParameters );
@@ -426,9 +497,7 @@
 	
 	function loop ( delay ) {
 		
-		var delay = this.options.loopDelay;
-		
-		clear_delays.call( this );
+		var delay = this.options.duration * this.options.loopDelayPct * ( this.options.loopDelayRandom === true ? Math.random() : 1 );
 		
 		this.prepare( true );
 		
@@ -442,11 +511,21 @@
 			
 		}
 		
+		loop_try.call( this, delay );
+		
+		return this;
+		
+	}
+	
+	function loop_try ( delay ) {
+		
+		clear_delays.call( this );
+		
 		// loop chance
 		
 		if ( this.options.loopChance < 1 && Math.random() > this.options.loopChance ) {
 			
-			delay += this.durationOriginal;
+			delay = Math.round( this.options.duration * ( this.options.loopDelayRandom === true ? Math.random() : 1 ) );
 			
 		}
 		
@@ -458,7 +537,7 @@
 			
 			this.stop();
 			
-			this.loopTimeoutHandle = window.requestTimeout( $.proxy( loop, this ), delay );
+			this.loopTimeoutHandle = window.requestTimeout( $.proxy( loop_try, this ), delay );
 			
 		}
 		// else resume
@@ -513,10 +592,10 @@
 				
 				if ( main.is_number( duration ) && duration > 0 ) {
 					
-					if ( this.clearing !== true || this.options.duration !== duration ) {
+					if ( this.clearing !== true || this.durationClear !== duration ) {
 						
 						this.clearing = true;
-						this.change( parameters );
+						this.durationClear = duration;
 						
 						this.recycle().resume();
 						
@@ -590,8 +669,7 @@
 			influences = mesh.morphTargetInfluences,
 			map = this.map,
 			o = this.options,
-			scaleMax = Math.max( mesh.scale.x, mesh.scale.y, mesh.scale.z, 0.5 ),
-			duration = o.duration * scaleMax,
+			duration,
 			timeFromStart,
 			cyclePct,
 			direction,
@@ -607,11 +685,13 @@
 		this.timeLast = this.time;
 		this.time += timeDelta;
 		timeFromStart = this.time - this.timeStart;
-		cyclePct = timeFromStart / duration;
 		
 		// clearing
 		
 		if ( this.clearing === true ) {
+			
+			duration = this.durationClear;
+			cyclePct = timeFromStart / duration;
 			
 			interpolationDelta = timeDelta / duration;
 			
@@ -628,6 +708,9 @@
 		}
 		// frame to frame
 		else {
+			
+			duration = o.duration * Math.max( mesh.scale.x, mesh.scale.y, mesh.scale.z, 0.5 );
+			cyclePct = timeFromStart / duration;
 			
 			direction = o.direction;
 			interpolationDirection = o.interpolationDirection;

@@ -13,7 +13,6 @@
 		_RigidBody = {},
 		_Velocity,
 		_VectorHelper,
-		_RayHelper,
 		_ObjectHelper,
 		_SceneHelper,
 		bodyCount = 0;
@@ -29,7 +28,6 @@
 		requirements: [
 			"js/kaiopua/physics/Velocity.js",
 			"js/kaiopua/utils/VectorHelper.js",
-			"js/kaiopua/utils/RayHelper.js",
 			"js/kaiopua/utils/ObjectHelper.js",
 			"js/kaiopua/utils/SceneHelper.js"
 		],
@@ -43,11 +41,10 @@
     
     =====================================================*/
 	
-	function init_internal ( vel, vh, rh, oh, sh ) {
-		console.log('internal Rigid Body', _RigidBody);
+	function init_internal ( vel, vh, oh, sh ) {
+		
 		_Velocity = vel;
 		_VectorHelper = vh;
-		_RayHelper = rh;
 		_ObjectHelper = oh;
 		_SceneHelper = sh;
 		
@@ -68,6 +65,13 @@
 		_RigidBody.gravityBodyChangeMagnitude = new THREE.Vector3( 0, -0.1, 0 );
 		
 		// functions
+		
+		_RigidBody.Collider = Collider;
+		_RigidBody.PlaneCollider = PlaneCollider;
+		_RigidBody.SphereCollider = SphereCollider;
+		_RigidBody.BoxCollider = BoxCollider;
+		_RigidBody.MeshCollider = MeshCollider;
+		_RigidBody.ObjectColliderOBB = ObjectColliderOBB;
 		
 		_RigidBody.extract_parent_gravity_body = extract_parent_gravity_body;
 		
@@ -102,7 +106,7 @@
 		Object.defineProperty( _RigidBody.Instance.prototype, 'radiusGravity', { 
 			get : function () {
 				
-				var scale = this.mesh.scale,
+				var scale = this.object.scale,
 					scaleMax = Math.max( scale.x, scale.y, scale.z ),
 					radiusGravity = this.radiusCore * scaleMax;
 				
@@ -125,15 +129,127 @@
 	}
 	
 	/*===================================================
+	
+	colliders
+	
+	=====================================================*/
+	 
+	function Collider ( rigidBody ) {
+		
+		this.rigidBody = rigidBody;
+		this.normal = new THREE.Vector3();
+		
+	}
+
+	function PlaneCollider ( rigidBody, point, normal ) {
+		
+		Collider.call( this, rigidBody );
+
+		this.point = point;
+		this.normal.copy( normal );
+
+	}
+	PlaneCollider.prototype = new Collider();
+	PlaneCollider.prototype.constructor = PlaneCollider;
+
+	function SphereCollider ( rigidBody, center, radius ) {
+		
+		Collider.call( this, rigidBody );
+
+		this.center = center;
+		this.radius = radius;
+		this.radiusSq = radius * radius;
+
+	}
+	SphereCollider.prototype = new Collider();
+	SphereCollider.prototype.constructor = SphereCollider;
+
+	function BoxCollider ( rigidBody, min, max ) {
+		
+		Collider.call( this, rigidBody );
+
+		this.min = min;
+		this.max = max;
+
+	}
+	BoxCollider.prototype = new Collider();
+	BoxCollider.prototype.constructor = BoxCollider;
+
+	function ObjectColliderAABB ( rigidBody ) {
+		
+		var geometry = rigidBody.geometry,
+			object = rigidBody.object || rigidBody,
+			bbox,
+			min,
+			max;
+		
+		if ( !geometry.boundingBox ) {
+			
+			geometry.computeBoundingBox();
+			
+		}
+		
+		bbox = geometry.boundingBox;
+		min = bbox.min.clone();
+		max = bbox.max.clone();
+		
+		// proto
+		
+		BoxCollider.call( this, rigidBody, min, max );
+		
+		// add object position
+		
+		this.min.addSelf( object.position );
+		this.max.addSelf( object.position );
+
+	}
+	ObjectColliderAABB.prototype = new BoxCollider();
+	ObjectColliderAABB.prototype.constructor = ObjectColliderAABB;
+	
+	function ObjectColliderOBB ( rigidBody ) {
+		
+		var geometry = rigidBody.geometry,
+			bbox,
+			min,
+			max;
+		
+		if ( !geometry.boundingBox ) {
+			
+			geometry.computeBoundingBox();
+			
+		}
+		
+		bbox = geometry.boundingBox;
+		min = bbox.min.clone();
+		max = bbox.max.clone();
+		
+		// proto
+		
+		BoxCollider.call( this, rigidBody, min, max );
+
+	}
+	ObjectColliderOBB.prototype = new BoxCollider();
+	ObjectColliderOBB.prototype.constructor = ObjectColliderOBB;
+
+	function MeshCollider ( rigidBody, box ) {
+		
+		Collider.call( this, rigidBody );
+		
+		this.box = box || new ObjectColliderOBB( this.rigidBody );
+		
+	}
+	MeshCollider.prototype = new Collider();
+	MeshCollider.prototype.constructor = MeshCollider;
+	
+	/*===================================================
     
     rigid body
     
     =====================================================*/
 	
-	function RigidBody ( mesh, parameters ) {
+	function RigidBody ( object, parameters ) {
 		
 		var i, l,
-			geometry,
 			vertices,
 			vertex,
 			bboxDimensions,
@@ -173,11 +289,10 @@
 		
 		this.id = bodyCount++;
 		
-		this.mesh = mesh;
+		this.object = object;
+		this.geometry = parameters.geometry || this.object.geometry;
 		
-		geometry = parameters.geometry || mesh.geometry;
-		
-		position = mesh.position;
+		position = this.object.position;
 		
 		// physics width/height/depth
 		
@@ -209,7 +324,7 @@
 			
 			// model bounding box
 			
-			bboxDimensions = _ObjectHelper.dimensions( mesh );
+			bboxDimensions = _ObjectHelper.dimensions( this.object );
 			
 			if ( needWidth === true ) {
 				
@@ -239,25 +354,25 @@
 		
 		if ( bodyType === 'mesh' ) {
 			
-			this.collider = new _RayHelper.MeshCollider( this.mesh );
+			this.collider = new MeshCollider( this );
 			
 		}
 		else if ( bodyType === 'sphere' ) {
 			
 			radius = Math.max( width, height, depth ) * 0.5;
 			
-			this.collider = new _RayHelper.SphereCollider( this.mesh, position, radius );
+			this.collider = new SphereCollider( this, position, radius );
 			
 		}
 		else if ( bodyType === 'plane' ) {
 			
-			this.collider = new _RayHelper.PlaneCollider( this.mesh, position, parameters.normal || new THREE.Vector3( 0, 0, 1 ) );
+			this.collider = new PlaneCollider( this, position, parameters.normal || new THREE.Vector3( 0, 0, 1 ) );
 			
 		}
 		// default box
 		else {
 			
-			this.collider = new _RayHelper.ObjectColliderOBB( this.mesh );
+			this.collider = new ObjectColliderOBB( this );
 			
 		}
 		
@@ -269,7 +384,7 @@
 		
 		this.radiusCore = 0;
 		
-		vertices = geometry.vertices;
+		vertices = this.geometry.vertices;
 		
 		for ( i = 0, l = vertices.length; i < l; i++ ) {
 			
@@ -380,7 +495,7 @@
 		
 		this.velocityMovement = new _Velocity.Instance( { 
 			rigidBody: this,
-			relativeTo: this.mesh,
+			relativeTo: this.object,
 			offsets: movementOffsets,
 			options: {
 				damping: parameters.movementDamping,
@@ -413,23 +528,23 @@
 		
 	}
 	
-	function clone ( mesh ) {
+	function clone ( object ) {
 		
 		var parameters = {};
 		
-		mesh = mesh || this.mesh;
+		object = object || this.object;
 		
-		if ( this.collider instanceof _RayHelper.MeshCollider ) {
+		if ( this.collider instanceof MeshCollider ) {
 			
 			parameters.bodyType = 'mesh';
 			
 		}
-		else if ( this.collider instanceof _RayHelper.SphereCollider ) {
+		else if ( this.collider instanceof SphereCollider ) {
 			
 			parameters.bodyType = 'sphere';
 			
 		}
-		else if ( this.collider instanceof _RayHelper.PlaneCollider ) {
+		else if ( this.collider instanceof PlaneCollider ) {
 			
 			parameters.bodyType = 'plane';
 			parameters.normal = this.collider.normal.clone();
@@ -446,7 +561,7 @@
 		parameters.movementDamping = this.velocityMovement.damping.clone();
 		parameters.gravityDamping = this.velocityGravity.damping.clone();
 		
-		return new _RigidBody.Instance( mesh, parameters );
+		return new _RigidBody.Instance( object, parameters );
 		
 	}
 	
@@ -498,7 +613,7 @@
 	
 	function collider_dimensions_scaled () {
 		
-		return this.collider_dimensions().multiplySelf( this.mesh.scale );
+		return this.collider_dimensions().multiplySelf( this.object.scale );
 		
 	}
 	
@@ -518,27 +633,27 @@
 	
 	function bounds_in_direction ( direction ) {
 		
-		var boundsHalf = this.collider_dimensions_scaled().multiplyScalar( 0.5 ).subSelf( _ObjectHelper.center_offset( this.mesh ) ),
+		var boundsHalf = this.collider_dimensions_scaled().multiplyScalar( 0.5 ).subSelf( _ObjectHelper.center_offset( this.geometry ) ),//this.object ) ),
 			localDirection = this.utilVec31Bounds,
-			meshRotation = this.utilQ1Bounds;
+			objectRotation = this.utilQ1Bounds;
 		
 		// get local direction
 		// seems like extra unnecessary work
 		// not sure if there is better way
 		
-		meshRotation.copy( this.mesh.quaternion ).inverse();
+		objectRotation.copy( this.object.quaternion ).inverse();
 		
 		localDirection.copy( direction ).normalize();
 		
-		meshRotation.multiplyVector3( localDirection );
+		objectRotation.multiplyVector3( localDirection );
 		
 		// set in direction
 		
 		boundsHalf.multiplySelf( localDirection );
 		
-		// rotate to match mesh
+		// rotate to match object
 		
-		return _VectorHelper.rotate_relative_to( boundsHalf, this.mesh );
+		return _VectorHelper.rotate_relative_to( boundsHalf, this.object );
 		
 	}
 	
@@ -553,8 +668,8 @@
 		var i, l,
 			j, jl,
 			gravityBodiesAttracting,
-			gravityBodiesAttractingMeshes,
-			gravityBodiesAttractingMeshesExcludingCurrent,
+			gravityBodiesAttractingObjects,
+			gravityBodiesAttractingObjectsExcludingCurrent,
 			gravityBody,
 			gravityBodyPotential,
 			gravityBodyChildren,
@@ -579,8 +694,8 @@
 			velocityMovementCollisionGravityBody,
 			velocityGravityRotatedProjected = this.utilVec34GravityBody,
 			velocityMovementRotatedProjected = this.utilVec35GravityBody,
-			mesh = this.mesh,
-			meshPositionProjected = this.utilVec36GravityBody;
+			object = this.object,
+			objectPositionProjected = this.utilVec36GravityBody;
 		
 		// get velocity collisions
 		
@@ -649,7 +764,7 @@
 			
 		}
 		// else if not grounded and no movement property or is jumping ( i.e. characters must jump to trigger gravity change to avoid unexpected shift )
-		else if ( this.grounded === false && ( typeof mesh.jumping === 'undefined' || mesh.jumping === true ) ) {
+		else if ( this.grounded === false && ( typeof object.jumping === 'undefined' || object.jumping === true ) ) {
 			
 			// record maximum force values
 			
@@ -674,41 +789,41 @@
 				
 				this.gravityBodyChangeDelayTime = 0;
 				
-				// project mesh position along combined rotated recent max velocity
+				// project object position along combined rotated recent max velocity
 				
-				mesh.quaternion.multiplyVector3( velocityGravityRotatedProjected.copy( velocityGravity.forceRecentMax ).multiplyScalar( this.gravityBodyChangeGravityProjectionMod ) );
-				mesh.quaternion.multiplyVector3( velocityMovementRotatedProjected.copy( velocityMovement.forceRecentMax ).multiplyScalar( this.gravityBodyChangeMovementProjectionMod ) );
+				object.quaternion.multiplyVector3( velocityGravityRotatedProjected.copy( velocityGravity.forceRecentMax ).multiplyScalar( this.gravityBodyChangeGravityProjectionMod ) );
+				object.quaternion.multiplyVector3( velocityMovementRotatedProjected.copy( velocityMovement.forceRecentMax ).multiplyScalar( this.gravityBodyChangeMovementProjectionMod ) );
 				
-				meshPositionProjected.copy( mesh.matrixWorld.getPosition() ).addSelf( velocityGravityRotatedProjected ).addSelf( velocityMovementRotatedProjected );
+				objectPositionProjected.copy( object.matrixWorld.getPosition() ).addSelf( velocityGravityRotatedProjected ).addSelf( velocityMovementRotatedProjected );
 				
 				// get all gravity bodies that overlap this with gravity radius
 				
 				gravityBodiesAttracting = [];
-				gravityBodiesAttractingMeshes = [];
+				gravityBodiesAttractingObjects = [];
 				
 				for ( i = 0, l = bodiesGravity.length; i < l; i++ ) {
 					
 					gravityBodyPotential = bodiesGravity[ i ];
-					gravityMesh = gravityBodyPotential.mesh;
+					gravityMesh = gravityBodyPotential.object;
 					
 					// if is current gravity body
 					
 					if ( this.gravityBody === gravityBodyPotential ) {
 						
 						gravityBodiesAttracting.push( gravityBodyPotential );
-						gravityBodiesAttractingMeshes.push( gravityBodyPotential.mesh );
+						gravityBodiesAttractingObjects.push( gravityBodyPotential.object );
 						
 					}
 					else {
 						
-						gravityBodyDifference.sub( meshPositionProjected, gravityMesh.matrixWorld.getPosition() );
+						gravityBodyDifference.sub( objectPositionProjected, gravityMesh.matrixWorld.getPosition() );
 						
 						// if within gravity radius
 						
 						if ( gravityBodyDifference.length() <= gravityBodyPotential.radiusGravity ) {
 							
 							gravityBodiesAttracting.push( gravityBodyPotential );
-							gravityBodiesAttractingMeshes.push( gravityBodyPotential.mesh );
+							gravityBodiesAttractingObjects.push( gravityBodyPotential.object );
 							
 						}
 						
@@ -728,19 +843,19 @@
 					for ( i = 0, l = gravityBodiesAttracting.length; i < l; i++ ) {
 						
 						gravityBodyPotential = gravityBodiesAttracting[ i ];
-						gravityMesh = gravityBodyPotential.mesh;
+						gravityMesh = gravityBodyPotential.object;
 						
-						// for each child of gravity body, excluding all attracting meshes that are not this gravity mesh
+						// for each child of gravity body, excluding all attracting objects that are not this gravity object
 						
-						gravityBodiesAttractingMeshesExcludingCurrent = gravityBodiesAttractingMeshes.slice( 0, i ).concat( gravityBodiesAttractingMeshes.slice( i + 1 ) );
+						gravityBodiesAttractingObjectsExcludingCurrent = gravityBodiesAttractingObjects.slice( 0, i ).concat( gravityBodiesAttractingObjects.slice( i + 1 ) );
 						
-						gravityBodyChildren = _SceneHelper.extract_children_from_objects( gravityMesh, gravityMesh, gravityBodiesAttractingMeshesExcludingCurrent );
+						gravityBodyChildren = _SceneHelper.extract_children_from_objects( gravityMesh, gravityMesh, gravityBodiesAttractingObjectsExcludingCurrent );
 						
 						for ( j = 0, jl = gravityBodyChildren.length; j < jl; j++ ) {
 							
 							gravityBodyChild = gravityBodyChildren[ j ];
 							
-							// child must be the gravity mesh or have a rigid body and not be a gravity source itself
+							// child must be the gravity object or have a rigid body and not be a gravity source itself
 							
 							if ( gravityBodyChild === gravityMesh || ( gravityBodyChild.rigidBody && gravityBodyChild.rigidBody.gravitySource !== true ) ) {
 								
@@ -748,7 +863,7 @@
 								
 								// difference in position
 								
-								gravityBodyDifference.sub( meshPositionProjected, matrixWorld.getPosition() );
+								gravityBodyDifference.sub( objectPositionProjected, matrixWorld.getPosition() );
 								
 								// account for bounding radius of child scaled to world
 								
@@ -924,7 +1039,7 @@
 				
 				// stop all morphs
 				
-				this.mesh.morphs.stop_all();
+				this.object.morphs.stop_all();
 				
 			}
 			
@@ -948,7 +1063,7 @@
 				
 				// play idle morph
 				
-				this.mesh.morphs.play( 'idle', { loop: true, startDelay: true } );
+				this.object.morphs.play( 'idle', { loop: true, startDelay: true } );
 				
 			}
 			

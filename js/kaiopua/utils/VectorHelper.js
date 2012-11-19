@@ -46,7 +46,7 @@
     =====================================================*/
 	
 	function init_internal ( mh ) {
-		console.log('internal vector helper', _VectorHelper);
+		
 		_MathHelper = mh;
 		
 		// utility

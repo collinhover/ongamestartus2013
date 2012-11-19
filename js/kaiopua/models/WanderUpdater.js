@@ -50,7 +50,6 @@
     =====================================================*/
 	
 	function init_internal ( pu, mh, vh, oh ) {
-		console.log('internal wander updater', _WanderUpdater);
 		
 		_PropertyUpdater = pu;
 		_MathHelper = mh;

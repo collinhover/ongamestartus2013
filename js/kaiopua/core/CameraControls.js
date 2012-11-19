@@ -41,7 +41,7 @@
     =====================================================*/
 	
 	function init_internal ( mh, vh, oh, ph ) {
-		console.log('internal cameracontrols');
+		
 		// assets
 		
 		_MathHelper = mh;
@@ -124,6 +124,12 @@
 				if ( this._target !== this.targetLast ) {
 					
 					this.targetTransitioned = false;
+					this.targetNew = true;
+					this.distanceThresholdPassed = false;
+					this.distanceSpeedPctWhenNew = 0;
+					this.cameraLerpDeltaWhenNew = 0;
+					this.distanceSpeed = 0;
+					this.distanceSpeedPct = this.options.distanceSpeedPctMin;
 					
 				}
 				
@@ -422,17 +428,6 @@
 				
 				this.moved = false;
 				this.onCameraMoved.dispatch();
-				
-			}
-			
-			// first time target is new
-			
-			if ( this.targetNew !== true && this.targetTransitioned !== true  ) {
-				
-				this.targetNew = true;
-				this.distanceSpeedPctWhenNew = 0;
-				this.cameraLerpDeltaWhenNew = 0;
-				this.distanceSpeed = 0;
 				
 			}
 			

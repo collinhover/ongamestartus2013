@@ -35,7 +35,7 @@
     =====================================================*/
 	
 	function init_internal ( vh ) {
-		console.log('internal Velocity', _Velocity);
+		
 		// modules
 		
 		_VectorHelper = vh;
@@ -173,7 +173,7 @@
 		var i, l,
 			offsetRotated,
 			rigidBody = this.rigidBody,
-			mesh,
+			object,
 			scaleMax = 1,
 			forceLengthMax;
 		
@@ -216,11 +216,11 @@
 		
 		if (  this.rigidBody ) {
 			
-			mesh = this.rigidBody.mesh;
+			object = this.rigidBody.object;
 			
-			if ( mesh instanceof THREE.Object3D ) {
+			if ( object instanceof THREE.Object3D ) {
 				
-				scaleMax = Math.max( mesh.scale.x, mesh.scale.y, mesh.scale.z );
+				scaleMax = Math.max( object.scale.x, object.scale.y, object.scale.z );
 				
 			}
 			

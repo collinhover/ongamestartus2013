@@ -35,7 +35,7 @@
     =====================================================*/
 	
 	function init_internal () {
-		console.log('internal Popover', _Popover);
+		
 		var i, il, placement;
 		
 		// generate placements and indices

@@ -13,6 +13,7 @@
     var shared = main.shared = main.shared || {},
 		assetPath = "js/kaiopua/utils/RayHelper.js",
 		_RayHelper = {},
+		_RigidBody,
 		_MathHelper,
 		_VectorHelper,
 		_SceneHelper,
@@ -23,21 +24,10 @@
 		utilMat42Localize,
 		utilVec31Box,
 		utilVec32Box,
+		utilVec31Scale,
 		utilVec31Casting,
 		utilVec32Casting,
 		utilVec33Casting,
-		utilVec31CastMesh,
-		utilVec32CastMesh,
-		utilVec33CastMesh,
-		utilVec34CastMesh,
-		utilVec35CastMesh,
-		utilVec36CastMesh,
-		utilVec37CastMesh,
-		utilVec38CastMesh,
-		utilVec39CastMesh,
-		utilVec31LinePoint,
-		utilVec32LinePoint,
-		utilVec33LinePoint,
 		utilVec31PointTriangle,
 		utilVec32PointTriangle,
 		utilVec33PointTriangle,
@@ -56,6 +46,7 @@
 	main.asset_register( assetPath, {
 		data: _RayHelper,
 		requirements: [
+			"js/kaiopua/physics/RigidBody.js",
 			"js/kaiopua/utils/MathHelper.js",
 			"js/kaiopua/utils/VectorHelper.js",
 			"js/kaiopua/utils/SceneHelper.js"
@@ -70,11 +61,11 @@
     
     =====================================================*/
 	
-	function init_internal ( mh, vh, sh ) {
-		console.log('internal ray helper', _RayHelper);
+	function init_internal ( rb, mh, vh, sh ) {
 		
 		// reqs
 		
+		_RigidBody = rb;
 		_MathHelper = mh;
 		_VectorHelper = vh;
 		_SceneHelper = sh;
@@ -88,21 +79,10 @@
 		utilMat42Localize = new THREE.Matrix4();
 		utilVec31Box = new THREE.Vector3();
 		utilVec32Box = new THREE.Vector3();
+		utilVec31Scale = new THREE.Vector3().set( 1, 1, 1 );
 		utilVec31Casting = new THREE.Vector3();
 		utilVec32Casting = new THREE.Vector3();
 		utilVec33Casting = new THREE.Vector3();
-		utilVec31CastMesh = new THREE.Vector3();
-		utilVec32CastMesh = new THREE.Vector3();
-		utilVec33CastMesh = new THREE.Vector3();
-		utilVec34CastMesh = new THREE.Vector3();
-		utilVec35CastMesh = new THREE.Vector3();
-		utilVec36CastMesh = new THREE.Vector3();
-		utilVec37CastMesh = new THREE.Vector3();
-		utilVec38CastMesh = new THREE.Vector3();
-		utilVec39CastMesh = new THREE.Vector3();
-		utilVec31LinePoint = new THREE.Vector3();
-		utilVec32LinePoint = new THREE.Vector3();
-		utilVec33LinePoint = new THREE.Vector3();
 		utilVec31PointTriangle = new THREE.Vector3();
 		utilVec32PointTriangle = new THREE.Vector3();
 		utilVec33PointTriangle = new THREE.Vector3();
@@ -113,13 +93,6 @@
 		utilVec34Triangle = new THREE.Vector3();
 		
 		// functions
-		
-		_RayHelper.Collider = Collider;
-		_RayHelper.PlaneCollider = PlaneCollider;
-		_RayHelper.SphereCollider = SphereCollider;
-		_RayHelper.BoxCollider = BoxCollider;
-		_RayHelper.MeshCollider = MeshCollider;
-		_RayHelper.ObjectColliderOBB = ObjectColliderOBB;
 		
 		_RayHelper.extract_collider = extract_collider;
 		_RayHelper.localize_ray = localize_ray;
@@ -200,151 +173,30 @@
 		
 	}
 	
-	/*===================================================
-	
-	colliders
-	
-	=====================================================*/
-	 
-	function Collider ( object ) {
-		
-		this.object = object;
-		this.normal = new THREE.Vector3();
-		
-	}
-
-	function PlaneCollider ( object, point, normal ) {
-		
-		Collider.call( this, object );
-
-		this.point = point;
-		this.normal.copy( normal );
-
-	}
-	PlaneCollider.prototype = new Collider();
-	PlaneCollider.prototype.constructor = PlaneCollider;
-
-	function SphereCollider ( object, center, radius ) {
-		
-		Collider.call( this, object );
-
-		this.center = center;
-		this.radius = radius;
-		this.radiusSq = radius * radius;
-
-	}
-	SphereCollider.prototype = new Collider();
-	SphereCollider.prototype.constructor = SphereCollider;
-
-	function BoxCollider ( object, min, max ) {
-		
-		Collider.call( this, object );
-
-		this.min = min;
-		this.max = max;
-
-	}
-	BoxCollider.prototype = new Collider();
-	BoxCollider.prototype.constructor = BoxCollider;
-
-	// @params object THREE.Mesh
-	// @returns CBox static Axis-Aligned Bounding Box
-	//
-	// The AABB is calculated based on current
-	// position of the object (assumes it won't move)
-
-	function ObjectColliderAABB ( object ) {
-		
-		var geometry = object.geometry,
-			bbox,
-			min,
-			max;
-		
-		if ( !geometry.boundingBox ) {
-			
-			geometry.computeBoundingBox();
-			
-		}
-		
-		bbox = geometry.boundingBox;
-		min = bbox.min.clone();
-		max = bbox.max.clone();
-		
-		// proto
-		
-		BoxCollider.call( this, object, min, max );
-		
-		// add object position
-		
-		this.min.addSelf( object.position );
-		this.max.addSelf( object.position );
-
-	}
-	ObjectColliderAABB.prototype = new BoxCollider();
-	ObjectColliderAABB.prototype.constructor = ObjectColliderAABB;
-
-	// @params object THREE.Mesh
-	// @returns CBox dynamic Object Bounding Box
-	
-	function ObjectColliderOBB ( object ) {
-		
-		var geometry = object.geometry,
-			bbox,
-			min,
-			max;
-		
-		if ( !geometry.boundingBox ) {
-			
-			geometry.computeBoundingBox();
-			
-		}
-		
-		bbox = geometry.boundingBox;
-		min = bbox.min.clone();
-		max = bbox.max.clone();
-		
-		// proto
-		
-		BoxCollider.call( this, object, min, max );
-
-	}
-	ObjectColliderOBB.prototype = new BoxCollider();
-	ObjectColliderOBB.prototype.constructor = ObjectColliderOBB;
-
-	function MeshCollider ( object, box ) {
-		
-		Collider.call( this, object );
-		
-		this.box = box || new ObjectColliderOBB( this.object );
-		
-	}
-	MeshCollider.prototype = new Collider();
-	MeshCollider.prototype.constructor = MeshCollider;
-	
 	function extract_collider( source ) {
 		
 		// collider
-		if ( source instanceof Collider ) {
+		if ( source instanceof _RigidBody.Collider ) {
 			
 			return source;
 			
 		}
-		// octree object
-		if ( source.object && source.object.rigidBody && ( typeof source.faces === 'undefined' || source.faces.length === 0 ) ) {
+		// rigidBody
+		else if ( source instanceof _RigidBody.Instance ) {
 			
-			return source.object.rigidBody.collider;
+			return source.collider;
 			
 		}
 		// object 3d
-		else if ( source.rigidBody ) {
+		else if ( source.rigidBody instanceof _RigidBody.Instance ) {
 			
 			return source.rigidBody.collider;
 			
 		}
-		// rigid body
-		else if ( source.collider ) {
+		// octree object
+		else if ( source.object && source.object.rigidBody instanceof _RigidBody.Instance ) {
 			
-			return source.collider;
+			return source.object.rigidBody.collider;
 			
 		}
 		
@@ -626,21 +478,18 @@
 		
 	}
 	
-	function raycast_colliders ( ray, colliders ) {
+	function raycast_colliders ( ray, sources ) {
 
 		var i, l,
 			intersections = [],
 			intersection,
-			distance,
-			collider;
+			distance;
 		
-		for ( i = 0, l = colliders.length; i < l; i++ ) {
+		for ( i = 0, l = sources.length; i < l; i++ ) {
 			
-			collider = extract_collider( colliders[ i ] );
+			// ray cast collider of object
 			
-			// ray cast collider
-			
-			intersection = raycast_collider( ray, collider  );
+			intersection = raycast_collider( ray, sources[ i ] );
 			
 			if ( intersection.distance < Number.MAX_VALUE ) {
 				
@@ -654,34 +503,35 @@
 
 	}
 
-	function raycast_collider ( ray, collider ) {
+	function raycast_collider ( ray, source ) {
 		
-		var intersection;
+		var intersection,
+			collider = extract_collider( source );
 		
 		// cast by type
 		
-		if ( collider instanceof PlaneCollider ) {
+		if ( collider instanceof _RigidBody.PlaneCollider ) {
 			
 			return raycast_plane( ray, collider );
 			
 		}
-		else if ( collider instanceof SphereCollider ) {
+		else if ( collider instanceof _RigidBody.SphereCollider ) {
 			
 			return raycast_sphere( ray, collider );
 			
 		}
-		else if ( collider instanceof BoxCollider ) {
+		else if ( collider instanceof _RigidBody.BoxCollider ) {
 			
 			return raycast_box( ray, collider );
 			
 		}
-		else if ( collider instanceof MeshCollider ) {
+		else if ( collider instanceof _RigidBody.MeshCollider ) {
 			
 			intersection = raycast_box( ray, collider.box );
 			
 			if ( intersection.distance < Number.MAX_VALUE ) {
 				
-				intersection = raycast_mesh( ray, collider );
+				intersection = raycast_mesh( ray, source, collider );
 				
 			}
 			
@@ -690,7 +540,9 @@
 		}
 		else {
 			
-			return raycast_mesh( ray, collider );
+			// TODO: should not be casting colliders when source has none
+			
+			return raycast_mesh( ray, source, collider );
 			
 		}
 
@@ -702,7 +554,7 @@
 			d = collider.point.dot( collider.normal ),
 			ds,
 			intersection = {
-				object: collider.object || collider,
+				object: collider.rigidBody.object,
 				distance: Number.MAX_VALUE,
 				normal: new THREE.Vector3(),
 				point: new THREE.Vector3()
@@ -736,7 +588,7 @@
 			t,
 			distance,
 			intersection = {
-				object: collider.object || collider,
+				object: collider.rigidBody.object,
 				distance: Number.MAX_VALUE,
 				normal: new THREE.Vector3(),
 				point: new THREE.Vector3()
@@ -747,8 +599,8 @@
 		if ( diffLengthSq < collider.radiusSq ) {
 			
 			// TODO: distance and normal to closest side
-			//intersection.distance = -1;
 			//intersection.normal.set( 0, yn, 0);
+			intersection.distance = -1;
 			
 			return intersection;
 		}
@@ -783,7 +635,8 @@
 	
 	function raycast_box ( ray, collider ) {
 		
-		var object = collider.object || collider,
+		var rigidBody = collider.rigidBody,
+			object = rigidBody.object,
 			rt = localize_ray( ray, object ),
 			abMin = utilVec31Box.copy( collider.min ),
 			abMax = utilVec32Box.copy( collider.max ),
@@ -877,19 +730,6 @@
 			
 		}
 		
-		// inside
-		
-		if( ins ) {
-			
-			// TODO: distance and normal to closest side
-			//intersection.distance = -1;
-			//intersection.normal.set( 0, yn, 0);
-			intersection.point.sub( abMax, abMin );
-			
-			return intersection;
-			
-		}
-		
 		// find side
 		
 		which = 0;
@@ -906,6 +746,19 @@
 			
 			which = 2;
 			t = zt;
+			
+		}
+		
+		// inside
+		
+		if( ins ) {
+			
+			// TODO: distance and normal to closest side
+			//intersection.normal.set( 0, yn, 0);
+			intersection.distance = -1;
+			intersection.point.sub( abMax, abMin );
+			
+			return intersection;
 			
 		}
 		
@@ -951,37 +804,94 @@
 		
 	}
 	
-	function raycast_mesh ( ray, collider ) {
+	function raycast_mesh ( ray, source, collider ) {
 		
 		var i, l,
 			p0 = new THREE.Vector3(),
 			p1 = new THREE.Vector3(),
 			p2 = new THREE.Vector3(),
 			p3 = new THREE.Vector3(),
-			object = collider.object || collider,
-			scale = object.scale,
-			side = object.material.side,
-			geometry = object.geometry,
-			vertices = geometry.vertices,
+			rigidBody,
+			object,
+			scale,
+			side,
+			geometry,
+			vertices,
+			materials,
 			faces,
 			face,
-			rayLocal = localize_ray( ray, object ),
+			rayLocal,
 			collision,
 			distance,
 			distanceMin = Number.MAX_VALUE,
 			faceMin,
 			intersection = {
-				object: object,
 				distance: Number.MAX_VALUE,
 				normal: new THREE.Vector3(),
 				point: new THREE.Vector3()
 			};
 		
-		// handle faces
+		// extract object and geometry
 		
-		if ( collider.faces ) {
+		if ( collider instanceof _RigidBody.Collider ) {
 			
-			faces = main.to_array( collider.faces );
+			rigidBody = collider.rigidBody;
+			
+		}
+		
+		if ( rigidBody instanceof _RigidBody.Instance ) {
+			
+			object = rigidBody.object;
+			geometry = rigidBody.geometry;
+			
+		}
+		else {
+			
+			object = source.object || source;
+			geometry = object.geometry;
+			
+		}
+		
+		// store object
+		
+		intersection.object = object;
+		
+		// make ray local to object
+		
+		rayLocal = localize_ray( ray, object );
+		
+		// handle geometry properties
+		
+		vertices = geometry.vertices;
+		scale = object.scale || utilVec31Scale;
+		
+		if ( object.material instanceof THREE.Material && typeof object.material.side !== 'undefined' ) {
+			
+			side = object.material.side;
+			
+		}
+		else if ( geometry.materials ) {
+			
+			materials = geometry.materials;
+			
+			for ( i = 0, l = materials.length; i < l; i++ ) {
+				
+				if ( typeof materials[ i ].side !== 'undefined' ) {
+					
+					side = materials[ i ].side;
+					break;
+					
+				}
+				
+			}
+			
+		}
+		
+		// for each face in source or geometry
+		
+		if ( typeof source.faces !== 'undefined' ) {
+			
+			faces = main.to_array( source.faces );
 			
 		}
 		
@@ -990,8 +900,6 @@
 			faces = geometry.faces;
 			
 		}
-		
-		// for each face in collider
 		
 		for( i = 0, l = faces.length; i < l; i ++ ) {
 			
@@ -1005,7 +913,7 @@
 				
 				p3.copy( vertices[ face.d ] ).multiplySelf( scale );
 				
-				collision = raycast_triangle( rayLocal, p0, p1, p3, object, distanceMin, side );
+				collision = raycast_triangle( rayLocal, p0, p1, p3, distanceMin, side );
 				distance = collision.distance;
 				
 				if( distance < distanceMin ) {
@@ -1017,7 +925,7 @@
 					
 				}
 				
-				collision = raycast_triangle( rayLocal, p1, p2, p3, object, distanceMin, side );
+				collision = raycast_triangle( rayLocal, p1, p2, p3, distanceMin, side );
 				distance = collision.distance;
 				
 				if( distance < distanceMin ) {
@@ -1032,7 +940,7 @@
 			}
 			else {
 				
-				collision = raycast_triangle( rayLocal, p0, p1, p2, object, distanceMin, side, face.normal );
+				collision = raycast_triangle( rayLocal, p0, p1, p2, distanceMin, side, face.normal );
 				distance = collision.distance;
 				
 				if( distance < distanceMin ) {
@@ -1056,7 +964,7 @@
 		
 	}
 	
-	function raycast_triangle ( ray, p0, p1, p2, object, distanceMin, side, normal ) {
+	function raycast_triangle ( ray, p0, p1, p2, distanceMin, side, normal ) {
 		
 		var e1 = utilVec31Triangle,
 			e2 = utilVec32Triangle,

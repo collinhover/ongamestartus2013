@@ -11,6 +11,7 @@
     var shared = main.shared = main.shared || {},
 		assetPath = "js/kaiopua/utils/PhysicsHelper.js",
 		_PhysicsHelper = {},
+		_RigidBody,
 		_VectorHelper,
 		_RayHelper,
 		utilVec31Pull,
@@ -31,6 +32,7 @@
 	main.asset_register( assetPath, { 
 		data: _PhysicsHelper,
 		requirements: [
+			"js/kaiopua/physics/RigidBody.js",
 			"js/kaiopua/utils/VectorHelper.js",
 			"js/kaiopua/utils/RayHelper.js"
 		],
@@ -44,8 +46,9 @@
     
     =====================================================*/
 	
-	function init_internal ( vh, rh ) {
-		console.log('internal physics helper', _PhysicsHelper);
+	function init_internal ( rb, vh, rh ) {
+		
+		_RigidBody = rb;
 		_VectorHelper = vh;
 		_RayHelper = rh;
 		
@@ -227,7 +230,7 @@
 				
 				object = objectsToIntersect[ i ];
 				
-				if( object instanceof _RayHelper.Collider ) {
+				if( object instanceof _RigidBody.Collider ) {
 					
 					colliders.push( object );
 					

@@ -46,7 +46,6 @@
     =====================================================*/
 	
 	function init_internal ( pu, mh, vh, oh ) {
-		console.log('internal orbit updater', _OrbitUpdater);
 		
 		_PropertyUpdater = pu;
 		_MathHelper = mh;
