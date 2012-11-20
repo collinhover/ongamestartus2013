@@ -158,7 +158,7 @@
 				
 				// snap rotation on next update
 				
-				rigidBody.rotateSnapOnNextUpdate = true;
+				rigidBody.setupOnNextUpdate = true;
 				
 				// bodies
 				
@@ -295,9 +295,27 @@
 			
 			velocityMovement = rigidBody.velocityMovement;
 			
-			gravityBody = rigidBody.gravityBody;
+			// setup
+			
+			if ( rigidBody.setupOnNextUpdate === true ) {
+				
+				rigidBody.setupOnNextUpdate = false;
+				
+				object.updateMatrixWorld( true );
+				rigidBody.change_gravity_body( rigidBody.find_gravity_body_closest( this.bodiesGravity ) );
+				
+				lerpDelta = 1;
+				
+			}
+			else {
+				
+				lerpDelta = rigidBody.lerpDelta;
+				
+			}
 			
 			// if has gravity body
+			
+			gravityBody = rigidBody.gravityBody;
 			
 			if ( gravityBody instanceof _RigidBody.Instance ) {
 				
@@ -324,18 +342,6 @@
 			velocityGravity.forceDelta.addSelf( gravityMagnitude );
 			
 			// rotate to stand on source
-			
-			if ( rigidBody.rotateSnapOnNextUpdate === true ) {
-				
-				lerpDelta = 1;
-				rigidBody.rotateSnapOnNextUpdate = false;
-				
-			}
-			else {
-				
-				lerpDelta = rigidBody.lerpDelta;
-				
-			}
 			
 			_PhysicsHelper.rotate_relative_to_source( object.quaternion, object.position, gravityOrigin, rigidBody.axes.up, rigidBody.axes.forward, lerpDelta, rigidBody );
 			

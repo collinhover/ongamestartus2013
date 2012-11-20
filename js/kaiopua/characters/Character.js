@@ -67,7 +67,7 @@
 				healthMax: 100,
 				invincible: false,
 				invulnerabilityDuration: 1500,
-				invulnerabilityOpacityPulses: 3,
+				invulnerabilityOpacityPulses: 6,
 				invulnerabilityOpacityMin: 0.5,
 				respawnOnDeath: false
 			},

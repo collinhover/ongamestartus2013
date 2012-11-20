@@ -221,21 +221,9 @@
 		
 		// iceplanet
 		
-		shared.world.parts.iceplanetMoonLight = new THREE.PointLight( 0xAEE4FE, 1 );
+		shared.world.parts.iceplanetMoonLight = new THREE.PointLight( 0xD8EFF4, 1 );
 		shared.world.add( shared.world.parts.iceplanetMoonLight );
 		
-		main.asset_require( { path: shared.pathToAssets + "iceplanet.js", type: 'model' }, function ( g ) {
-			var model = new _ObstacleSlippery.Instance( {
-				geometry: g,
-				physics:  {
-					bodyType: 'mesh',
-					//TODO: make it possible to get off planet
-					// gravitySource: true
-				},
-				center: true
-			} );
-			shared.world.add( model );
-		} );
 		main.asset_require( { path: shared.pathToAssets + "iceplanet_moon.js", type: 'model' }, function ( g ) {
 			var model = new _Model.Instance( {
 				geometry: g,
@@ -247,8 +235,21 @@
 			} );
 			shared.world.add( model );
 			
-			shared.world.parts.iceplanetMoonLight.distance = model.boundRadius * 10;
+			shared.world.parts.iceplanetMoonLight.distance = model.boundRadius * 15;
 			model.add( shared.world.parts.iceplanetMoonLight );
+		} );
+		//TODO: make it possible to get off planet, and add some life to planet
+		/*
+		main.asset_require( { path: shared.pathToAssets + "iceplanet.js", type: 'model' }, function ( g ) {
+			var model = new _ObstacleSlippery.Instance( {
+				geometry: g,
+				physics:  {
+					bodyType: 'mesh',
+					gravitySource: true
+				},
+				center: true
+			} );
+			shared.world.add( model );
 		} );
 		main.asset_require( { path: shared.pathToAssets + "iceplanet_noncolliders.js", type: 'model' }, function ( g ) {
 			var model = new _Model.Instance( {
@@ -256,6 +257,7 @@
 			} );
 			shared.world.add( model );
 		} );
+		*/
 		
 		// lava
 		

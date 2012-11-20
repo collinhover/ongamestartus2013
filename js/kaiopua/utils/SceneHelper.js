@@ -47,17 +47,34 @@
     
     =====================================================*/
 	
-	function extract_children_from_objects ( objects, cascade, ignore ) {
+	function extract_children_from_objects ( objects, cascade, ignoreOrCheck ) {
 		
 		var i, l,
-			object;
+			object,
+			extractMethod;
 		
 		objects = main.to_array( objects );
 		cascade = main.to_array( cascade );
 		
+		if ( typeof ignoreOrCheck === 'function' ) {
+			
+			extractMethod = extract_child_cascade_with_check;
+			
+		}
+		else if ( typeof ignoreOrCheck !== 'undefined' ) {
+			
+			extractMethod = extract_child_cascade_with_ignore;
+			
+		}
+		else {
+			
+			extractMethod = extract_child_cascade;
+			
+		}
+		
 		for ( i = 0, l = objects.length; i < l; i++ ) {
 			
-			extract_child_cascade( objects[ i ], cascade, ignore );
+			extractMethod( objects[ i ], cascade, ignoreOrCheck );
 			
 		}
 		
@@ -65,7 +82,43 @@
 		
 	}
 	
-	function extract_child_cascade ( object, cascade, ignore ) {
+	function extract_child_cascade ( object, cascade ) {
+		
+		var i, l,
+			children = object.children;
+		
+		Array.prototype.push.apply( cascade, children );
+		
+		for ( i = 0, l = children.length; i < l; i++ ) {
+			
+			extract_child_cascade( children[ i ], cascade );
+			
+		}
+		
+	}
+	
+	function extract_child_cascade_with_check ( object, cascade, check ) {
+		
+		var i, l,
+			children;
+			
+		if ( check( object ) ) {
+			
+			children = object.children;
+			
+			Array.prototype.push.apply( cascade, children );
+			
+			for ( i = 0, l = children.length; i < l; i++ ) {
+				
+				extract_child_cascade_with_check( children[ i ], cascade, check );
+				
+			}
+			
+		}
+		
+	}
+	
+	function extract_child_cascade_with_ignore ( object, cascade, ignore ) {
 		
 		var i, l,
 			children;
@@ -78,7 +131,7 @@
 			
 			for ( i = 0, l = children.length; i < l; i++ ) {
 				
-				extract_child_cascade( children[ i ], cascade, ignore );
+				extract_child_cascade_with_ignore( children[ i ], cascade, ignore );
 				
 			}
 			

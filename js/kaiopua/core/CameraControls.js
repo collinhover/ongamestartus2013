@@ -14,6 +14,7 @@
 		_MathHelper,
 		_VectorHelper,
 		_ObjectHelper,
+		_RayHelper,
 		_PhysicsHelper;
 	
 	/*===================================================
@@ -28,6 +29,7 @@
 			"js/kaiopua/utils/MathHelper.js",
 			"js/kaiopua/utils/VectorHelper.js",
 			"js/kaiopua/utils/ObjectHelper.js",
+			"js/kaiopua/utils/RayHelper.js",
 			"js/kaiopua/utils/PhysicsHelper.js"
 		],
 		callbacksOnReqs: init_internal,
@@ -40,13 +42,14 @@
     
     =====================================================*/
 	
-	function init_internal ( mh, vh, oh, ph ) {
+	function init_internal ( mh, vh, oh, rh, ph ) {
 		
 		// assets
 		
 		_MathHelper = mh;
 		_VectorHelper = vh;
 		_ObjectHelper = oh;
+		_RayHelper = rh;
 		_PhysicsHelper = ph;
 		
 		// properties
@@ -196,6 +199,7 @@
 		
 		this.utilVec31Update = new THREE.Vector3();
 		this.utilVec32Update = new THREE.Vector3();
+		this.utilVec33Update = new THREE.Vector3();
 		this.utilQ31Update = new THREE.Quaternion();
 		this.utilQ32Update = new THREE.Quaternion();
 		this.utilQ31Rotate = new THREE.Quaternion();
@@ -406,7 +410,8 @@
 	function update () {
 		
 		var target = this._target,
-			scale,
+			targetPosition,
+			targetScale,
 			rigidBody,
 			distance,
 			distanceDiff,
@@ -417,7 +422,12 @@
 			positionOffsetScaled = this.utilVec31Update,
 			positionFinal = this.utilVec32Update,
 			rotationTargetNew = this.utilQ32Update,
-			cameraLerpDelta = this.cameraLerpDelta;
+			cameraLerpDelta = this.cameraLerpDelta,
+			targetCameraDifference,
+			targetCameraDistance,
+			targetCameraNormal = this.utilVec33Update,
+			intersection,
+			cameraIntersectionDistance;
 		
 		if ( this.enabled === true ) {
 			
@@ -441,12 +451,14 @@
 			else {
 				
 				rigidBody = target.rigidBody;
-				scale = Math.max( target.scale.x, target.scale.y, target.scale.z );
-				positionOffsetScaled.copy( this.positionOffset ).multiplyScalar( scale );
+				matrixWorld = target.matrixWorld;
+				targetScale = matrixWorld.getMaxScaleOnAxis();
+				targetPosition = matrixWorld.getPosition();
+				positionOffsetScaled.copy( this.positionOffset ).multiplyScalar( targetScale );
 				
 				// get distance to target position
 				
-				distance = _VectorHelper.distance_between( this.position, target.position );
+				distance = _VectorHelper.distance_between( this.position, targetPosition );
 				
 				if ( this.targetNew === true && distance - this.options.distanceThresholdMin <= this.distanceThresholdMax ) {
 					
@@ -519,7 +531,7 @@
 					
 					// normal / magnitude to target
 					
-					this.distanceNormal.sub( target.position, this.position ).normalize();
+					this.distanceNormal.sub( targetPosition, this.position ).normalize();
 					this.distanceMagnitude.copy( this.distanceNormal ).multiplyScalar( this.distanceSpeed * distanceSpeedMod );
 					
 					// update position
@@ -530,14 +542,16 @@
 				// reset position variables
 				else if ( this.distanceThresholdPassed !== false ) {
 					
-					this.position.copy( target.position );
+					this.position.copy( targetPosition );
 					this.distanceSpeed = 0;
 					this.distanceThresholdPassed = false;
 					
 				}
 				
 				// get camera target rotation
-				
+				// TODO: work with matrix world to get world rotation (below method is jerky)
+				//target.matrixRotationWorld.extractRotation( matrixWorld );
+				//rotationTargetNew.setFromRotationMatrix( target.matrixRotationWorld );
 				rotationTargetNew.copy( target.quaternion );
 				
 				if ( target && target.facing instanceof THREE.Quaternion ) {
@@ -580,6 +594,32 @@
 			if ( this.moved !== true ) {
 				
 				this.moved = _VectorHelper.different( this.camera.position, positionFinal );
+				
+			}
+			
+			// raycast from target to camera to ensure nothing intersectable is blocking view
+			
+			if ( this.targetNew !== true && this.moved === true ) {
+				
+				targetCameraDifference = _VectorHelper.vector_between( targetPosition, positionFinal );
+				targetCameraDistance = targetCameraDifference.length();
+				targetCameraNormal.copy( targetCameraDifference ).normalize();
+				
+				intersection = _RayHelper.raycast( {
+					octrees: shared.scene.octree,
+					origin: targetPosition,
+					direction: targetCameraNormal,
+					far: targetCameraDistance,
+					ignore: target
+				} );
+				
+				if ( intersection && intersection.distance < Number.MAX_VALUE ) {
+					
+					cameraIntersectionDistance = Math.max( 0, targetCameraDistance - intersection.distance );
+					
+					positionFinal.addSelf( targetCameraNormal.multiplyScalar( -cameraIntersectionDistance ) );
+					
+				}
 				
 			}
 			
