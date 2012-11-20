@@ -224,7 +224,7 @@ var KAIOPUA = (function (main) {
 				
 				focusLost = false;
 				
-				resume();
+				resume( true );
 				
 			}
 			
@@ -764,13 +764,13 @@ var KAIOPUA = (function (main) {
 		
     }
     
-    function resume () {
+    function resume ( refocused ) {
 		
         if ( paused === true && ( _ErrorHandler.errorState !== true || started !== true ) ) {
 			console.log('GAME: RESUME');
 			paused = false;
 			
-			shared.signals.onGameResumed.dispatch();
+			shared.signals.onGameResumed.dispatch( refocused );
             
         }
     }
