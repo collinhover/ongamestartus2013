@@ -92,7 +92,7 @@
 	<!-- END game -->
 	
 	<!-- ui -->
-	<div id="ui" class="unselectable ignore-pointer">
+	<div id="ui" class="ignore-pointer">
 		
 		<!-- uiHeader -->
 		<header id="uiHeader">
@@ -103,10 +103,10 @@
 		<!-- END uiHeader -->
 		
 		<!-- uiBody -->
-		<div id="uiBody" class="unselectable ignore-pointer">
+		<div id="uiBody" class="ignore-pointer">
 			
 			<!-- uiOverGame -->
-			<div id="uiOverGame" class="unselectable ignore-pointer">
+			<div id="uiOverGame" class="ignore-pointer">
 				
 			</div>
 			<!-- END uiOverGame -->
@@ -123,7 +123,7 @@
 			</div>
 			<!-- END ui blocker -->
 			
-			<div id="uiStatus" class="unselectable ignore-pointer">
+			<div id="uiStatus" class="ignore-pointer">
 				
 				<!-- status inactive -->
 				<div id="statusInactive" class="hidden">
@@ -252,10 +252,10 @@
 										<li>
 											<a href="https://docs.google.com/spreadsheet/viewform?formkey=dG94UXdDS2ZBVjRrWnlMUUZMWU96M1E6MQ" target="_blank">Preregister <small>(external)</small></a>
 										</li>
-										<li class="disabled dim">
+										<li>
 											<a href="#about">About</a>
 										</li>
-										<li class="disabled dim">
+										<li>
 											<a href="#speakers">Speakers</a>
 										</li>
 									</ul>
@@ -409,9 +409,9 @@
 							<div class="container-center">
 								<img src="img/info_rev_64.png"  class="iconk-giant">
 								<h1 class="inline-type">About</h1>
-								<h2 class="sidekick-type">HTML5 Game Conference</h2>
+								<h2 class="sidekick-type">onGameStart: the Web + Games Conference</h2>
 							</div>
-							<div id="navAbout" class="subnavbar is-sticky">
+							<!--<div id="navAbout" class="subnavbar is-sticky">
 								<div class="navbar-inner">
 									<div class="container">
 										<ul class="nav nav-pills pull-left">
@@ -423,14 +423,39 @@
 										</ul>
 									</div>
 								</div>
-							</div>
+							</div>-->
 						</header>
 						
 						<!-- description -->
 						<section id="description" class="menu-section">
 							
-							<div class="page-header">
-								<h1><small></small></h1>
+							<div class="row">
+								
+								<div class="span3">
+									<img src="img/html.png" alt="HTML" class="iconk-spacebottom">
+									<h6>Make it</h6>
+									<h2>Open</h2>
+									<p>We support the web as a space for open game development and collaboration. Come learn from our experience and share what you know!</p>
+								</div>
+								<div class="span3">
+									<img src="img/css.png" alt="CSS" class="iconk-spacebottom">
+									<h6>Make it</h6>
+									<h2>Beautiful</h2>
+									<p>You may think us shallow, but there is nothing wrong with a sexy game. Cute, vibrant, creepy, or anything inbetween: bring on the eye candy!</p>
+								</div>
+								<div class="span3">
+									<img src="img/js.png" alt="JS" class="iconk-spacebottom">
+									<h6>Make it</h6>
+									<h2>Fly</h2>
+									<p>Run, jump, punch, slash, shoot, carry, break, push, throw, swing, group, raid, quest, drive, or fly. We don't care as long as it's fun!</p>
+								</div>
+								<div class="span3">
+									<img src="img/webgl.png" alt="WebGL" class="iconk-spacebottom">
+									<h6>Make it</h6>
+									<h2>Experimental</h2>
+									<p>For all the times when a new spec has made you cry, you know it's worth it in the end. We &hearts; experimental!</p>
+								</div>
+								
 							</div>
 							
 						</section>
@@ -440,7 +465,68 @@
 						<section id="location" class="menu-section">
 							
 							<div class="page-header">
-								<h1><small></small></h1>
+								<h1>New York 2013</h1>
+							</div>
+							
+							<div class="row">
+								<div class="span12">
+									<img src="img/location.jpg" alt="New York by Paulo Barcellos Jr." class="iconk-spacebottom">
+								</div>
+							</div>
+							
+							<div id="locationInfo">
+								<div class="eqheight3-container3">
+									<div class="eqheight3-container2">
+										<div class="eqheight3-container1">
+											<!-- venue -->
+											<div class="eqheight3-column">
+												
+												<div class="eqheight3-content">
+													<!--<img src="img/location_venue.jpg" alt="NYIT Auditorium on Broadway" class="iconk-spacebottom">-->
+													<h6><i class="dim icon-home icon-white"></i> Venue</h6>
+													<p class="lead">NYIT Auditorium on Broadway</p>
+													<p>Hosted in the New York Institute of Technology on Broadway, 3 minutes from Central Park.</p>
+													<a href="http://www.nyit.edu/aob/" target="_blank" class="btn">More Info</a>
+												</div>
+												
+											</div>
+											<!-- info -->
+											<div class="eqheight3-column">
+												
+												<div class="eqheight3-content">
+													
+													<!--<img src="img/location_map.jpg" alt="NYIT Auditorium on Broadway" class="iconk-spacebottom">-->
+													
+													<div class="hero-anchor">
+														<h6><i class="dim icon-road icon-white"></i> Address</h6>
+														<p>
+															1871 Broadway<br/>
+															New York, NY 10023
+														</p>
+													</div>
+													<div class="hero-anchor">
+														<h6><i class="dim icon-comment icon-white"></i> Phone</h6>
+														<p>646.273.6100</p>
+													</div>
+													<a href="https://maps.google.com/maps?ie=UTF8&q=NYIT+Auditorium+on+Broadway&t=h&z=16&vpsrc=0&iwloc=A" target="_blank" class="btn">Google Maps</a>
+													
+												</div>
+												
+											</div>
+											<!-- party -->
+											<div class="eqheight3-column">
+												
+												<div class="eqheight3-content">
+													<!--<img src="img/location_party.jpg" alt="Party" class="iconk-spacebottom">-->
+													<h6><i class="dim icon-fire icon-white"></i> Party</h6>
+													<p class="lead">Coming Soon!</p>
+												</div>
+												
+											</div>
+											
+										</div>
+									</div>
+								</div>
 							</div>
 							
 						</section>
@@ -454,7 +540,7 @@
 									<p>
 										Conference presented by <a href="http://michalbe.blogspot.com/" target="_blank">Michal Budzynski</a><br/>
 										Website & Game developed by <a href="http://www.collinhover.com/" target="_blank">Collin Hover</a><br/>
-										Visuals by <a href="http://blackmoondev.com/" target="_blank">Black Moon Design</a></p>
+										3D Models / Animations by <a href="http://blackmoondev.com/" target="_blank">Black Moon Design</a></p>
 									</p>
 								</div>
 							</div>
@@ -478,6 +564,14 @@
 								<h2 class="sidekick-type">Look at all these people!</h2>
 							</div>
 						</header>
+						
+					</div>
+					
+					<div id="speakersList">
+						
+						<div id="speakersListEmpty" class="container-center">
+							<p><img src='img/waiting_rev_64.png' class="iconk-huge">Hold on, we're finding all the people...</p>
+						</div>
 						
 					</div>
 					

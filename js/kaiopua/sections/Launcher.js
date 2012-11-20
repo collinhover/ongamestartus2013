@@ -221,7 +221,7 @@
 		
 		// iceplanet
 		
-		shared.world.parts.iceplanetMoonLight = new THREE.PointLight( 0xD8EFF4, 1 );
+		shared.world.parts.iceplanetMoonLight = new THREE.PointLight( 0x6FD4FB, 1 );
 		shared.world.add( shared.world.parts.iceplanetMoonLight );
 		
 		main.asset_require( { path: shared.pathToAssets + "iceplanet_moon.js", type: 'model' }, function ( g ) {
@@ -291,7 +291,7 @@
 		
 		// star cluster
 		
-		shared.world.parts.starclusterLight = new THREE.PointLight( 0xFFED66, 1 );
+		shared.world.parts.starclusterLight = new THREE.PointLight( 0xFFD943, 1 );
 		shared.world.add( shared.world.parts.starclusterLight );
 		
 		main.asset_require( { path: shared.pathToAssets + "starcluster_core.js", type: 'model' }, function ( g ) {

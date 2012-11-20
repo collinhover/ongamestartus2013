@@ -1,0 +1,52 @@
+/* about 
+-------------------------*/
+
+#about {
+
+	#description {
+		
+		h2 {
+			padding-top: 0;
+		}
+		
+	}
+	
+	#location {
+		
+		#locationInfo {
+			margin-bottom: 20px;
+			padding: 20px;
+			background: @grayDark;
+			color: @grayLighter;
+			.box-shadow(~"0 0 10px rgba(0, 0, 0, 0.2)");
+			.border-radius( 4px );
+			.clearfix;
+			
+			.eqheight3-container2, .eqheight3-container1 {
+				border-right: 1px solid lighten( @grayDark, 10% );
+			}
+			
+			.eqheight3-column {
+				
+				.eqheight3-content {
+					padding: 0 20px;
+				}
+				
+				&:first-child {
+					.eqheight3-content {
+						padding-left: 0;
+					}
+				}
+				&:last-child {
+					.eqheight3-content {
+						padding-right: 0;
+					}
+				}
+				
+			}
+			
+		}
+	
+	}
+	
+}
