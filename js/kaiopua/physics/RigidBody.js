@@ -89,6 +89,7 @@
 		_RigidBody.Instance.prototype.bounds_in_direction = bounds_in_direction;
 		
 		_RigidBody.Instance.prototype.find_gravity_body = find_gravity_body;
+		_RigidBody.Instance.prototype.find_gravity_body_closest = find_gravity_body_closest;
 		_RigidBody.Instance.prototype.change_gravity_body = change_gravity_body;
 		
 		Object.defineProperty( _RigidBody.Instance.prototype, 'grounded', { 
@@ -663,7 +664,7 @@
     
     =====================================================*/
 	
-	function find_gravity_body ( bodiesGravity, timeDelta ) {
+	function find_gravity_body ( gravityBodies, timeDelta, closest ) {
 		
 		var i, l,
 			j, jl,
@@ -801,9 +802,9 @@
 				gravityBodiesAttracting = [];
 				gravityBodiesAttractingObjects = [];
 				
-				for ( i = 0, l = bodiesGravity.length; i < l; i++ ) {
+				for ( i = 0, l = gravityBodies.length; i < l; i++ ) {
 					
-					gravityBodyPotential = bodiesGravity[ i ];
+					gravityBodyPotential = gravityBodies[ i ];
 					gravityMesh = gravityBodyPotential.object;
 					
 					// if is current gravity body
@@ -833,6 +834,8 @@
 				
 				// find closest gravity body
 				
+				gravityBody = this.find_gravity_body_closest( gravityBodiesAttracting, objectPositionProjected );
+				/*
 				if ( gravityBodiesAttracting.length === 1 ) {
 					
 					gravityBody = gravityBodiesAttracting[ 0 ];
@@ -890,7 +893,7 @@
 					}
 					
 				}
-				
+				*/
 				// swap to closest gravity body
 				
 				if ( gravityBody instanceof RigidBody && this.gravityBody !== gravityBody ) {
@@ -911,6 +914,80 @@
 			velocityMovement.forceRecentMax.set( 0, 0, 0 );
 			
 		}
+		
+	}
+	
+	function find_gravity_body_closest ( gravityBodies, fromPosition ) {
+		
+		var i, l,
+			j, jl,
+			object = this.object,
+			gravityBody,
+			gravityBodyPotential,
+			gravityBodyChildren,
+			gravityBodyChild,
+			gravityObject,
+			gravityBodyDifference = this.utilVec31GravityBody,
+			gravityBodyDistancePotential,
+			gravityBodyDistance = Number.MAX_VALUE,
+			matrixWorld,
+			matrixWorldScale;
+		
+		// find closest gravity body
+		
+		if ( gravityBodies.length === 1 ) {
+			
+			gravityBody = gravityBodies[ 0 ];
+		
+		}
+		else if ( gravityBodies.length > 1 ) {
+			
+			if ( typeof fromPosition === 'undefined' ) {
+				
+				fromPosition = object.matrixWorld.getPosition().clone();
+				
+			}
+			
+			for ( i = 0, l = gravityBodies.length; i < l; i++ ) {
+				
+				gravityBodyPotential = gravityBodies[ i ];
+				gravityObject = gravityBodyPotential.object;
+				
+				// extract all children of gravity body, exclude any children that are gravity sources themselves
+				
+				gravityBodyChildren = _SceneHelper.extract_children_from_objects( gravityObject, gravityObject, function ( obj ) {
+					return !( obj.rigidBody && obj.rigidBody.gravitySource !== true );
+				} );
+				
+				for ( j = 0, jl = gravityBodyChildren.length; j < jl; j++ ) {
+					
+					gravityBodyChild = gravityBodyChildren[ j ];
+					
+					matrixWorld = gravityBodyChild.matrixWorld;
+					
+					// difference in position
+					
+					gravityBodyDifference.sub( fromPosition, matrixWorld.getPosition() );
+					
+					// account for bounding radius of child scaled to world
+					
+					matrixWorldScale = matrixWorld.getMaxScaleOnAxis();
+					gravityBodyDistancePotential = gravityBodyDifference.length() - ( gravityBodyChild.boundRadius * matrixWorldScale );
+					
+					if ( gravityBodyDistancePotential < gravityBodyDistance ) {
+						
+						gravityBody = gravityBodyPotential;
+						gravityBodyDistance = gravityBodyDistancePotential;
+						
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+		return gravityBody;
 		
 	}
 	

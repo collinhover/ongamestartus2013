@@ -24,10 +24,12 @@
 		utilMat42Localize,
 		utilVec31Box,
 		utilVec32Box,
-		utilVec31Scale,
 		utilVec31Casting,
 		utilVec32Casting,
 		utilVec33Casting,
+		utilVec31DistanceIntersection,
+		utilVec32DistanceIntersection,
+		utilVec33DistanceIntersection,
 		utilVec31PointTriangle,
 		utilVec32PointTriangle,
 		utilVec33PointTriangle,
@@ -79,10 +81,12 @@
 		utilMat42Localize = new THREE.Matrix4();
 		utilVec31Box = new THREE.Vector3();
 		utilVec32Box = new THREE.Vector3();
-		utilVec31Scale = new THREE.Vector3().set( 1, 1, 1 );
 		utilVec31Casting = new THREE.Vector3();
 		utilVec32Casting = new THREE.Vector3();
 		utilVec33Casting = new THREE.Vector3();
+		utilVec31DistanceIntersection = new THREE.Vector3();
+		utilVec32DistanceIntersection = new THREE.Vector3();
+		utilVec33DistanceIntersection = new THREE.Vector3();
 		utilVec31PointTriangle = new THREE.Vector3();
 		utilVec32PointTriangle = new THREE.Vector3();
 		utilVec33PointTriangle = new THREE.Vector3();
@@ -137,12 +141,20 @@
 			mt.multiplyVector3( rt.origin );
 			mt.rotateAxis( rt.direction );
 			
-			rt.direction.normalize();
-			
 		}
 
 		return rt;
 
+	}
+	
+	function distance_from_intersection ( origin, direction, position ) {
+		
+		var difference = utilVec31DistanceIntersection.sub( position, origin ),
+			dot = difference.dot( direction ),
+			intersect = utilVec32DistanceIntersection.add( origin, utilVec33DistanceIntersection.copy( direction ).multiplyScalar( dot ) );
+		
+		return _VectorHelper.distance_between( intersect, position );
+		
 	}
 	
 	function point_outside_triangle ( p, a, b, c ) {
@@ -807,17 +819,20 @@
 	function raycast_mesh ( ray, source, collider ) {
 		
 		var i, l,
-			p0 = new THREE.Vector3(),
-			p1 = new THREE.Vector3(),
-			p2 = new THREE.Vector3(),
-			p3 = new THREE.Vector3(),
+			p0,
+			p1,
+			p2,
+			p3,
 			rigidBody,
 			object,
-			scale,
-			side,
 			geometry,
+			scale,
+			radiusScaled,
 			vertices,
+			isFaceMaterial,
 			materials,
+			material,
+			side,
 			faces,
 			face,
 			rayLocal,
@@ -852,42 +867,10 @@
 			
 		}
 		
-		// store object
-		
 		intersection.object = object;
 		
-		// make ray local to object
-		
-		rayLocal = localize_ray( ray, object );
-		
-		// handle geometry properties
-		
-		vertices = geometry.vertices;
-		scale = object.scale || utilVec31Scale;
-		
-		if ( object.material instanceof THREE.Material && typeof object.material.side !== 'undefined' ) {
-			
-			side = object.material.side;
-			
-		}
-		else if ( geometry.materials ) {
-			
-			materials = geometry.materials;
-			
-			for ( i = 0, l = materials.length; i < l; i++ ) {
-				
-				if ( typeof materials[ i ].side !== 'undefined' ) {
-					
-					side = materials[ i ].side;
-					break;
-					
-				}
-				
-			}
-			
-		}
-		
-		// for each face in source or geometry
+		// source has specific list of faces to test
+		// most likely an octree search result
 		
 		if ( typeof source.faces !== 'undefined' ) {
 			
@@ -895,23 +878,53 @@
 			
 		}
 		
+		// no faces given, check distance and test all faces
+		
 		if ( typeof faces === 'undefined' || faces.length === 0 ) {
+			
+			// test distance to object
+			
+			scale = object.matrixWorld instanceof THREE.Matrix4 ? object.matrixWorld.getMaxScaleOnAxis() : 1;
+			radiusScaled = geometry.boundingSphere.radius * scale;
+			distance = distance_from_intersection( ray.origin, ray.direction, object.matrixWorld.getPosition() );
+			
+			if ( distance > radiusScaled ) {
+				
+				return intersection;
+				
+			}
 			
 			faces = geometry.faces;
 			
 		}
 		
+		vertices = geometry.vertices;
+		isFaceMaterial = object.material instanceof THREE.MeshFaceMaterial;
+		// in the future, change to: object.material.materials
+		materials = isFaceMaterial === true ? geometry.materials : null;
+		
+		// make ray local to object
+		
+		rayLocal = localize_ray( ray, object );
+		
+		// for each face
+		
 		for( i = 0, l = faces.length; i < l; i ++ ) {
 			
 			face = faces[ i ];
 			
-			p0.copy( vertices[ face.a ] ).multiplySelf( scale );
-			p1.copy( vertices[ face.b ] ).multiplySelf( scale );
-			p2.copy( vertices[ face.c ] ).multiplySelf( scale );
+			// instead of skipping when no material, leave side blank and assume is front side
+			
+			material = isFaceMaterial === true ? materials[ face.materialIndex ] : object.material;
+			if ( typeof material !== 'undefined' ) side = material.side;
+			
+			p0 = vertices[ face.a ];
+			p1 = vertices[ face.b ];
+			p2 = vertices[ face.c ];
 			
 			if ( face instanceof THREE.Face4 ) {
 				
-				p3.copy( vertices[ face.d ] ).multiplySelf( scale );
+				p3 = vertices[ face.d ];
 				
 				collision = raycast_triangle( rayLocal, p0, p1, p3, distanceMin, side );
 				distance = collision.distance;
@@ -978,7 +991,7 @@
 		
 		// calculate normal if not provided
 		
-		if ( normal instanceof THREE.Vector3 !== true ) {
+		if ( typeof normal === 'undefined' ) {
 			
 			e1.sub( p1, p0 );
 			e2.sub( p2, p1 );
