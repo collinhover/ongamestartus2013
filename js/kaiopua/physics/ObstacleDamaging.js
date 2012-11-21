@@ -48,9 +48,9 @@
 		_ObstacleDamaging.options = {
 			damage: 1,
 			pushback: {
-				speedStart: 4,
+				speedStart: 10,
 				speedEnd: 0,
-				duration: 200
+				duration: 400
 			},
 			effects: {
 				speedDelta: 0
@@ -148,11 +148,13 @@
 				
 				// collision normal is local to collision object, i.e. this
 				
-				affected.pushbackDelta = affected.collision.normal.clone();
-				this.matrixWorld.rotateAxis( affected.pushbackDelta );
+				affected.pushbackNormal = affected.collision.normal.clone();
+				this.matrixWorld.rotateAxis( affected.pushbackNormal );
+				affected.pushbackDelta = affected.pushbackNormal.clone();
 				
-				// reset movement velocity
+				// reset velocities
 				
+				rigidBody.velocityGravity.clear();
 				rigidBody.velocityMovement.clear();
 				rigidBody.velocityMovement.dampingPre.set( 1, 1, 1 );
 				
@@ -167,9 +169,9 @@
 						
 						// apply pushback to force rotated
 						
-						affected.pushbackDelta.multiplyScalar( affected.tweenFrom.speed );
+						affected.pushbackDelta.copy( affected.pushbackNormal ).multiplyScalar( affected.tweenFrom.speed );
 						
-						rigidBody.velocityMovement.forceRotated.addSelf( affected.pushbackDelta );
+						rigidBody.velocityMovement.forceDeltaExternal.addSelf( affected.pushbackDelta );
 						
 					},
 					onComplete: function () {

@@ -73,12 +73,12 @@
 		
 		// seems as if lights must be in world before world is added for the first time to scene
 		
-		shared.world.parts.ambientLight = new THREE.AmbientLight( 0x777777 );
+		shared.world.parts.ambientLight = new THREE.AmbientLight( 0x555555 );
 		shared.world.add( shared.world.parts.ambientLight );
 		
 		// asteroid
 		
-		shared.world.parts.asteroidMoonLight = new THREE.PointLight( 0xffffff, 1 );
+		shared.world.parts.asteroidMoonLight = new THREE.PointLight( 0xffffff, 1.5 );
 		shared.world.add( shared.world.parts.asteroidMoonLight );
 		
 		shared.world.parts.asteroid = new _Model.Instance( {
@@ -142,7 +142,7 @@
 		
 		// gem forest
 		
-		shared.world.parts.gemLight = new THREE.PointLight( 0xE1FB64, 1 );
+		shared.world.parts.gemLight = new THREE.PointLight( 0xE1FB64, 2 );
 		shared.world.add( shared.world.parts.gemLight );
 		
 		main.asset_require( { path: shared.pathToAssets + "gem.js", type: 'model' }, function ( g ) {
@@ -155,7 +155,8 @@
 			} );
 			shared.world.add( model );
 			
-			shared.world.parts.gemLight.distance = model.boundRadius * 10;
+			shared.world.parts.gemLight.distance = model.boundRadius * 12;
+			shared.world.parts.gemLight.position.copy( model.position ).normalize().multiplyScalar( shared.world.parts.gemLight.distance * 0.25 );
 			model.add( shared.world.parts.gemLight );
 		} );
 		main.asset_require( { path: shared.pathToAssets + "gemforest_colliders.js", type: 'model' }, function ( g ) {
@@ -221,7 +222,7 @@
 		
 		// iceplanet
 		
-		shared.world.parts.iceplanetMoonLight = new THREE.PointLight( 0xD8EFF4, 1 );
+		shared.world.parts.iceplanetMoonLight = new THREE.PointLight( 0x6FD4FB, 2.5 );
 		shared.world.add( shared.world.parts.iceplanetMoonLight );
 		
 		main.asset_require( { path: shared.pathToAssets + "iceplanet_moon.js", type: 'model' }, function ( g ) {
@@ -235,7 +236,7 @@
 			} );
 			shared.world.add( model );
 			
-			shared.world.parts.iceplanetMoonLight.distance = model.boundRadius * 15;
+			shared.world.parts.iceplanetMoonLight.distance = model.boundRadius * 12;
 			model.add( shared.world.parts.iceplanetMoonLight );
 		} );
 		//TODO: make it possible to get off planet, and add some life to planet
@@ -260,6 +261,23 @@
 		*/
 		
 		// lava
+		
+		shared.world.parts.lavaLight = new THREE.PointLight( 0xF09E00, 2 );
+		shared.world.add( shared.world.parts.lavaLight );
+		
+		main.asset_require( { path: shared.pathToAssets + "lava_volcano.js", type: 'model' }, function ( g ) {
+			var model = new _Model.Instance( {
+				geometry: g,
+				physics:  {
+					bodyType: 'mesh'
+				},
+				center: true
+			} );
+			shared.world.add( model );
+			
+			shared.world.parts.lavaLight.distance = model.boundRadius * 7;
+			model.add( shared.world.parts.lavaLight );
+		} );
 		
 		main.asset_require( { path: shared.pathToAssets + "lava_colliders.js", type: 'model' }, function ( g ) {
 			var model = new _Model.Instance( {
@@ -291,7 +309,7 @@
 		
 		// star cluster
 		
-		shared.world.parts.starclusterLight = new THREE.PointLight( 0xFFED66, 1 );
+		shared.world.parts.starclusterLight = new THREE.PointLight( 0xFFD943, 2.5 );
 		shared.world.add( shared.world.parts.starclusterLight );
 		
 		main.asset_require( { path: shared.pathToAssets + "starcluster_core.js", type: 'model' }, function ( g ) {
@@ -305,7 +323,7 @@
 			} );
 			shared.world.add( model );
 			
-			shared.world.parts.starclusterLight.distance = model.boundRadius * 10;
+			shared.world.parts.starclusterLight.distance = model.boundRadius * 7;
 			model.add( shared.world.parts.starclusterLight );
 		} );
 		main.asset_require( { path: shared.pathToAssets + "starcluster_1.js", type: 'model' }, function ( g ) {

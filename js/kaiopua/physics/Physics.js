@@ -462,7 +462,8 @@
 				
 				if ( intersectionJump ) {
 					
-					forceRotated.set( 0, 0, 0 );
+					//forceRotated.set( 0, 0, 0 );
+					velocity.forceInternal.set( 0, 0, 0 );
 					
 				}
 				// revert force, jump is safe
@@ -633,8 +634,7 @@
 		}
 		else {
 			
-			force.multiplySelf( damping );
-			forceRotated.multiplySelf( damping );
+			velocity.damp();
 			
 		}
 		

@@ -178,8 +178,10 @@
 				
 			}
 			
-		}
+			this.update_placement( this.options.placement, true );
 			
+		}
+		
 		return this;
 		
 	}
@@ -316,7 +318,7 @@
     
     =====================================================*/
 	
-	function reposition ( position ) {
+	function reposition ( left, top ) {
 		
 		var i, il,
 			placements,
@@ -324,102 +326,82 @@
 			indices,
 			index,
 			positionChanged;
+			
+		// left
 		
-		if ( typeof position !== 'undefined' ) {
+		if ( main.is_number( left ) && this.positionBase.left !== left ) {
 			
-			// left
+			positionChanged = true;
+			this.positionBase.left = left;
 			
-			if ( main.is_number( position.x ) ) {
+		}
+		
+		// top
+		
+		if ( main.is_number( top ) && this.positionBase.top !== top ) {
+			
+			positionChanged = true;
+			this.positionBase.top = top;
+			
+		}
+			
+		// change position
+		
+		if ( positionChanged === true ) {
+			
+			// handle bounds by checking each placement possibility until one found
+			
+			if ( this.options.checkBoundsClockwise !== true ) {
 				
-				if ( this.positionBase.left !== position.x ) positionChanged = true;
-				
-				this.positionBase.left = position.x;
+				placements = placementsCounterclockwise;
+				indices = indicesCounterclockwise;
 				
 			}
-			else if ( main.is_number( position.left ) ) {
+			else {
 				
-				if ( this.positionBase.left !== position.left ) positionChanged = true;
-				
-				this.positionBase.left = position.left;
-				
-			}
-			
-			// top
-			
-			if ( main.is_number( position.y ) ) {
-				
-				if ( this.positionBase.top !== position.y ) positionChanged = true;
-				
-				this.positionBase.top = position.y;
-				
-			}
-			else if ( main.is_number( position.top ) ) {
-				
-				if ( this.positionBase.top !== position.top ) positionChanged = true;
-				
-				this.positionBase.top = position.top;
+				placements = placementsClockwise;
+				indices = indicesClockwise;
 				
 			}
 			
-			// change position
+			placement = this.options.placement;
+			index = indices[ placement ];
 			
-			if ( positionChanged === true ) {
+			for ( i = 0, il = placements.length; i < il; i++ ) {
 				
-				// handle bounds by checking each placement possibility until one found
+				placement = placements[ index ];
 				
-				if ( this.options.checkBoundsClockwise !== true ) {
+				// change
+				
+				if ( this.placementCurrent !== placement ) {
 					
-					placements = placementsCounterclockwise;
-					indices = indicesCounterclockwise;
-					
-				}
-				else {
-					
-					placements = placementsClockwise;
-					indices = indicesClockwise;
+					this.update_placement( placement );
 					
 				}
 				
-				placement = this.options.placement;
-				index = indices[ placement ];
+				this.update_position();
 				
-				for ( i = 0, il = placements.length; i < il; i++ ) {
+				// test
+				
+				if ( this.check_bounds() ) {
 					
-					placement = placements[ index ];
-					
-					// change
-					
-					if ( this.placementCurrent !== placement ) {
-						
-						this.update_placement( placement );
-						
-					}
-					
-					this.update_position();
-					
-					// test
-					
-					if ( this.check_bounds() ) {
-						
-						break;
-						
-					}
-					
-					// update index
-					
-					index++;
-					
-					if ( index === il ) {
-						
-						index = 0;
-						
-					}
+					break;
 					
 				}
 				
-				this.$element.css( this.position );
+				// update index
+				
+				index++;
+				
+				if ( index === il ) {
+					
+					index = 0;
+					
+				}
 				
 			}
+			
+			this.$element.css( this.position );
 			
 		}
 		
@@ -439,9 +421,9 @@
 		
 	}
 	
-	function update_placement ( placement ) {
+	function update_placement ( placement, force ) {
 		
-		if ( this.placementCurrent !== placement ) {
+		if ( this.placementCurrent !== placement || force === true ) {
 			
 			if ( typeof this.placementCurrent === 'string' ) {
 				

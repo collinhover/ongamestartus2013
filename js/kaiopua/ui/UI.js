@@ -383,7 +383,6 @@
 			
 			first = function () {
 				
-				//main.pause( false, $menu );
 				pause_consider_started( false, $menu );
 				
 			};
@@ -393,7 +392,6 @@
 				main.dom_fade( {
 					element: shared.domElements.$uiOutGame
 				} );
-				//main.resume();
 					
 				resume_consider_started();
 				
@@ -732,6 +730,13 @@
 	
 	function open_default_menu () {
 		
+		// uiGameDimmer
+		
+		shared.domElements.$uiGameDimmer.off( '.resume' );
+		main.dom_fade( {
+			element: shared.domElements.$uiGameDimmer
+		} );
+		
 		if ( shared.domElements.$menuToggleDefault.length > 0 ) {
 			
 			shared.domElements.$menuToggleDefault.trigger( 'tap' );
@@ -876,7 +881,7 @@
 		
 	}
 	
-	function resume () {
+	function resume ( refocused ) {
 		
 		paused = false;
 		
@@ -893,18 +898,37 @@
 			element: shared.domElements.$uiBlocker
 		} );
 		
-		// uiGameDimmer
-		
-		shared.domElements.$uiGameDimmer.off( '.resume' );
-		main.dom_fade( {
-			element: shared.domElements.$uiGameDimmer
-		} );
-		
-		if ( main.started === true ) {
+		if ( refocused !== true ) {
 			
-			// clear menus
+			// uiGameDimmer
 			
-			_UIQueue.clear( shared.domElements.$uiOutGame );
+			shared.domElements.$uiGameDimmer.off( '.resume' );
+			main.dom_fade( {
+				element: shared.domElements.$uiGameDimmer
+			} );
+			
+			if ( main.started === true ) {
+				
+				// clear menus
+				
+				_UIQueue.clear( shared.domElements.$uiOutGame );
+				
+				// show pause button
+				
+				main.dom_fade( {
+					element: shared.domElements.$buttonsGamePause,
+					opacity: 1
+				} );
+			
+			}
+			else {
+				
+				open_default_menu();
+				
+			}
+			
+		}
+		else {
 			
 			// show pause button
 			
@@ -912,11 +936,6 @@
 				element: shared.domElements.$buttonsGamePause,
 				opacity: 1
 			} );
-		
-		}
-		else {
-			
-			open_default_menu();
 			
 		}
 		
