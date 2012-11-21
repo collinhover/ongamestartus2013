@@ -63,6 +63,7 @@
 		_Velocity.Instance.prototype.rotate = rotate;
 		
 		_Velocity.Instance.prototype.update = update;
+		_Velocity.Instance.prototype.damp = damp;
 		
 	}
 	
@@ -89,10 +90,12 @@
 		this.rigidBody = parameters.rigidBody;
 		
 		this.force = new THREE.Vector3();
+		this.forceInternal = new THREE.Vector3();
 		this.forceRotated = new THREE.Vector3();
 		this.forceApplied = new THREE.Vector3();
 		this.forceRecentMax = new THREE.Vector3();
 		this.forceDelta = new THREE.Vector3();
+		this.forceDeltaExternal = new THREE.Vector3();
 		this.speedDelta = new THREE.Vector3();
 		
 		this.damping = new THREE.Vector3();
@@ -156,6 +159,7 @@
 		
 		this.forceDelta.set( 0, 0, 0 );
 		this.force.set( 0, 0, 0 );
+		this.forceInternal.set( 0, 0, 0 );
 		this.forceRotated.set( 0, 0, 0 );
 		
 		this.moving = false;
@@ -199,7 +203,8 @@
 		
 		this.force.addSelf( this.forceDelta );
 		this.forceDelta.copy( _VectorHelper.rotate_relative_to( this.forceDelta, this.relativeToQ ) );
-		this.forceRotated.addSelf( this.forceDelta );
+		this.forceInternal.addSelf( this.forceDelta );
+		//this.forceRotated.addSelf( this.forceDelta );
 		
 		// check forces against max
 		
@@ -208,9 +213,20 @@
 		if ( forceLengthMax < Number.MAX_VALUE ) {
 			
 			_VectorHelper.clamp_length( this.force, forceLengthMax );
-			_VectorHelper.clamp_length( this.forceRotated, forceLengthMax );
+			_VectorHelper.clamp_length( this.forceInternal, forceLengthMax );
+			//_VectorHelper.clamp_length( this.forceRotated, forceLengthMax );
 			
 		}
+		
+		// pre damp, physics will handle post damping
+		
+		this.force.multiplySelf( this.dampingPre );
+		this.forceInternal.multiplySelf( this.dampingPre );
+		//this.forceRotated.multiplySelf( this.dampingPre );
+		
+		// add external delta
+		
+		this.forceRotated.add( this.forceInternal, this.forceDeltaExternal );
 		
 		// rotate offsets
 		
@@ -243,11 +259,15 @@
 		// clear delta
 		
 		this.forceDelta.set( 0, 0, 0 );
+		this.forceDeltaExternal.set( 0, 0, 0 );
 		
-		// pre damp, physics will handle post damping
+	}
+	
+	function damp ( clear ) {
 		
-		this.force.multiplySelf( this.dampingPre );
-		this.forceRotated.multiplySelf( this.dampingPre );
+		this.force.multiplySelf( this.damping );
+		//this.forceRotated.multiplySelf( this.damping );
+		this.forceInternal.multiplySelf( this.damping );
 		
 	}
 	

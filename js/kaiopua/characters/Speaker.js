@@ -70,15 +70,15 @@
 							next: 'name'
 						},
 						{
-							message: "Sup son?",
-							next: 'fun'
-						},
-						{
-							message: "Yo!",
+							message: "Hi!",
 							next: 'unsaid'
 						},
 						{
-							message: "Hi!",
+							message: "Sup son?",
+							next: 'unsaid'
+						},
+						{
+							message: "Yo!",
 							next: 'random'
 						},
 						"Hey friend!"
@@ -88,13 +88,12 @@
 				name: {
 					responses: {
 						message: function () { return ( Math.random() > 0.5 ? "I'm " : "My name is " ) + this.name + "."; },
-						next: 'about'
+						next: 'presenting'
 					},
 					randomable: false
 				},
-				about: {
-					responses: "I'll be presenting about web gaming and development at oGS 2013. I <3 web and gaming!"
-				},
+				presenting: "I'll be presenting about web gaming and development at oGS 2013.",
+				about: "I <3 web and gaming!",
 				fun: "oGS 2013 or bust!",
 				goodbye: {
 					responses: [

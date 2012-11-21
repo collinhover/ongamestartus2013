@@ -917,8 +917,8 @@
 		
 		// handle start
 		
-		this.communicate_start();
 		this.targetCommunication.communicate_start();
+		this.communicate_start();
 		
 	}
 	
@@ -1051,7 +1051,7 @@
 						
 					}
 					
-					conversations.textbubble.reposition( screenPosition );
+					conversations.textbubble.reposition( screenPosition.x, screenPosition.y );
 					
 				}
 				
@@ -1408,8 +1408,7 @@
 		
 		// get signed angle delta and and multiply this quaternion by delta
 		
-		angle = _VectorHelper.signed_angle_between_coplanar_vectors( forwardWorld, forwardWorldTarget, axis );
-		
+		angle = _VectorHelper.signed_angle_between_coplanar_vectors( forwardWorld, forwardWorldTarget, axisWorld );
 		rotateDelta.setFromAxisAngle( axis, angle );
 				
 		this.quaternion.multiplySelf( rotateDelta );

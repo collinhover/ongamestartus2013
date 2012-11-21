@@ -128,9 +128,6 @@ var KAIOPUA = (function (main) {
     init
     
     =====================================================*/
-    
-	// force cache-busting
-	$LAB.setGlobalDefaults({ CacheBust: true });
 	
     // load scripts
     $LAB.script( libsPrimaryList ).wait().script( libsSecondaryList ).wait().script( libsTertiaryList ).wait( init );

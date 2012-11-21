@@ -160,7 +160,7 @@
 		
 		if ( this.pointer === pointer ) {
 			
-			this.reposition( pointer );
+			this.reposition( pointer.x, pointer.y );
 			
 		}
 		
