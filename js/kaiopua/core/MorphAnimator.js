@@ -497,7 +497,7 @@
 	
 	function loop ( delay ) {
 		
-		var delay = this.options.duration * this.options.loopDelayPct * ( this.options.loopDelayRandom === true ? Math.random() : 1 );
+		delay = this.options.duration * this.options.loopDelayPct * ( this.options.loopDelayRandom === true ? Math.random() : 1 );
 		
 		this.prepare( true );
 		

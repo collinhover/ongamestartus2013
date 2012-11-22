@@ -213,7 +213,7 @@
 			}
 			else {
 				
-				material = new THREE.MeshLambertMaterial( { vertexColors: THREE.VertexColors, shading: THREE.SmoothShading } )
+				material = new THREE.MeshLambertMaterial( { vertexColors: THREE.VertexColors, shading: THREE.SmoothShading } );
 				
 			}
 			

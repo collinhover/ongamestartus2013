@@ -128,11 +128,11 @@
     
     =====================================================*/
 	
-	function content ( content ) {
+	function content ( text ) {
 		
-		if ( typeof content === 'string' ) {
+		if ( typeof text === 'string' ) {
 			
-			this.$inner.html( content );
+			this.$inner.html( text );
 			
 			//if ( this.showing ) {
 				

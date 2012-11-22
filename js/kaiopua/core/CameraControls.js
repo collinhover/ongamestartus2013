@@ -275,7 +275,7 @@
 		
 		pointer = pointer || main.get_pointer( e );
 		
-		this.rotationDelta.set( -pointer.deltaY * this.options.rotationSpeedDelta, -pointer.deltaX * this.options.rotationSpeedDelta, 0 )
+		this.rotationDelta.set( -pointer.deltaY * this.options.rotationSpeedDelta, -pointer.deltaX * this.options.rotationSpeedDelta, 0 );
 		this.rotationDeltaTotal.addSelf( this.rotationDelta );
 		
 	}

@@ -93,15 +93,15 @@
 		_RigidBody.Instance.prototype.change_gravity_body = change_gravity_body;
 		
 		Object.defineProperty( _RigidBody.Instance.prototype, 'grounded', { 
-			get : function () { return Boolean( this.velocityGravity.collision ) && !this.velocityGravity.moving }
+			get : function () { return Boolean( this.velocityGravity.collision ) && !this.velocityGravity.moving; }
 		});
 		
 		Object.defineProperty( _RigidBody.Instance.prototype, 'sliding', { 
-			get : function () { return this.velocityGravity.sliding }
+			get : function () { return this.velocityGravity.sliding; }
 		});
 		
 		Object.defineProperty( _RigidBody.Instance.prototype, 'collisions', { 
-			get : function () { return { gravity: this.velocityGravity.collision, movement: this.velocityMovement.collision } }
+			get : function () { return { gravity: this.velocityGravity.collision, movement: this.velocityMovement.collision }; }
 		});
 		
 		Object.defineProperty( _RigidBody.Instance.prototype, 'radiusGravity', { 
@@ -134,7 +134,7 @@
 	colliders
 	
 	=====================================================*/
-	 
+	
 	function Collider ( rigidBody ) {
 		
 		this.rigidBody = rigidBody;
@@ -955,9 +955,7 @@
 				
 				// extract all children of gravity body, exclude any children that are gravity sources themselves
 				
-				gravityBodyChildren = _SceneHelper.extract_children_from_objects( gravityObject, gravityObject, function ( obj ) {
-					return !( obj.rigidBody && obj.rigidBody.gravitySource !== true );
-				} );
+				gravityBodyChildren = _SceneHelper.extract_children_from_objects( gravityObject, gravityObject, gravity_body_check );
 				
 				for ( j = 0, jl = gravityBodyChildren.length; j < jl; j++ ) {
 					
@@ -989,6 +987,10 @@
 		
 		return gravityBody;
 		
+	}
+	
+	function gravity_body_check ( obj ) {
+		return !( obj.rigidBody && obj.rigidBody.gravitySource !== true );
 	}
 	
 	function extract_parent_gravity_body ( object, last ) {

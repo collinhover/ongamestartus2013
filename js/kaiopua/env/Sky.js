@@ -57,7 +57,7 @@
 		
 		_Sky.options = {
 			intersectable: false
-		}
+		};
 		
 		_Sky.numClouds = 10;
 		_Sky.cloudInitAxis = new THREE.Vector3( 0, 1, 0 );

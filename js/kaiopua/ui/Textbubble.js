@@ -122,17 +122,17 @@
     
     =====================================================*/
 	
-	function content ( content ) {
+	function content ( message ) {
 		
 		var oneStarted;
 		
-		if ( typeof content !== 'undefined' ) {
+		if ( typeof message !== 'undefined' ) {
 			
-			content = main.to_array( content );
+			message = main.to_array( message );
 			
-			if ( this.messages !== content || typeof this.messageParts === 'undefined' || typeof this.messageParts.shown !== 'undefined' ) {
+			if ( this.messages !== message || typeof this.messageParts === 'undefined' || typeof this.messageParts.shown !== 'undefined' ) {
 				
-				this.messages = content;
+				this.messages = message;
 				this.messageParts = undefined;
 				
 				// callbacks

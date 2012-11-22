@@ -105,7 +105,6 @@
 			affected = _ObstacleDamaging.Instance.prototype.supr.affect.apply( this, arguments ),
 			options = this.options,
 			pushback = options.pushback,
-			affected,
 			velocity,
 			damaged,
 			rigidBody,

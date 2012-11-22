@@ -156,7 +156,6 @@
 	function play ( name, parameters ) {
 		
 		var names = this.names,
-			name,
 			maps,
 			map,
 			animators,
@@ -403,7 +402,7 @@
 		
 	}
 	
-	function add_stability_morph ( mesh ) {
+	function add_stability_morph () {
 		
 		var i, l,
 			mesh = this.mesh,

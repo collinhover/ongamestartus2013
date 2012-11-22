@@ -149,7 +149,7 @@
 		_ObjectHelper.rotation_offset = rotation_offset;
 		_ObjectHelper.center_rotation = center_rotation;
 		
-		_ObjectHelper.normalize_faces = normalize_faces
+		_ObjectHelper.normalize_faces = normalize_faces;
 		
 		_ObjectHelper.object_follow_object = object_follow_object;
 		_ObjectHelper.object_orbit_source = object_orbit_source;
@@ -354,7 +354,7 @@
 		var i, l,
 			parentCascade,
 			parent,
-			parentUpdate
+			parentUpdate;
 		
 		// search all parents between object and root for world matrix update
 		
@@ -503,7 +503,7 @@
 		
 		var mesh = object instanceof THREE.Mesh ? object : false,
 			geometry = mesh ? mesh.geometry : object,
-			dimensions = utilVec31Dimensions,
+			dim = utilVec31Dimensions,
 			bbox;
 		
 		// if needs calculation
@@ -520,24 +520,24 @@
 			
 			// get original dimensions
 			
-			dimensions.set( bbox.max.x - bbox.min.x, bbox.max.y - bbox.min.y, bbox.max.z - bbox.min.z );
+			dim.set( bbox.max.x - bbox.min.x, bbox.max.y - bbox.min.y, bbox.max.z - bbox.min.z );
 			
 			// scale to mesh's scale
 			
 			if ( ignoreScale !== true && mesh ) {
 				
-				dimensions.multiplySelf( mesh.scale );
+				dim.multiplySelf( mesh.scale );
 				
 			}
 			
 		}
 		else {
 			
-			dimensions.set( 0, 0, 0 );
+			dim.set( 0, 0, 0 );
 			
 		}
 		
-		return dimensions;
+		return dim;
 		
 	}
 	
@@ -1469,13 +1469,14 @@
 		
 		var i, l,
 			properties = [],
-			property;
+			property,
+			tweener;
 		
 		parameters = parameters || {};
 		
 		tween_stop( object, to );
 		
-		tween = new TWEEN.Tween( object )
+		tweener = new TWEEN.Tween( object )
 			.to( to, parameters.duration )
 			.easing( parameters.easing || TWEEN.Easing.Quadratic.InOut )
 			.delay( parameters.delay || 0 )
@@ -1486,11 +1487,11 @@
 		
 		if ( parameters.start !== false ) {
 			
-			tween.start();
+			tweener.start();
 			
 		}
 			
-		return tween;
+		return tweener;
 		
 	}
 	
@@ -1498,27 +1499,27 @@
 		
 		var i,
 			tweens = TWEEN.getAll(),
-			tween,
+			tweener,
 			tweenObject,
 			tweenTarget,
 			property;
 		
 		for ( i = tweens.length - 1; i >= 0; i-- ) {
 			
-			tween = tweens[ i ];
-			tweenObject = tween.getObject();
+			tweener = tweens[ i ];
+			tweenObject = tweener.getObject();
 			
 			if ( object === tweenObject ) {
 				
 				if ( typeof to !== 'undefined' ) {
 					
-					tweenTarget = tween.getTarget();
+					tweenTarget = tweener.getTarget();
 					
 					for ( property in to ) {
 						
 						if ( to.hasOwnProperty( property ) && tweenTarget && tweenTarget.hasOwnProperty( property ) ) {
 							
-							tween.stop();
+							tweener.stop();
 							break;
 							
 						}
@@ -1528,7 +1529,7 @@
 				}
 				else {
 					
-					tween.stop();
+					tweener.stop();
 					
 				}
 				

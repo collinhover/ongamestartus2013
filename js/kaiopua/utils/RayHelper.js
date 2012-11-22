@@ -656,6 +656,7 @@
 			direction = rt.direction,
 			far = rt.far,
 			scale,
+			x, y, z,
 			xt = 0, yt = 0, zt = 0,
 			xn = 0, yn = 0, zn = 0,
 			ins = true,
@@ -778,9 +779,9 @@
 		
 		if( which === 0 ) {
 			
-			var y = origin.y + direction.y * t;
+			y = origin.y + direction.y * t;
 			if ( y < abMin.y || y > abMax.y )  return intersection;
-			var z = origin.z + direction.z * t;
+			z = origin.z + direction.z * t;
 			if ( z < abMin.z || z > abMax.z ) return intersection;
 			
 			intersection.normal.set( xn, 0, 0 );
@@ -789,9 +790,9 @@
 		}
 		else if ( which === 1 ) {
 			
-			var x = origin.x + direction.x * t;
+			x = origin.x + direction.x * t;
 			if ( x < abMin.x || x > abMax.x ) return intersection;
-			var z = origin.z + direction.z * t;
+			z = origin.z + direction.z * t;
 			if ( z < abMin.z || z > abMax.z ) return intersection;
 			
 			intersection.normal.set( 0, yn, 0) ;
@@ -800,9 +801,9 @@
 		}
 		else if ( which === 2 ) {
 			
-			var x = origin.x + direction.x * t;
+			x = origin.x + direction.x * t;
 			if ( x < abMin.x || x > abMax.x ) return intersection;
-			var y = origin.y + direction.y * t;
+			y = origin.y + direction.y * t;
 			if ( y < abMin.y || y > abMax.y ) return intersection;
 			
 			intersection.normal.set( 0, 0, zn );

@@ -215,7 +215,7 @@
 		
 		// misc
 		
-		kb[ 'escape' ] = 'escape'
+		kb[ 'escape' ] = 'escape';
 		kb[ 'space' ] = 'space';
 		
 		// set list of keys that are always available
@@ -338,7 +338,7 @@
 				names: 'pointer',
 				eventCallbacks: {
 					tap: $.proxy( this.select, this ),
-					doubletap: $.proxy( this.interact, this ),
+					doubletap: $.proxy( this.interact, this )
 				},
 				activeCheck: function () {
 					return me.target instanceof THREE.Object3D;

@@ -173,7 +173,6 @@ var KAIOPUA = (function (main) {
 			onGamePaused : new signals.Signal(),
 			onGameResumed : new signals.Signal(),
 			onGameUpdated : new signals.Signal(),
-			onGameUpdated : new signals.Signal(),
 			onGameStarted : new signals.Signal(),
 			onGameStartedCompleted : new signals.Signal(),
 			onGameStopped : new signals.Signal(),
@@ -443,7 +442,7 @@ var KAIOPUA = (function (main) {
 			up: new THREE.Vector3( 0, 1, 0 ),
 			forward: new THREE.Vector3( 0, 0, 1 ),
 			right: new THREE.Vector3( -1, 0, 0 )
-		}
+		};
 		
 		// renderer
 		
@@ -866,7 +865,7 @@ var KAIOPUA = (function (main) {
     =====================================================*/
 	
 	function type ( o ) {
-		return o==null?o+'':Object.prototype.toString.call(o).slice(8,-1).toLowerCase();
+		return o===null?o+'':Object.prototype.toString.call(o).slice(8,-1).toLowerCase();
 	}
 	
 	function is_array ( target ) {
@@ -1559,7 +1558,7 @@ var KAIOPUA = (function (main) {
 				'top': shared.screenOffsetTop,
 				'bottom': shared.screenOffsetBottom,
 				'left': shared.screenOffsetLeft,
-				'right': shared.screenOffsetRight,
+				'right': shared.screenOffsetRight
 			} );
 			shared.renderer.setSize( gameWidth, gameHeight );
 			shared.renderTarget.width = gameWidth;
@@ -1596,8 +1595,6 @@ var KAIOPUA = (function (main) {
 		// debug
         
         throw error + " at " + lineNumber + " in " + url;
-		
-		return true;
 		
 	}
 	
@@ -2569,7 +2566,7 @@ var KAIOPUA = (function (main) {
 	
 	function get_asset_path( location ) {
 		
-		return location.path || location
+		return location.path || location;
 		
 	}
 	
@@ -3092,130 +3089,129 @@ var KAIOPUA = (function (main) {
 	}
 	
 	GameAsset.prototype = new Object();
-	GameAsset.prototype.constructor = GameAsset;
 	
-	GameAsset.prototype.merge_asset_self = function ( asset, includeRequirements ) {
-		
-		var readyCallbackIndex;
-		
-		// TODO:
-		// make sure merging accounts for new requirements and loading
-		
-		if ( typeof asset !== 'undefined' ) {
+	GameAsset.prototype = {
+		constructor: GameAsset,
+		merge_asset_self: function ( asset, includeRequirements ) {
 			
-			this.path = asset.path;
+			var readyCallbackIndex;
 			
-			// merge asset data into this data
+			// TODO:
+			// make sure merging accounts for new requirements and loading
 			
-			this.merge_asset_data_self( asset );
-			
-			// if either asset is waiting
-			
-			if ( typeof this.wait !== 'boolean' || this.wait === false ) {
-			
-				if ( asset.wait === true ) {
+			if ( typeof asset !== 'undefined' ) {
+				
+				this.path = asset.path;
+				
+				// merge asset data into this data
+				
+				this.merge_asset_data_self( asset );
+				
+				// if either asset is waiting
+				
+				if ( typeof this.wait !== 'boolean' || this.wait === false ) {
+				
+					if ( asset.wait === true ) {
+						
+						this.wait = asset.wait;
+						
+					}
+					else {
+						
+						this.wait = false;
+						
+					}
 					
-					this.wait = asset.wait;
+				}
+				
+				// if asset is not ready
+				
+				if ( this.ready !== true ) {
+					
+					this.ready = false;
+					
+				}
+				
+				// requirements basics
+				
+				if ( typeof this.readyAutoUpdate !== 'boolean' ) {
+				
+					if ( asset.hasOwnProperty( 'readyAutoUpdate' ) ) {
+						
+						this.readyAutoUpdate = asset.readyAutoUpdate;
+						
+					}
+					else {
+						
+						this.readyAutoUpdate = true;
+						
+					}
+					
+				}
+				
+				this.requirements = to_array( this.requirements );
+				
+				this.callbacksOnReqs = to_array( this.callbacksOnReqs );
+				
+				// if should also copy requirements
+				
+				if ( includeRequirements === true ) {
+				
+					this.requirements = this.requirements.concat( to_array( asset.requirements ) );
+					
+					this.callbacksOnReqs = this.callbacksOnReqs.concat( to_array( asset.callbacksOnReqs ) );
+					
+				}
+				
+			}
+			
+		},
+		merge_asset_data_self: function ( source ) {
+			
+			var dataSrc = source.data;
+			
+			// if source data exists
+			
+			if ( typeof dataSrc !== 'undefined' ) {
+				
+				// if this data does not exist or source data is image, set as data instead of merging, as merging causes issues
+				
+				if ( typeof this.data === 'undefined' || is_image( dataSrc ) ) {
+					
+					this.data = dataSrc;
 					
 				}
 				else {
 					
-					this.wait = false;
+					// copy properties of source asset data into this data
+					// order is important to ensure this data remains an instance of whatever it is
+					
+					extend( dataSrc, this.data );
 					
 				}
 				
 			}
 			
-			// if asset is not ready
+		},
+		is_empty: function () {
 			
-			if ( this.ready !== true ) {
+			var isEmpty = true;
+			
+			if ( typeof this.data !== 'undefined' || ( this.ready === false && this.requirements.length > 0 ) ) {
 				
-				this.ready = false;
-				
-			}
-			
-			// requirements basics
-			
-			if ( typeof this.readyAutoUpdate !== 'boolean' ) {
-			
-				if ( asset.hasOwnProperty( 'readyAutoUpdate' ) ) {
-					
-					this.readyAutoUpdate = asset.readyAutoUpdate;
-					
-				}
-				else {
-					
-					this.readyAutoUpdate = true;
-					
-				}
+				isEmpty = false;
 				
 			}
 			
-			this.requirements = to_array( this.requirements );
+			return isEmpty;
 			
-			this.callbacksOnReqs = to_array( this.callbacksOnReqs );
-			
-			// if should also copy requirements
-			
-			if ( includeRequirements === true ) {
-			
-				this.requirements = this.requirements.concat( to_array( asset.requirements ) );
-				
-				this.callbacksOnReqs = this.callbacksOnReqs.concat( to_array( asset.callbacksOnReqs ) );
-				
-			}
+		},
+		on_ready: function () {
+			console.log( '[ KAIOPUA ] Module / Asset Ready: ' + this.path );
+			asset_ready( this.path, this );
 			
 		}
-		
-	}
-	
-	GameAsset.prototype.merge_asset_data_self = function ( source ) {
-		
-		var dataSrc = source.data;
-		
-		// if source data exists
-		
-		if ( typeof dataSrc !== 'undefined' ) {
-			
-			// if this data does not exist or source data is image, set as data instead of merging, as merging causes issues
-			
-			if ( typeof this.data === 'undefined' || is_image( dataSrc ) ) {
-				
-				this.data = dataSrc;
-				
-			}
-			else {
-				
-				// copy properties of source asset data into this data
-				// order is important to ensure this data remains an instance of whatever it is
-				
-				extend( dataSrc, this.data );
-				
-			}
-			
-		}
-		
-	}
-	
-	GameAsset.prototype.is_empty = function () {
-		
-		var isEmpty = true;
-		
-		if ( typeof this.data !== 'undefined' || ( this.ready === false && this.requirements.length > 0 ) ) {
-			
-			isEmpty = false;
-			
-		}
-		
-		return isEmpty;
-		
-	}
-	
-	GameAsset.prototype.on_ready = function () {
-		console.log( '[ KAIOPUA ] Module / Asset Ready: ' + this.path );
-		asset_ready( this.path, this );
-		
-	}
+	};
     
     return main; 
     

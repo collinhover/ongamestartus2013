@@ -34,7 +34,7 @@
 			"js/kaiopua/physics/ObstacleDamaging.js",
 			"js/kaiopua/characters/Speaker.js",
             { path: shared.pathToAssets + "asteroid.js", type: 'model' },
-			shared.pathToAssets + "skybox.jpg",
+			shared.pathToAssets + "skybox.jpg"
 		],
 		callbacksOnReqs: init_internal,
 		wait: true
@@ -204,7 +204,7 @@
 		
 		// TODO: allow alternate geometry in physics
 		main.asset_require( [
-			{ path: shared.pathToAssets + "snow_obstacles_damaging.js", type: 'model' },
+			{ path: shared.pathToAssets + "snow_obstacles_damaging.js", type: 'model' }
 			//{ path: shared.pathToAssets + "snow_obstacles_damaging_colliders.js", type: 'model' }
 		], function ( g, gphys ) {
 			var model = new _ObstacleDamaging.Instance( {
@@ -291,7 +291,7 @@
 		
 		// TODO: allow alternate geometry in physics
 		main.asset_require( [
-			{ path: shared.pathToAssets + "lava_obstacles_damaging.js", type: 'model' },
+			{ path: shared.pathToAssets + "lava_obstacles_damaging.js", type: 'model' }
 			//{ path: shared.pathToAssets + "snow_obstacles_damaging_colliders.js", type: 'model' }
 		], function ( g, gphys ) {
 			var model = new _ObstacleDamaging.Instance( {

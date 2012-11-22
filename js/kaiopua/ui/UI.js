@@ -28,7 +28,7 @@
 		requirements: [
 			"js/kaiopua/ui/UIQueue.js",
 			"js/lib/jquery.scrollbarwidth.min.js",
-			"js/lib/jquery.multi-sticky.js",
+			"js/lib/jquery.multi-sticky.js"
 		], 
 		callbacksOnReqs: init_internal,
 		wait: true
@@ -465,7 +465,7 @@
 		
 		// for each tab toggle
 		
-		 shared.domElements.$tabToggles.each( function () {
+		shared.domElements.$tabToggles.each( function () {
 			
 			var $toggle = $( this ),
 				$tab = $( $toggle.attr( 'href' ) );
@@ -970,27 +970,19 @@
     
     =====================================================*/
 	
-    function error ( error, origin, lineNumber ) {
-		
-        var errorType;
+    function error ( errorType, origin, lineNumber ) {
 		
 		// clear existing
 		
 		error_clear();
         
-        // if error type in list
+        // if error type not in list
 		
-        if ( main.index_of_value( shared.errorTypes, error ) !== -1 ) {
-			
-			errorType = error;
-			
-        }
-		// else use general type
-		else {
+        if ( main.index_of_value( shared.errorTypes, errorType ) === -1 ) {
 			
 			errorType = shared.errorTypeGeneral;
 			
-		}
+        }
 		
 		// if should only show error type once to a user
 		

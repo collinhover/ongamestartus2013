@@ -1596,7 +1596,7 @@
 						solo: true, 
 						durationClear: animationDurations.clearSolo,
 						startAt: 0,
-						startAtMax: false,
+						startAtMax: false
 					};
 					if ( animationOptions.jump ) $.extend( animationParameters, animationOptions.jump );
 					
