@@ -423,7 +423,9 @@
 		state.forward = 0;
 		state.back = 0;
 		state.moving = false;
+		state.movingSelf = false;
 		state.movingHorizontal = false;
+		state.movingSelfHorizontal = false;
 		state.movingBack = false;
 		state.grounded = false;
 		state.invulnerable = false;
@@ -1489,33 +1491,33 @@
 					
 			if ( state.forward === 1 || state.back === 1 || state.left === 1 || state.right === 1 ) {
 				
-				state.movingHorizontal = true;
+				state.movingSelfHorizontal = true;
 				
 			}
 			else {
 				
-				state.movingHorizontal = false;
+				state.movingSelfHorizontal = false;
 				
 			}
 			
-			if ( state.movingHorizontal || state.up === 1 || state.down === 1 ) {
+			if ( state.movingSelfHorizontal || state.up === 1 || state.down === 1 ) {
 				
-				state.moving = true;
+				state.movingSelf = true;
 				
 			}
 			else {
 				
-				state.moving = false;
+				state.movingSelf = false;
 				
 			}
 			
 			// update movement
 			
-			moveDir.z = state.movingHorizontal ? 1 : 0;
+			moveDir.z = state.movingSelfHorizontal ? 1 : 0;
 			
 			// if moving
 			
-			if ( state.movingHorizontal === true ) {
+			if ( state.movingSelfHorizontal === true ) {
 				
 				// rotate by turn angle change
 				
@@ -1547,6 +1549,11 @@
 				velocityMovementForceRotatedLength = velocityMovement.forceRotated.length() / timeDeltaMod;
 				velocityGravity = rigidBody.velocityGravity;
 				velocityGravityForceDelta = velocityGravity.forceDelta;
+				
+				// update moving
+				
+				state.movingHorizontal = state.movingSelfHorizontal || velocityMovementForceRotatedLength > 0;
+				state.moving = state.movingSelf || state.movingHorizontal || velocityGravity.forceRotated.lengthSq() > 0;
 				
 				// jumping
 				

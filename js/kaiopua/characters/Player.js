@@ -82,7 +82,8 @@
 				}
 			},
 			interactions: {
-				distance: 500
+				distanceTarget: 600,
+				distance: 375
 			},
 			dialogues: {
 				greeting: [ "Hello!", "Heyo!", "Hi!" ]
@@ -98,12 +99,14 @@
 		
 		_Player.Instance.prototype.set_scene = set_scene;
 		
+		_Player.Instance.prototype.update_ui_state = update_ui_state;
 		_Player.Instance.prototype.die = die;
 		_Player.Instance.prototype.respawn = respawn;
 		
 		_Player.Instance.prototype.hover = hover;
 		_Player.Instance.prototype.select = select;
 		_Player.Instance.prototype.interact = interact;
+		_Player.Instance.prototype.interaction_distance_check = interaction_distance_check;
 		
 		_Player.Instance.prototype.silence = silence;
 		
@@ -111,6 +114,7 @@
 		_Player.Instance.prototype.trigger_action = trigger_action;
 		
 		_Player.Instance.prototype.pause = pause;
+		_Player.Instance.prototype.update = update;
 		
 		Object.defineProperty( _Player.Instance.prototype, 'controllable', { 
 			get : function () { return this.state.controllable; },
@@ -176,6 +180,9 @@
 		parameters.physics = $.extend( {}, _Player.options.physics, parameters.physics );
 		
 		_Character.Instance.call( this, parameters );
+		
+		this.utilVec31Interactable = new THREE.Vector3();
+		this.utilVec32Interactable = new THREE.Vector3();
 		
 		// default keybindings
 		
@@ -298,7 +305,7 @@
 					type: this.options.actionTypes.movement
 				}
 			},
-			{
+			/*{
 				names: 'escape',
 				eventCallbacks: {
 					up: function () {
@@ -311,7 +318,7 @@
 				options: {
 					type: this.options.actionTypes.targetting
 				}
-			},
+			},*/
 			// hovering
 			{
 				names: 'pointer',
@@ -365,9 +372,24 @@
 			} 
 		] );
 		
-		// tooltip
+		// ui
 		
 		this.tooltip = new _Tooltip.Instance( parameters.tooltip );
+		
+		shared.domElements.$playerState = $( '#playerState' );
+		shared.domElements.$playerHealth = $( '.player-health' );
+		shared.domElements.$playerHealthBar = shared.domElements.$playerHealth.find( '.bar' );
+		
+		shared.domElements.$playerTarget = $( '#playerTarget' );
+		shared.domElements.$playerTargetPortrait = $( '#playerTargetPortrait' );
+		shared.domElements.$playerTargetImage = $( '.target-image' );
+		shared.domElements.$playerTargetName = $( '.target-name' );
+		shared.domElements.$playerTargetInteract = $( '#playerTargetInteract' );
+		
+		this.onHurt.add( this.update_ui_state, this );
+		this.onDead.add( this.update_ui_state, this );
+		this.onRespawned.add( this.update_ui_state, this );
+		this.update_ui_state();
 		
 	}
 	
@@ -400,6 +422,22 @@
 	
 	/*===================================================
     
+    ui
+    
+    =====================================================*/
+	
+	function update_ui_state () {
+		
+		var options = this.options,
+			stats = options.stats,
+			state = this.state;
+		
+		shared.domElements.$playerHealthBar.css( 'width', ( state.health / stats.healthMax ) * 100 + '%' );
+		
+	}
+	
+	/*===================================================
+    
     die
     
     =====================================================*/
@@ -410,7 +448,9 @@
 		
 		this.controllable = false;
 		
-		// TODO: ui changes
+		main.dom_fade( {
+			element: shared.domElements.$playerState
+		} );
 		
 	}
 	
@@ -432,6 +472,11 @@
 		shared.cameraControls.target = this;
 		shared.cameraControls.rotateTarget = true;
 		
+		main.dom_fade( {
+			element: shared.domElements.$playerState,
+			opacity: 1
+		} );
+		
 	}
 	
 	/*===================================================
@@ -445,7 +490,8 @@
 		return {
 			pointer: pointer || main.get_pointer( e ),
 			camera: shared.camera,
-			far: this.options.interactions.distance + _VectorHelper.distance_between( this.matrixWorld.getPosition(), shared.camera.position ),
+			// TODO: below far is just an approximation
+			far: this.options.interactions.distanceTarget + _VectorHelper.distance_between( this.matrixWorld.getPosition(), shared.camera.position ),
 			objects: shared.scene.dynamics,
 			octrees: shared.scene.octree,
 			objectOnly: true
@@ -507,6 +553,7 @@
 	function select ( parameters ) {
 		
 		var target,
+			targetLast = this.target,
 			e;
 		
 		// find target
@@ -537,9 +584,43 @@
 		
 		_Player.Instance.prototype.supr.select.call( this, target );
 		
-		if ( this.target === this.targetHover  ) {
+		// handle target ui
+		
+		if ( this.target === this.targetHover ) {
 			
 			this.tooltip.hide();
+			
+		}
+		
+		if ( this.target !== targetLast ) {
+			
+			if ( this.target instanceof _Character.Instance ) {
+				
+				main.dom_fade( {
+					element: shared.domElements.$playerTarget,
+					opacity: 1
+				} );
+				
+				shared.domElements.$playerTargetImage.css( "background-image", "url( '" + shared.pathToAssets + this.target.options.assetsPath + ".png' )" );
+				shared.domElements.$playerTargetName.html( this.target.name );
+				
+				shared.domElements.$playerTargetInteract
+					.off( ".interact" )
+					.on( "tap.interact", $.proxy( this.interact, this ) );
+				
+				this.interaction_distance_check();
+				
+			}
+			else {
+				
+				main.dom_fade( {
+					element: shared.domElements.$playerTarget
+				} );
+				
+				shared.domElements.$playerTargetInteract
+					.off( ".interact" );
+				
+			}
 			
 		}
 		
@@ -555,7 +636,7 @@
 			
 		}
 		
-		if ( this.target instanceof _Character.Instance ) {
+		if ( this.interaction_distance_check() ) {
 			
 			this.targetInteract = this.target;
 			
@@ -564,6 +645,56 @@
 			this.actions.execute( 'communicate', 'greeting', { target: this.targetInteract } );
 			
 		}
+		else {
+			
+			this.tooltip.show().content( 'Too far away!' );
+			this.tooltipNeedsUpdate = true;
+			
+		}
+		
+	}
+	
+	function interaction_distance_check () {
+		
+		var options = this.options,
+			interactions = options.interactions,
+			state = this.state,
+			position,
+			positionTarget,
+			closeEnough = false;
+		
+		if ( this.target instanceof _Character.Instance ) {
+			
+			position = this.utilVec31Interactable.copy( this.matrixWorld.getPosition() );
+			positionTarget = this.utilVec32Interactable.copy( this.target.matrixWorld.getPosition() );
+			
+			// check distance between this and target
+			
+			if ( _VectorHelper.distance_between( position, positionTarget ) <= interactions.distance ) {
+				
+				closeEnough = true;
+				
+				shared.domElements.$playerTargetInteract
+					.removeClass( 'disabled' );
+				
+				if ( this.tooltipNeedsUpdate === true ) {
+					
+					this.tooltipNeedsUpdate = false;
+					this.tooltip.content( this.target.name );
+					
+				}
+				
+			}
+			else {
+				
+				shared.domElements.$playerTargetInteract
+					.addClass( 'disabled' );
+				
+			}
+			
+		}
+		
+		return closeEnough;
 		
 	}
 	
@@ -621,6 +752,26 @@
 	function pause () {
 		
 		this.hover();
+		
+	}
+	
+	/*===================================================
+    
+    update
+    
+    =====================================================*/
+	
+	function update () {
+		
+		var state = this.state;
+		
+		_Player.Instance.prototype.supr.update.apply( this, arguments );
+		
+		if ( state.dead !== true && state.moving === true ) {
+			
+			this.interaction_distance_check();
+			
+		}
 		
 	}
 	

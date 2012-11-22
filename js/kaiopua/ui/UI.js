@@ -26,7 +26,9 @@
 	main.asset_register( assetPath, {
 		data: _UI,
 		requirements: [
-			"js/kaiopua/ui/UIQueue.js"
+			"js/kaiopua/ui/UIQueue.js",
+			"js/lib/jquery.scrollbarwidth.min.js",
+			"js/lib/jquery.multi-sticky.js",
 		], 
 		callbacksOnReqs: init_internal,
 		wait: true
@@ -60,12 +62,14 @@
 		shared.domElements.$uiGameDimmer = $('#uiGameDimmer');
 		shared.domElements.$uiBlocker = $('#uiBlocker');
 		shared.domElements.$ui = $('#ui');
-		shared.domElements.$uiHeader = $( '#uiHeader' );
-		shared.domElements.$uiBody = $( '#uiBody' );
 		shared.domElements.$uiInGame = $( '#uiInGame' );
 		shared.domElements.$uiOverGame = $( '#uiOverGame' );
 		shared.domElements.$uiOutGame = $( '#uiOutGame' );
+		shared.domElements.$uiOverlay = $( '#uiOverlay' );
+		shared.domElements.$uiHeader = $( '#uiHeader' );
 		shared.domElements.$uiFooter = $( '#uiFooter' );
+		shared.domElements.$uiSidebarLeft = $( '#uiSidebarLeft' );
+		shared.domElements.$uiSidebarRight = $( '#uiSidebarRight' );
 		
 		shared.domElements.$autoCenter = $( '.auto-center' );
 		shared.domElements.$autoCenterVertical = $( '.auto-center-vertical' );
@@ -110,13 +114,12 @@
 		shared.domElements.$buttonsGamePause = $('.game-pause');
 		shared.domElements.$buttonsGameResume = $('.game-resume');
 		
+		shared.domElements.$buttonsGamePauseMain = $('#gamePauseMain');
+		shared.domElements.$buttonsGameResumeMain = $('#gameResumeMain');
+		
 		// set all images to not draggable
 		
-		if ( Modernizr.draganddrop ) {
-			
-			$( 'img' ).attr( 'draggable', false );
-			
-		}
+		$( 'img' ).attr( 'draggable', false );
 		
 		// all links that point to a location in page
 		
@@ -810,10 +813,15 @@
 		
 		paused = true;
 		
-		// hide pause button
+		// hide buttons
 		
 		main.dom_fade( {
 			element: shared.domElements.$buttonsGamePause,
+			duration: 0
+		} );
+		
+		main.dom_fade( {
+			element: shared.domElements.$buttonsGameResume,
 			duration: 0
 		} );
 		
@@ -885,13 +893,6 @@
 		
 		paused = false;
 		
-		// hide resume button
-		
-		main.dom_fade( {
-			element: shared.domElements.$buttonsGameResume,
-			duration: 0
-		} );
-		
 		// unblock ui
 		
 		main.dom_fade( {
@@ -912,18 +913,40 @@
 				// clear menus
 				
 				_UIQueue.clear( shared.domElements.$uiOutGame );
-				
-				// show pause button
-				
-				main.dom_fade( {
-					element: shared.domElements.$buttonsGamePause,
-					opacity: 1
-				} );
 			
 			}
 			else {
 				
 				open_default_menu();
+				
+			}
+			
+		}
+		
+		// hide resume button
+		
+		main.dom_fade( {
+			element: shared.domElements.$buttonsGameResume,
+			duration: 0
+		} );
+		
+		if ( main.started !== true ) {
+			
+			// hide pause button
+			
+			main.dom_fade( {
+				element: shared.domElements.$buttonsGamePause,
+				duration: 0
+			} );
+			
+			if ( !shared.domElements.$menuDefault.is( '.active' ) ) {
+				
+				// show resume button
+				
+				main.dom_fade( {
+					element: shared.domElements.$buttonsGameResume,
+					opacity: 1
+				} );
 				
 			}
 			
@@ -1068,13 +1091,19 @@
 	
 	function resize () {
 		
-		shared.screenOffsetTop = shared.domElements.$uiHeader.height();
-		shared.screenViewableHeight = shared.screenHeight - shared.screenOffsetTop;
+		// since main resume is in another ui layer to make sure it can always be available to user
+		// we need to mirror main pause position in resume
 		
-		shared.domElements.$uiBody.css( {
-			'height' : shared.screenViewableHeight,
-			'top' : shared.screenOffsetTop
+		var pauseHidden = shared.domElements.$buttonsGamePauseMain.hasClass( 'hidden' );
+		
+		if ( pauseHidden ) shared.domElements.$buttonsGamePauseMain.removeClass( 'hidden' );
+		
+		shared.domElements.$buttonsGameResumeMain.css( {
+			'top' : shared.domElements.$buttonsGamePauseMain.position().top,
+			'left' : shared.domElements.$buttonsGamePauseMain.position().left
 		} );
+		
+		if ( pauseHidden ) shared.domElements.$buttonsGamePauseMain.addClass( 'hidden' );
 		
 		// because ui out game is scrollable, its grids are not aligned to main header grids
 		// so we need to pad left side of the individual containers to correct for this

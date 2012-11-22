@@ -228,7 +228,7 @@
 	}
 	
 	function clone_geometry ( geometry ) {
-		console.log( 'CLONE geometry ', geometry );
+		
 		var i, l,
 			j, k,
 			vertices = geometry.vertices,

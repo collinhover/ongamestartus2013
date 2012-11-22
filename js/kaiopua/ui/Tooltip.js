@@ -55,6 +55,7 @@
 		
 		_Tooltip.Instance.prototype.show = show;
 		_Tooltip.Instance.prototype.hide = hide;
+		_Tooltip.Instance.prototype.remove = remove;
 		
 		_Tooltip.Instance.prototype.update_placement = update_placement;
 		
@@ -94,19 +95,28 @@
 		
 		_Tooltip.Instance.prototype.supr.show.apply( this, arguments );
 		
-		this.pointer = pointer;
+		this.pointer = pointer || this.pointer;
 		
 		shared.signals.onGamePointerMoved.add( this.follow, this );
 		this.follow( undefined, this.pointer );
+		
+		return this;
 		
 	}
 	
 	function hide () {
 		
 		shared.signals.onGamePointerMoved.remove( this.follow, this );
-		this.pointer = undefined;
 		
 		return _Tooltip.Instance.prototype.supr.hide.apply( this, arguments );
+		
+	}
+	
+	function remove () {
+		
+		shared.signals.onGamePointerMoved.remove( this.follow, this );
+		
+		return _Tooltip.Instance.prototype.supr.remove.apply( this, arguments );
 		
 	}
 	

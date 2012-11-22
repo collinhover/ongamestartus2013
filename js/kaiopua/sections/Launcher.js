@@ -376,10 +376,10 @@
 				spawns,
 				spawnsUnused,
 				speakersData = [
-					{ name: "Michal Budzynski", assets: { path: shared.pathToAssets + "speaker_budzynski_michal.js", type: 'model' } },
-					{ name: "Collin Hover", assets: { path: shared.pathToAssets + "speaker_hover_collin.js", type: 'model' } },
-					{ name: "Jesse Freeman", assets: { path: shared.pathToAssets + "speaker_freeman_jesse.js", type: 'model' } },
-					{ name: "Pascal Rettig", assets: { path: shared.pathToAssets + "speaker_rettig_pascal.js", type: 'model' } }
+					{ name: "Michal Budzynski", options: { assetsPath: "speaker_budzynski_michal" } },
+					{ name: "Collin Hover", options: { assetsPath: "speaker_hover_collin" } },
+					{ name: "Jesse Freeman", options: { assetsPath: "speaker_freeman_jesse" } },
+					{ name: "Pascal Rettig", options: { assetsPath: "speaker_rettig_pascal" } }
 				],
 				data;
 			
@@ -418,10 +418,13 @@
 	
 	function load_speaker ( data ) {
 		
-		main.asset_require( data.assets, function ( g ) {
+		main.asset_require( [
+			{ path: shared.pathToAssets + data.options.assetsPath + ".js", type: 'model' }
+		], function ( g ) {
 			
 			var speaker = new _Speaker.Instance( {
 				name: data.name,
+				options: data.options,
 				geometry: g
 			} );
 			shared.world.add( speaker );

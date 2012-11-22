@@ -134,6 +134,13 @@
 			
 			this.$inner.html( content );
 			
+			//if ( this.showing ) {
+				
+				this.update_placement( this.placementCurrent, true ).update_position();
+				this.$element.css( this.position );
+				
+			//}
+			
 			return this;
 			
 		}

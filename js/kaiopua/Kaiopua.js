@@ -8,6 +8,18 @@
  */
 var KAIOPUA = (function (main) {
 	
+	// console support
+	
+	window.console = window.console || {
+		
+		info: function () {},
+		log: function () {},
+		debug: function () {},
+		warn: function () {},
+		error: function () {}
+		
+	};
+	
 	// shared
 	
     var shared = main.shared = main.shared || {};
@@ -87,13 +99,8 @@ var KAIOPUA = (function (main) {
 			"js/lib/hammer.custom.js",
 			"js/lib/bootstrap.min.js",
 			"js/lib/jquery.easing-1.3.min.js",
-			"js/lib/jquery.imagesloaded.min.js",
 			"js/lib/jquery.throttle-debounce.custom.min.js",
-			"js/lib/jquery.scrollbarwidth.min.js",
 			"js/lib/jquery.placeholdme.js"
-		],
-		libsTertiaryList = [
-			"js/lib/jquery.multi-sticky.js"
 		],
         assetsGameCompatibility = [
 			"js/kaiopua/utils/ErrorHandler.js",
@@ -130,7 +137,7 @@ var KAIOPUA = (function (main) {
     =====================================================*/
 	
     // load scripts
-    $LAB.script( libsPrimaryList ).wait().script( libsSecondaryList ).wait().script( libsTertiaryList ).wait( init );
+    $LAB.script( libsPrimaryList ).wait().script( libsSecondaryList ).wait( init );
     
     function init () {
 		
@@ -247,7 +254,6 @@ var KAIOPUA = (function (main) {
 		
 		add_loaded_locations( libsPrimaryList );
 		add_loaded_locations( libsSecondaryList );
-		add_loaded_locations( libsTertiaryList );
 		
 		// init worker
 		
@@ -370,7 +376,7 @@ var KAIOPUA = (function (main) {
 		
 		// check for errors
         
-        if ( _ErrorHandler.check() ) {
+        if ( _ErrorHandler.errorState ) {
 			
             _ErrorHandler.process();
 			
@@ -1817,13 +1823,13 @@ var KAIOPUA = (function (main) {
 					}
 					
 				};
-				
-			isHidden = $element.is( '.hidden' );
+			
+			isHidden = $element.is( '.hiding, .hidden, .invisible' );
 			isCollapsed = $element.is( '.collapsed' );
 			
 			// stop animations
 			
-			$element.stop( true ).removeClass( 'hiding hidden collapsed' );
+			$element.stop( true ).removeClass( 'invisible hiding hidden collapsed' );
 			
 			$ignore = $element.find( 'a, button' ).add( $element );
 			
@@ -1919,7 +1925,7 @@ var KAIOPUA = (function (main) {
 			
 			// if should start from hidden
 			
-			isHidden = $element.is( '.hiding, .hidden' );
+			isHidden = $element.is( '.hiding, .hidden, .invisible' );
 			isCollapsed = $element.is( '.collapsed' );
 			
 			if ( isCollapsed !== true && ( isHidden === true || parameters.initHidden === true ) ) {
@@ -1935,7 +1941,7 @@ var KAIOPUA = (function (main) {
 				
 				// stop any previous animation
 				
-				$element.stop( true ).removeClass( 'hiding hidden collapsed' );
+				$element.stop( true ).removeClass( 'invisible hiding hidden collapsed' );
 				
 				$ignore = $element.find( 'a, button' ).add( $element );
 				
