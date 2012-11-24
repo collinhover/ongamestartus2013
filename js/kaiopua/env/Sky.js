@@ -1,12 +1,477 @@
-(function(d){function u(a){a=a||{};a.options=$.extend(!0,{},b.options,a.options);l.Instance.call(this,a);this.numClouds=d.is_number(a.numClouds)?a.numClouds:b.numClouds;this.cloudParameters=a.cloudParameters;this.cloudInitAxis=d.is_number(a.cloudInitAxis)?a.cloudInitAxis:b.cloudInitAxis;this.cloudInitAngle=d.is_number(a.cloudInitAngle)?a.cloudInitAngle:b.cloudInitAngle;this.cloudRotateTowardWorld=typeof a.cloudRotateTowardWorld==="boolean"?a.cloudRotateTowardWorld:b.cloudRotateTowardWorld;this.cloudOpacityByDistance=
-m.clamp(d.is_number(a.cloudOpacityByDistance)?a.cloudOpacityByDistance:b.cloudOpacityByDistance,-1,1);this.cloudRotateUtilVec31=new THREE.Vector3;this.cloudRotateUtilVec32=new THREE.Vector3;this.cloudScaleMax=d.is_number(a.cloudScaleMax)?a.cloudScaleMax:b.cloudScaleMax;this.cloudScaleMin=d.is_number(a.cloudScaleMin)?a.cloudScaleMin:b.cloudScaleMin;this.cloudBoundRadius=d.is_number(a.cloudBoundRadius)?a.cloudBoundRadius:b.cloudBoundRadius;this.cloudDistanceFromSurfaceMin=d.is_number(a.cloudDistanceFromSurfaceMin)?
-a.cloudDistanceFromSurfaceMin:b.cloudDistanceFromSurfaceMin;this.cloudDistanceFromSurfaceMax=d.is_number(a.cloudDistanceFromSurfaceMax)?a.cloudDistanceFromSurfaceMax:b.cloudDistanceFromSurfaceMax;this.cloudRangeWander=d.is_number(a.cloudRangeWander)?a.cloudRangeWander:b.cloudRangeWander;this.cloudAnimationDuration=d.is_number(a.cloudAnimationDuration)?a.cloudAnimationDuration:b.cloudAnimationDuration;this.cloudsGeometry=a.cloudsGeometry||b.cloudsGeometry;this.bounds=a.bounds||{min:new THREE.Vector3,
-max:new THREE.Vector3};this.layout=a.layout;this.zones=d.type(a.zones)==="array"?a.zones:b.zones;this.clouds=[];this.world=a.world}function v(a){this._world=a;this.set_clouds()}function r(a){var b,e,f;if(d.is_number(a)&&a>=0)this.numClouds=a;if(this.clouds.length>this.numClouds){f=this.clouds.splice(this.numClouds,this.clouds.length-this.numClouds);for(a=0,b=f.length;a<b;a++)e=f[a],this.remove(e)}else if(this.clouds.length<this.numClouds)for(a=this.clouds.length,b=this.numClouds;a<b;a++)e=new s.Instance(this.cloudParameters),
-this.clouds.push(e),this.add(e)}function w(){var a,j,e,f;this.bounds.min.set(-this.cloudBoundRadius,-this.cloudBoundRadius,-this.cloudBoundRadius);this.bounds.max.set(this.cloudBoundRadius,this.cloudBoundRadius,this.cloudBoundRadius);if(this._world instanceof l.Instance){e=q.extract_children_from_objects(this._world,this._world);for(a=0,j=e.length;a<j;a++)f=e[a],this.bounds=t.push_bounds(f,this.bounds)}if(d.is_array(this.layout)){var c,h,i=this.cloudRotateUtilVec31,k=this.cloudRotateUtilVec32;r.call(this,
-this.layout.length);for(a=0,j=this.numClouds;a<j;a++)e=this.clouds[a],c=this.layout[a],f=c.position,h=c.rotation,c=c.scale,f instanceof THREE.Vector3&&e.position.copy(f),h instanceof THREE.Quaternion?e.quaternion.copy(h):h instanceof THREE.Vector3?e.quaternion.setFromEuler(h):this.cloudRotateTowardWorld&&(i.copy(o.cardinalAxes.forward),k.copy(o.cardinalAxes.up),e.quaternion.multiplyVector3(i),e.quaternion.multiplyVector3(k),p.rotate_relative_to_source(e.quaternion,e.position,this._world,k,i)),d.is_number(c)?
-e.scale.set(c,c,c):c instanceof THREE.Vector3?e.scale.copy(c):(c=Math.random()*(this.cloudScaleMax-this.cloudScaleMin)+this.cloudScaleMin,e.scale.set(c,c,c))}else{a=e;f=this.bounds.min;h=this.bounds.max;var g,n;j=this.cloudRotateUtilVec31;e=this.cloudRotateUtilVec32;a=d.type(a)==="array"?a:q.extract_children_from_objects(this._world,this._world);k=Math.abs(m.max_magnitude(f.x,f.y,f.z,h.x,h.y,h.z));r.call(this);for(f=0,h=this.numClouds;f<h;f++)i=this.clouds[f],g=d.array_random_value(this.zones),c=
-g.polar&&d.is_number(g.polar.min)&&d.is_number(g.polar.max)?g.polar:b.zonePolar,g=g.azimuth&&d.is_number(g.azimuth.min)&&d.is_number(g.azimuth.max)?g.azimuth:b.zoneAzimuth,c=m.clamp(Math.random()*(c.max-c.min)+c.min,0,Math.PI),n=m.clamp(Math.random()*(g.max-g.min)+g.min,0,Math.PI*2),g=k*Math.cos(n)*Math.sin(c),n=k*Math.sin(n)*Math.sin(c),c=k*Math.cos(c),i.position.set(g,n,c),i.quaternion.setFromAxisAngle(this.cloudInitAxis,this.cloudInitAngle+Math.atan2(g,c)),this.cloudRotateTowardWorld&&(j.copy(o.cardinalAxes.forward),
-e.copy(o.cardinalAxes.up),i.quaternion.multiplyVector3(j),i.quaternion.multiplyVector3(e),p.rotate_relative_to_source(i.quaternion,i.position,this._world,j,e)),c=Math.random()*(this.cloudScaleMax-this.cloudScaleMin)+this.cloudScaleMin,i.scale.set(c,c,c),c=Math.random()*(this.cloudDistanceFromSurfaceMax-this.cloudDistanceFromSurfaceMin)+this.cloudDistanceFromSurfaceMin,p.pull_to_source(i,this._world,a,c)}}function x(a){var b,e,d,a=a||{};for(b=0,e=this.clouds.length;b<e;b++)d=this.clouds[b],a.stop===
-!0?d.morphs.stop_all():d.morphs.play("idle",{duration:this.cloudAnimationDuration,loop:!0,startDelay:!0})}var o=d.shared=d.shared||{},b={},l,s,m,q,t,p;d.asset_register("js/kaiopua/env/Sky.js",{data:b,requirements:"js/kaiopua/core/Model.js,js/kaiopua/env/Cloud.js,js/kaiopua/utils/MathHelper.js,js/kaiopua/utils/SceneHelper.js,js/kaiopua/utils/ObjectHelper.js,js/kaiopua/utils/PhysicsHelper.js".split(","),callbacksOnReqs:function(a,d,e,f,c,h){l=a;s=d;m=e;q=f;t=c;p=h;b.options={intersectable:!1};b.numClouds=
-10;b.cloudInitAxis=new THREE.Vector3(0,1,0);b.cloudInitAngle=0;b.cloudRotateTowardWorld=!0;b.cloudOpacityByDistance=0;b.cloudScaleMax=6;b.cloudScaleMin=1;b.cloudBoundRadius=1500;b.cloudDistanceFromSurfaceMin=1E3;b.cloudDistanceFromSurfaceMax=3E3;b.cloudRangeWander=200;b.cloudAnimationDuration=3E3;b.zonePolar={min:0,max:Math.PI};b.zoneAzimuth={min:0,max:Math.PI*2};b.zones=[{polar:b.zonePolar,azimuth:b.zoneAzimuth}];b.Instance=u;b.Instance.prototype=new l.Instance;b.Instance.prototype.constructor=b.Instance;
-b.Instance.prototype.supr=l.Instance.prototype;b.Instance.prototype.set_world=v;b.Instance.prototype.set_clouds=w;b.Instance.prototype.animate=x;Object.defineProperty(b.Instance.prototype,"world",{get:function(){return this._world},set:function(a){this.set_world(a)}})},wait:!0})})(KAIOPUA);
+/*
+ *
+ * Sky.js
+ * World Sky.
+ *
+ * @author Collin Hover / http://collinhover.com/
+ *
+ */
+(function (main) {
+    
+    var shared = main.shared = main.shared || {},
+		assetPath = "js/kaiopua/env/Sky.js",
+		_Sky = {},
+		_Model,
+		_Cloud,
+		_MathHelper,
+		_SceneHelper,
+		_ObjectHelper,
+		_PhysicsHelper;
+	
+	/*===================================================
+    
+    public
+    
+    =====================================================*/
+	
+	main.asset_register( assetPath, { 
+		data: _Sky,
+		requirements: [
+			"js/kaiopua/core/Model.js",
+			"js/kaiopua/env/Cloud.js",
+			"js/kaiopua/utils/MathHelper.js",
+			"js/kaiopua/utils/SceneHelper.js",
+			"js/kaiopua/utils/ObjectHelper.js",
+			"js/kaiopua/utils/PhysicsHelper.js"
+		],
+		callbacksOnReqs: init_internal,
+		wait: true
+	});
+	
+	/*===================================================
+    
+    internal init
+    
+    =====================================================*/
+	
+	function init_internal ( m, cld, mh, sh, oh, ph ) {
+		
+		_Model = m;
+		_Cloud = cld;
+		_MathHelper = mh;
+		_SceneHelper = sh;
+		_ObjectHelper = oh;
+		_PhysicsHelper = ph;
+		
+		// properties
+		
+		_Sky.options = {
+			intersectable: false
+		};
+		
+		_Sky.numClouds = 10;
+		_Sky.cloudInitAxis = new THREE.Vector3( 0, 1, 0 );
+		_Sky.cloudInitAngle = 0;
+		_Sky.cloudRotateTowardWorld = true;
+		_Sky.cloudOpacityByDistance = 0;
+		_Sky.cloudScaleMax = 6;
+		_Sky.cloudScaleMin = 1;
+		_Sky.cloudBoundRadius = 1500;
+		_Sky.cloudDistanceFromSurfaceMin = 1000;
+		_Sky.cloudDistanceFromSurfaceMax = 3000;
+		_Sky.cloudRangeWander = 200;
+		_Sky.cloudAnimationDuration = 3000;
+		_Sky.zonePolar = {
+			min: 0,
+			max: Math.PI
+		};
+		_Sky.zoneAzimuth = {
+			min: 0,
+			max: Math.PI * 2
+		};
+		_Sky.zones = [ {
+			polar: _Sky.zonePolar,
+			azimuth: _Sky.zoneAzimuth
+		} ];
+		
+		// instance
+		
+		_Sky.Instance = Sky;
+		_Sky.Instance.prototype = new _Model.Instance();
+		_Sky.Instance.prototype.constructor = _Sky.Instance;
+		_Sky.Instance.prototype.supr = _Model.Instance.prototype;
+		
+		_Sky.Instance.prototype.set_world = set_world;
+		_Sky.Instance.prototype.set_clouds = set_clouds;
+		
+		_Sky.Instance.prototype.animate = animate;
+		
+		Object.defineProperty( _Sky.Instance.prototype, 'world', {
+			get: function () { return this._world; },
+			set: function ( world ) { this.set_world( world ); }
+		});
+		
+		
+	}
+	
+	/*===================================================
+    
+    sky
+    
+    =====================================================*/
+	
+	function Sky ( parameters ) {
+		
+		var i, l,
+			cloud;
+		
+		// handle parameters
+		
+		parameters = parameters || {};
+		parameters.options = $.extend( true, {}, _Sky.options, parameters.options );
+		
+		// prototype constructor
+		
+		_Model.Instance.call( this, parameters );
+		
+		// properties
+		
+		this.numClouds = main.is_number( parameters.numClouds ) ? parameters.numClouds : _Sky.numClouds;
+		this.cloudParameters = parameters.cloudParameters;
+		this.cloudInitAxis = main.is_number( parameters.cloudInitAxis ) ? parameters.cloudInitAxis : _Sky.cloudInitAxis;
+		this.cloudInitAngle = main.is_number( parameters.cloudInitAngle ) ? parameters.cloudInitAngle : _Sky.cloudInitAngle;
+		this.cloudRotateTowardWorld = typeof parameters.cloudRotateTowardWorld === 'boolean' ? parameters.cloudRotateTowardWorld : _Sky.cloudRotateTowardWorld;
+		this.cloudOpacityByDistance = _MathHelper.clamp( main.is_number( parameters.cloudOpacityByDistance ) ? parameters.cloudOpacityByDistance : _Sky.cloudOpacityByDistance, -1, 1 );
+		this.cloudRotateUtilVec31 = new THREE.Vector3();
+		this.cloudRotateUtilVec32 = new THREE.Vector3();
+		this.cloudScaleMax = main.is_number( parameters.cloudScaleMax ) ? parameters.cloudScaleMax : _Sky.cloudScaleMax;
+		this.cloudScaleMin = main.is_number( parameters.cloudScaleMin ) ? parameters.cloudScaleMin : _Sky.cloudScaleMin;
+		this.cloudBoundRadius =  main.is_number( parameters.cloudBoundRadius ) ? parameters.cloudBoundRadius : _Sky.cloudBoundRadius;
+		this.cloudDistanceFromSurfaceMin = main.is_number( parameters.cloudDistanceFromSurfaceMin ) ? parameters.cloudDistanceFromSurfaceMin : _Sky.cloudDistanceFromSurfaceMin;
+		this.cloudDistanceFromSurfaceMax = main.is_number( parameters.cloudDistanceFromSurfaceMax ) ? parameters.cloudDistanceFromSurfaceMax : _Sky.cloudDistanceFromSurfaceMax;
+		this.cloudRangeWander = main.is_number( parameters.cloudRangeWander ) ? parameters.cloudRangeWander : _Sky.cloudRangeWander;
+		this.cloudAnimationDuration = main.is_number( parameters.cloudAnimationDuration ) ? parameters.cloudAnimationDuration : _Sky.cloudAnimationDuration;
+		this.cloudsGeometry = parameters.cloudsGeometry || _Sky.cloudsGeometry;
+		this.bounds = parameters.bounds || { min: new THREE.Vector3(), max: new THREE.Vector3() };
+		this.layout = parameters.layout;
+		this.zones = main.type( parameters.zones ) === 'array' ? parameters.zones : _Sky.zones;
+		
+		// init clouds list
+		
+		this.clouds = [];
+		
+		// world
+		
+		this.world = parameters.world;
+		
+	}
+	
+	/*===================================================
+    
+    world
+    
+    =====================================================*/
+	
+	function set_world ( world ) {
+		
+		// store new world
+		
+		this._world = world;
+		
+		// clouds
+		
+		this.set_clouds();
+		
+	}
+	
+	/*===================================================
+    
+    clouds
+    
+    =====================================================*/
+	
+	function update_cloud_count ( count ) {
+		
+		var i, l,
+			cloud,
+			cloudsExtra;
+		
+		// change count
+		
+		if ( main.is_number( count ) && count >= 0 ) {
+			
+			this.numClouds = count;
+			
+		}
+		
+		// remove any extra clouds
+		
+		if ( this.clouds.length > this.numClouds ) {
+			
+			cloudsExtra = this.clouds.splice( this.numClouds, this.clouds.length - this.numClouds );
+			
+			for ( i = 0, l = cloudsExtra.length; i < l; i++ ) {
+				
+				cloud = cloudsExtra[ i ];
+				
+				this.remove( cloud );
+				
+			}
+			
+		}
+		// add until num clouds reached
+		else if ( this.clouds.length < this.numClouds ) {
+			
+			for ( i = this.clouds.length, l = this.numClouds; i < l; i++ ) {
+				
+				cloud = new _Cloud.Instance( this.cloudParameters );
+				
+				// store
+				
+				this.clouds.push( cloud );
+				
+				// add
+				
+				this.add( cloud );
+				
+			}
+			
+		}
+		
+	}
+	
+	function set_clouds () {
+		
+		var i, l,
+			children,
+			child;
+		
+		// reset bounds
+		
+		this.bounds.min.set( -this.cloudBoundRadius, -this.cloudBoundRadius, -this.cloudBoundRadius );
+		this.bounds.max.set( this.cloudBoundRadius, this.cloudBoundRadius, this.cloudBoundRadius );
+		
+		// world influence, pre layout
+		
+		if ( this._world instanceof _Model.Instance ) {
+			
+			// get world children
+			
+			children = _SceneHelper.extract_children_from_objects( this._world, this._world );
+			
+			// get new bounds based on world and children
+			
+			for ( i = 0, l = children.length; i < l; i++ ) {
+				
+				child = children[ i ];
+				
+				this.bounds = _ObjectHelper.push_bounds( child, this.bounds );
+				
+			}
+			
+		}
+		
+		// layout
+		
+		// prearranged
+		
+		if ( main.is_array( this.layout ) ) {
+			
+			clouds_layout_prearranged.call( this );
+			
+		}
+		// default to sphere
+		else {
+			
+			clouds_layout_sphere.call( this, children );
+			
+		}
+		
+	}
+	
+	function clouds_layout_prearranged () {
+		
+		var i, l,
+			cloud,
+			properties,
+			position,
+			rotation,
+			scale,
+			cloudForward = this.cloudRotateUtilVec31,
+			cloudUp = this.cloudRotateUtilVec32;
+		
+		// update cloud count
+		
+		update_cloud_count.call( this, this.layout.length );
+		
+		// update clouds
+		
+		for ( i = 0, l = this.numClouds; i < l; i++ ) {
+			
+			cloud = this.clouds[ i ];
+			
+			properties = this.layout[ i ];
+			position = properties.position;
+			rotation = properties.rotation;
+			scale = properties.scale;
+			
+			// position
+			
+			if ( position instanceof THREE.Vector3 ) {
+				
+				cloud.position.copy( position );
+				
+			}
+			
+			// rotate
+			
+			if ( rotation instanceof THREE.Quaternion ) {
+				
+				cloud.quaternion.copy( rotation );
+				
+			}
+			else if ( rotation instanceof THREE.Vector3 ) {
+				
+				cloud.quaternion.setFromEuler( rotation );
+			
+			}
+			else if ( this.cloudRotateTowardWorld ) {
+				
+				cloudForward.copy( shared.cardinalAxes.forward );
+				cloudUp.copy( shared.cardinalAxes.up );
+				
+				cloud.quaternion.multiplyVector3( cloudForward );
+				cloud.quaternion.multiplyVector3( cloudUp );
+				
+				_PhysicsHelper.rotate_relative_to_source( cloud.quaternion, cloud.position, this._world, cloudUp, cloudForward );
+				
+			}
+			
+			// scale
+			if ( main.is_number( scale ) ) {
+				
+				cloud.scale.set( scale, scale, scale );
+			
+			}
+			else if ( scale instanceof THREE.Vector3 ) {
+				
+				cloud.scale.copy( scale );
+			
+			}
+			else {
+				
+				scale = Math.random() * ( this.cloudScaleMax - this.cloudScaleMin ) + this.cloudScaleMin;
+				
+				cloud.scale.set( scale, scale, scale );
+				
+			}
+			
+		}
+		
+	}
+	
+	function clouds_layout_sphere ( children ) {
+		
+		var i, l,
+			bmin = this.bounds.min,
+			bmax = this.bounds.max,
+			cloud,
+			radius,
+			scale,
+			distance,
+			zone,
+			zpolar, zazimuth,
+			tx, ty, tz,
+			azimuth, polar,
+			x, y, z,
+			cloudForward = this.cloudRotateUtilVec31,
+			cloudUp = this.cloudRotateUtilVec32;
+		
+		// get children
+		
+		children = main.type( children ) === 'array' ? children : _SceneHelper.extract_children_from_objects( this._world, this._world );
+		
+		// set radius
+		
+		radius = Math.abs( _MathHelper.max_magnitude( bmin.x, bmin.y, bmin.z, bmax.x, bmax.y, bmax.z ) );
+		
+		// update clouds
+		
+		update_cloud_count.call( this );
+		
+		for ( i = 0, l = this.numClouds; i < l; i++ ) {
+			
+			cloud = this.clouds[ i ];
+			
+			// zone / angles
+			
+			zone = main.array_random_value( this.zones );
+			zpolar = ( zone.polar && main.is_number( zone.polar.min ) && main.is_number( zone.polar.max ) ) ? zone.polar : _Sky.zonePolar;
+			zazimuth = ( zone.azimuth && main.is_number( zone.azimuth.min ) && main.is_number( zone.azimuth.max ) ) ? zone.azimuth : _Sky.zoneAzimuth;
+			
+			polar = _MathHelper.clamp( Math.random() * ( zpolar.max - zpolar.min ) + zpolar.min, 0, Math.PI );
+			azimuth = _MathHelper.clamp( Math.random() * ( zazimuth.max - zazimuth.min ) + zazimuth.min, 0, Math.PI * 2 );
+			
+			// position
+			
+			x = radius * Math.cos( azimuth ) * Math.sin( polar );
+			y = radius * Math.sin( azimuth ) * Math.sin( polar );
+			z = radius * Math.cos( polar );
+			
+			cloud.position.set( x, y, z );
+			
+			// rotate
+			
+			cloud.quaternion.setFromAxisAngle( this.cloudInitAxis, this.cloudInitAngle + Math.atan2( x, z ) );
+			
+			if ( this.cloudRotateTowardWorld ) {
+				
+				cloudForward.copy( shared.cardinalAxes.forward );
+				cloudUp.copy( shared.cardinalAxes.up );
+				
+				cloud.quaternion.multiplyVector3( cloudForward );
+				cloud.quaternion.multiplyVector3( cloudUp );
+				
+				_PhysicsHelper.rotate_relative_to_source( cloud.quaternion, cloud.position, this._world, cloudForward, cloudUp );
+				
+			}
+			
+			// scale
+			
+			scale = Math.random() * ( this.cloudScaleMax - this.cloudScaleMin ) + this.cloudScaleMin;
+			
+			cloud.scale.set( scale, scale, scale );
+			
+			// pull towards world
+			
+			distance = Math.random() * ( this.cloudDistanceFromSurfaceMax - this.cloudDistanceFromSurfaceMin ) + this.cloudDistanceFromSurfaceMin;
+			
+			_PhysicsHelper.pull_to_source( cloud, this._world, children, distance );
+			
+		}
+		
+	}
+	
+	function animate ( parameters ) {
+		
+		var i, l,
+			cloud,
+			idleMod,
+			stop;
+		
+		// handle parameters
+		
+		parameters = parameters || {};
+		
+		// clouds
+		
+		for ( i = 0, l = this.clouds.length; i < l; i++ ) {
+			
+			cloud = this.clouds[ i ];
+			
+			if ( parameters.stop === true ) {
+				
+				cloud.morphs.stop_all();
+				
+			}
+			else {
+				
+				cloud.morphs.play( 'idle', { duration: this.cloudAnimationDuration, loop: true, startDelay: true } );
+				
+			}
+			
+		}
+		
+	}
+	
+} (KAIOPUA) );

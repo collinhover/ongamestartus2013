@@ -1,7 +1,523 @@
-(function(i){function n(a){return typeof a==="string"?a.replace(/\s{2,}/g," ").split(" "):i.to_array(a)}function o(a,b){return b.options.priority-a.options.priority}function m(a){var b,a=a||{};this.options=$.extend(!0,{},p,a.options);this.id=q++;this.eventCallbacks=a.eventCallbacks||{};this.deactivateCallbacks=i.to_array(a.deactivateCallbacks);this.eventsActive=[];this.activeCheck=a.activeCheck||{};for(b in this.eventCallbacks)this.eventCallbacks.hasOwnProperty(b)&&(this.eventCallbacks[b]=i.to_array(this.eventCallbacks[b]))}
-i.shared=i.shared||{};var e={},q=0,p={priority:0,blocking:!1,silencing:!1,type:"action_untyped"};e.Instance=function(){this.map={};this.actionNames=[];this.actionsByType={}};e.Instance.prototype.constructor=e.Instance;e.Instance.prototype.add=function(a){var b,d,c,g,f,j,h,e,k,l,a=i.to_array(a);for(b=0,d=a.length;b<d;b++){f=a[b];c=f.names;j=n(c);f.clean===!0&&this.remove(j);for(c=0,g=j.length;c<g;c++)h=j[c],e=this.map[h]=this.map[h]||[],k=new m(f),l=k.options.type,typeof this.actionsByType[l]==="undefined"&&
-(this.actionsByType[l]=[]),i.array_cautious_add(this.actionsByType[l],k),e.push(k),e.sort(o),i.array_cautious_add(this.actionNames,h)}};e.Instance.prototype.remove=function(a){var b,d,c,g=n(a),f,j,h,e;for(a=0,b=g.length;a<b;a++)if(f=g[a],this.map.hasOwnProperty(f)){j=this.map[f];for(d=0,c=j.length;d<c;d++)h=j[d],h.deactivate(),e=h.options.type,i.array_cautious_remove(this.actionsByType[e],h),this.actionsByType[e].length===0&&delete this.actionsByType[e];delete this.map[f];i.array_cautious_remove(this.actionNames,
-f)}};e.Instance.prototype.execute=function(a,b,d){var c,g,f,e;if(this.map.hasOwnProperty(a)){g=this.map[a];for(a=0,c=g.length;a<c;a++)if(f=g[a],e=f.execute(b,d),(f.options.silencing===!0||e===!0&&f.options.blocking===!0)&&f.active===!0)break}};e.Instance.prototype.is_active=function(a){var b,d,c,g,f;if(typeof a!=="undefined"){a=i.to_array(a);for(b=0,d=a.length;b<d;b++){c=a[b];if(this.map.hasOwnProperty(c)&&this.map[c].active)return!0;if(this.actionsByType.hasOwnProperty(c)){f=this.actionsByType[c];
-for(c=0,g=f.length;c<g;c++)if(f[c].active)return!0}}}else for(b=0,d=this.actionNames.length;b<d;b++){a=this.map[this.actionNames[b]];for(c=0,g=a.length;c<g;c++)if(a[c].active)return!0}return!1};e.Instance.prototype.clear_active=function(){var a,b,d,c,g;for(a=0,b=this.actionNames.length;a<b;a++){g=this.map[this.actionNames[a]];for(d=0,c=g.length;d<c;d++)g[d].deactivate()}};i.asset_register("js/kaiopua/core/Actions.js",{data:e});m.prototype={execute:function(a,b){var d,c,g,f,e=this.eventCallbacks.hasOwnProperty(a),
-h;if(e){b=b||{};h=this.is_deactivate_callback(a);g=this.eventCallbacks[a];for(d=0,c=g.length;d<c;d++)f=g[d],h!==!0&&(h=this.is_deactivate_callback(f)),f(b);b.event&&b.allowDefault!==!0&&b.event.preventDefault();h===!0?this.reset():i.array_cautious_add(this.eventsActive,a)}return e},deactivate:function(){var a,b,d=this.deactivateCallbacks,c;for(a=0,b=d.length;a<b;a++)c=d[a],typeof c==="function"?c():typeof c==="string"&&this.eventCallbacks.hasOwnProperty(c)&&this.execute(c);this.reset()},is_deactivate_callback:function(a){var b,
-d,c=this.deactivateCallbacks;for(b=0,d=c.length;b<d;b++)if(a===c[b])return!0;return!1},reset:function(){this.eventsActive=[]}};Object.defineProperty(m.prototype,"active",{get:function(){return typeof this.activeCheck==="function"?this.activeCheck():this.eventsActive.length>0}})})(KAIOPUA);
+/*
+ *
+ * Actions.js
+ * Action handler for player, character, etc.
+ *
+ * @author Collin Hover / http://collinhover.com/
+ *
+ */
+(function (main) {
+    
+    var shared = main.shared = main.shared || {},
+		assetPath = "js/kaiopua/core/Actions.js",
+		_Actions = {},
+		actionCount = 0,
+		actionOptions = {
+			priority: 0,
+			blocking: false,
+			silencing: false,
+			type: 'action_untyped'
+		};
+	
+	/*===================================================
+    
+    public
+    
+    =====================================================*/
+	
+	init_internal();
+	
+	main.asset_register( assetPath, { 
+		data: _Actions
+	} );
+	
+	/*===================================================
+    
+    init
+    
+    =====================================================*/
+	
+	function init_internal() {
+		
+		// functions
+		
+		_Actions.Instance = Actions;
+		_Actions.Instance.prototype.constructor = _Actions.Instance;
+		
+		_Actions.Instance.prototype.add = add;
+		_Actions.Instance.prototype.remove = remove;
+		_Actions.Instance.prototype.execute = execute;
+		
+		_Actions.Instance.prototype.is_active = is_active;
+		_Actions.Instance.prototype.clear_active = clear_active;
+		
+	}
+	
+	/*===================================================
+    
+    instance
+    
+    =====================================================*/
+	
+	function Actions () {
+		
+		this.map = {};
+		this.actionNames = [];
+		this.actionsByType = {};
+		
+	}
+	
+	/*===================================================
+    
+    utility
+    
+    =====================================================*/
+	
+	function handle_names ( names ) {
+		
+		var namesList;
+		
+		// handle names
+		
+		if ( typeof names === 'string' ) {
+			
+			namesList = names.replace(/\s{2,}/g, ' ').split( ' ' );
+			
+		}
+		else {
+			
+			namesList = main.to_array( names );
+			
+		}
+		
+		return namesList;
+		
+	}
+	
+	function sort_priority ( a, b ) {
+		
+		return b.options.priority - a.options.priority;
+		
+	}
+	
+	/*===================================================
+    
+    add / remove
+    
+    =====================================================*/
+	
+	function add ( actions ) {
+		
+		var i, il,
+			j, jl,
+			parameters,
+			names,
+			namesList,
+			name,
+			nameActions,
+			action,
+			type;
+		
+		actions = main.to_array( actions );
+		
+		for ( i = 0, il = actions.length; i < il; i++ ) {
+			
+			parameters = actions[ i ];
+			names = parameters.names;
+			namesList = handle_names( names );
+			
+			// remove all previous actions at names
+			
+			if ( parameters.clean === true ) {
+				
+				this.remove( namesList );
+				
+			}
+			
+			// for each name
+			
+			for ( j = 0, jl = namesList.length; j < jl; j++ ) {
+				
+				name = namesList[ j ];
+				nameActions = this.map[ name ] = this.map[ name ] || [];
+				
+				action = new Action( parameters );
+				type = action.options.type;
+				
+				if ( typeof this.actionsByType[ type ] === 'undefined' ) {
+					
+					this.actionsByType[ type ] = [];
+					
+				}
+				
+				main.array_cautious_add( this.actionsByType[ type ], action );
+				
+				nameActions.push( action );
+				nameActions.sort( sort_priority );
+				
+				main.array_cautious_add( this.actionNames, name );
+				
+			}
+			
+		}
+		
+	}
+	
+	function remove ( names ) {
+		
+		var i, l,
+			j, k,
+			namesList = handle_names( names ),
+			name,
+			nameActions,
+			action,
+			type,
+			index;
+		
+		// for each name
+		
+		for ( i = 0, l = namesList.length; i < l; i++ ) {
+			
+			name = namesList[ i ];
+			
+			if ( this.map.hasOwnProperty( name ) ) {
+				
+				nameActions = this.map[ name ];
+				
+				// deactivate each action
+				
+				for ( j = 0, k = nameActions.length; j < k; j++ ) {
+					
+					action = nameActions[ j ];
+					
+					action.deactivate();
+					type = action.options.type;
+					
+					main.array_cautious_remove( this.actionsByType[ type ], action );
+					
+					if ( this.actionsByType[ type ].length === 0 ) {
+						
+						delete this.actionsByType[ type ];
+						
+					}
+					
+				}
+				
+				delete this.map[ name ];
+				main.array_cautious_remove( this.actionNames, name );
+				
+			}
+			
+		}
+		
+	}
+	
+	/*===================================================
+    
+    execute
+    
+    =====================================================*/
+	
+	function execute ( name, eventName, parameters ) {
+		
+		var i, l,
+			nameActions,
+			action,
+			executable;
+		
+		if ( this.map.hasOwnProperty( name ) ) {
+			
+			nameActions = this.map[ name];
+			
+			for ( i = 0, l = nameActions.length; i < l; i++ ) {
+				
+				action = nameActions[ i ];
+				
+				executable = action.execute( eventName, parameters );
+				
+				if ( ( action.options.silencing === true || ( executable === true && action.options.blocking === true ) ) && action.active === true ) {
+					
+					break;
+					
+				}
+				
+			}
+		
+		}
+		
+	}
+	
+	/*===================================================
+    
+    activity
+    
+    =====================================================*/
+	
+	function is_active ( names ) {
+		
+		var i, il,
+			j, jl,
+			name,
+			nameActions,
+			typeActions;
+		
+		if ( typeof names !== 'undefined' ) {
+			
+			names = main.to_array( names );
+			
+			for ( i = 0, il = names.length; i < il; i++ ) {
+				
+				name = names[ i ];
+				
+				// try name in map
+				
+				if ( this.map.hasOwnProperty( name ) && this.map[ name ].active ) {
+				
+					return true;
+					
+				}
+				
+				// try name as type
+				
+				if ( this.actionsByType.hasOwnProperty( name ) ) {
+					
+					typeActions = this.actionsByType[ name ];
+					
+					for ( j = 0, jl = typeActions.length; j < jl; j++ ) {
+						
+						if ( typeActions[ j ].active ) {
+							
+							return true;
+							
+						}
+						
+					}
+					
+				}
+				
+			}
+			
+		}
+		else {
+			
+			// for each action name
+			
+			for ( i = 0, il = this.actionNames.length; i < il; i++ ) {
+				
+				nameActions = this.map[ this.actionNames[ i ] ];
+				
+				for ( j = 0, jl = nameActions.length; j < jl; j++ ) {
+					
+					if ( nameActions[ j ].active) {
+						
+						return true;
+						
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+		return false;
+		
+	}
+	
+	function clear_active () {
+		
+		var i, l,
+			j, k,
+			nameActions;
+		
+		// for each action name
+		
+		for ( i = 0, l = this.actionNames.length; i < l; i++ ) {
+			
+			nameActions = this.map[ this.actionNames[ i ] ];
+			
+			for ( j = 0, k = nameActions.length; j < k; j++ ) {
+				
+				nameActions[ j ].deactivate();
+				
+			}
+			
+		}
+		
+	}
+	
+	/*===================================================
+    
+    action instance
+    
+    =====================================================*/
+	
+	function Action ( parameters ) {
+		
+		var name,
+			deactivateCallbacks,
+			deactivateCallback,
+			index;
+		
+		// handle parameters
+		
+		parameters = parameters || {};
+		
+		// options
+		
+		this.options = $.extend( true, {}, actionOptions, parameters.options );
+		
+		// properties
+		
+		this.id = actionCount++;
+		this.eventCallbacks = parameters.eventCallbacks || {};
+		this.deactivateCallbacks = main.to_array( parameters.deactivateCallbacks );
+		
+		this.eventsActive = [];
+		this.activeCheck = parameters.activeCheck || {};
+		
+		// for each list of eventCallbacks
+		
+		for ( name in this.eventCallbacks ) {
+			
+			if ( this.eventCallbacks.hasOwnProperty( name ) ) {
+				
+				// ensure is array
+				
+				this.eventCallbacks[ name ] = main.to_array( this.eventCallbacks[ name ] );
+				
+			}
+			
+		}
+		
+	}
+	
+	Action.prototype = {
+		
+		execute: function ( eventName, parameters ) {
+			
+			var i, l,
+				eventCallbacks,
+				callback,
+				executable = this.eventCallbacks.hasOwnProperty( eventName ),
+				isDeactivate;
+			
+			if ( executable ) {
+				
+				parameters = parameters || {};
+				
+				isDeactivate = this.is_deactivate_callback( eventName );
+				
+				// execute each eventCallback
+				
+				eventCallbacks = this.eventCallbacks[ eventName ];
+				
+				for ( i = 0, l = eventCallbacks.length; i < l; i++ ) {
+					
+					callback = eventCallbacks[ i ];
+					
+					if ( isDeactivate !== true ) isDeactivate = this.is_deactivate_callback( callback );
+					
+					callback( parameters );
+					
+				}
+				
+				// if event passed
+				
+				if ( parameters.event && parameters.allowDefault !== true ) {
+					
+					parameters.event.preventDefault();
+					
+				}
+				
+				if ( isDeactivate === true ) {
+					
+					this.reset();
+					
+				}
+				else {
+					
+					main.array_cautious_add( this.eventsActive, eventName );
+					
+				}
+				
+			}
+			
+			return executable;
+			
+		},
+		
+		deactivate: function () {
+			
+			var i, il,
+				callbacks = this.deactivateCallbacks,
+				callback;
+			
+			for ( i = 0, il = callbacks.length; i < il; i++ ) {
+				
+				callback = callbacks[ i ];
+				
+				if ( typeof callback === 'function' ) {
+					
+					callback();
+					
+				}
+				else if ( typeof callback === 'string' && this.eventCallbacks.hasOwnProperty( callback ) ) {
+					
+					this.execute( callback );
+					
+				}
+				
+			}
+			
+			this.reset();
+			
+		},
+		
+		is_deactivate_callback: function ( callback ) {
+			
+			var i, il,
+				callbacks = this.deactivateCallbacks;
+			
+			for ( i = 0, il = callbacks.length; i < il; i++ ) {
+				
+				if ( callback === callbacks[ i ] ) {
+					
+					return true;
+					
+				}
+				
+			}
+			
+			return false;
+			
+		},
+		
+		reset: function () {
+			
+			this.eventsActive = [];
+			
+		}
+		
+	};
+	
+	Object.defineProperty( Action.prototype, 'active', { 
+		get : function () { 
+			
+			// if has check
+			if ( typeof this.activeCheck === 'function' ) {
+				
+				return this.activeCheck();
+				
+			}
+			// else default
+			else {
+				
+				return this.eventsActive.length > 0;
+				
+			}
+			
+		}
+	});
+	
+} (KAIOPUA) );

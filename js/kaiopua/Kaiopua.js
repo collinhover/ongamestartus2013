@@ -1,47 +1,3244 @@
-var KAIOPUA=function(e){var ta,aa,ba,ca,v,M,E,N,s,w,F,O,G,t,P,Q,u,H,I,da,J,R;function Qa(a,c,d){console.log("GAME: compatiblity check");z=a;ea=c;ua=d;z.errorState?(z.process(),b.signals.onGameReady.dispatch()):(b.supports.webGL=!0,e.asset_require(Ra,[Sa],!0))}function Sa(){e.asset_require(Ta,[Ua,Va],!0)}function Va(){e.asset_require(Wa,[Xa,Ya],!0)}function Ya(){e.asset_require(Za,[$a,ab],!0)}function ab(){e.asset_require(bb,cb,!0)}function Ua(){console.log("GAME: foundation");b.universeGravitySource=
-new THREE.Vector3(0,0,0);b.universeGravityMagnitude=new THREE.Vector3(0,-0.4,0);b.cardinalAxes={up:new THREE.Vector3(0,1,0),forward:new THREE.Vector3(0,0,1),right:new THREE.Vector3(-1,0,0)};b.renderer=new THREE.WebGLRenderer({clearColor:0,clearAlpha:0,maxLights:8});b.renderer.setSize(b.gameWidth,b.gameHeight);b.renderer.autoClear=!1;b.renderTarget=new THREE.WebGLRenderTarget(b.gameWidth,b.gameHeight,{minFilter:THREE.LinearFilter,magFilter:THREE.NearestFilter})}function Xa(a,c){console.log("GAME: setup");
-fa=a;va=c;b.scene=new fa.Instance;b.sceneBG=new fa.Instance;b.scene.fog=void 0;e.physics=b.scene.physics;b.camera=new THREE.PerspectiveCamera(60,b.gameWidth/b.gameHeight,1,2E4);b.cameraBG=new THREE.PerspectiveCamera(60,b.gameWidth/b.gameHeight,1,2E4);b.camera.useQuaternion=b.cameraBG.useQuaternion=!0;b.cameraControls=new va.Instance({camera:b.camera});b.cameraControls.onCameraMoved.add($.throttle(b.throttleTimeMedium,function(){b.domElements.$game.triggerHandler("mousemove")}));ta=new THREE.RenderPass(b.sceneBG,
-b.cameraBG);aa=new THREE.RenderPass(b.scene,b.camera);ba=new THREE.ShaderPass(THREE.ShaderExtras.screen);aa.clear=!1;ba.renderToScreen=!0;A=new THREE.EffectComposer(b.renderer,b.renderTarget);A.addPass(ta);A.addPass(aa);A.addPass(ba);b.domElements.$game.prepend(b.renderer.domElement);b.throttled.on_game_pointer_moved=$.throttle(b.throttleTimeShort,db);b.throttled.on_game_pointer_dragged=$.throttle(b.throttleTimeShort,!0,eb);b.domElements.$game.on("mouseleave",fb).on("mouseenter",gb).on("mousemove",
-b.throttled.on_game_pointer_moved).on("tap",hb).on("doubletap",ib).on("hold",jb).on("dragstart",kb).on("drag",b.throttled.on_game_pointer_dragged).on("dragend",lb).on("mousewheel DOMMouseScroll",mb).on("contextmenu",nb);K=!0;wa()}function $a(a){ga=a;S(ga)}function cb(a){console.log("GAME: ready");xa=a;T=!0;b.signals.onGameReady.dispatch()}function S(a,c){var d=b.fadeBetweenSections,f=!1,g=function(){typeof b.sectionLast!=="undefined"&&b.sectionLast.remove();a.show();b.section=a;d!==!1&&e.dom_fade({element:b.domElements.$uiBlocker});
-U();typeof c!=="undefined"&&c.call()};V(!0);if(typeof b.section!=="undefined")f=!0,b.sectionLast=b.section,b.sectionLast.hide(),d!==!1&&e.dom_fade({element:b.domElements.$uiBlocker,opacity:1});b.section=void 0;typeof startedValue!=="undefined"&&(B=startedValue);typeof a!=="undefined"&&(d!==!1&&f===!0?window.requestTimeout(function(){g()},ob):g())}function pb(){T===!0&&(B===!1?(console.log("GAME: START"),B=!0,b.signals.onGameStarted.dispatch(),S(xa,function(){b.signals.onGameStartedCompleted.dispatch()})):
-U())}function qb(){T===!0&&(console.log("GAME: STOP"),B=!1,b.signals.onGameStopped.dispatch(),S(ga,function(){b.signals.onGameStoppedCompleted.dispatch()}))}function V(a,c){x===!1&&(console.log("GAME: PAUSE"),x=!0,b.signals.onGamePaused.dispatch(a,c),ha())}function U(a){if(x===!0&&(z.errorState!==!0||B!==!0))console.log("GAME: RESUME"),x=!1,b.signals.onGameResumed.dispatch(a)}function ya(){var a,c;window.requestAnimationFrame(ya);b.timeLast=b.time;b.time=(new Date).getTime();a=b.time-b.timeLast;c=
-Math.round(a/b.timeDeltaExpected*b.timeDeltaModDec)/b.timeDeltaModDec;C(c)!==!0&&(c=1);b.signals.onUpdated.dispatch(a,c);x!==!0&&K===!0&&(TWEEN.update(),e.physics&&e.physics.update(a,c),b.signals.onGameUpdated.dispatch(a,c),ha())}function ha(){K===!0&&(b.cameraControls.update(),b.cameraBG.quaternion.copy(b.camera.quaternion),b.renderer.setViewport(0,0,b.gameWidth,b.gameHeight),b.renderer.clear(),A.render())}function za(a){return a===null?a+"":Object.prototype.toString.call(a).slice(8,-1).toLowerCase()}
-function W(a){return Object.prototype.toString.call(a)==="[object Array]"}function C(a){return!isNaN(a)&&isFinite(a)&&typeof a!=="boolean"}function ia(a){return typeof a!=="undefined"&&a.hasOwnProperty("nodeName")&&a.nodeName.toLowerCase()==="img"}function Aa(a){return a==="jpg"||a==="jpeg"||a==="png"||a==="gif"||a==="bmp"?!0:!1}function rb(a){return a&&a.type&&(a.target||a.srcElement)}function ja(a,c,b,f){var g,h,j,k,i,l,q,X,Y,m;if(typeof a!=="undefined"){c=e.type(c)==="object"?c:{};j=Object.getOwnPropertyNames(a);
-for(g=0,h=j.length;g<h;g++)if(k=j[g],i=Object.getOwnPropertyDescriptor(a,k),c.hasOwnProperty(k)&&delete c[k],Object.defineProperty(c,k,i),b===!0&&(i=Object.getOwnPropertyDescriptor(c,k),l=i.value,q=za(l),q==="object"||q==="array"))f=f||{sources:[],copies:[]},X=f.sources,Y=f.copies,m=n(X,l),m===-1?(X[X.length]=l,q=Y[Y.length]=q==="object"?{}:[],l===a&&(l[k]=q),i.value=ja(l,q,!0,f)):i.value=Y[m],Object.defineProperty(c,k,i)}return c}function sb(a,c,b){var f,g,e,c=C(c)&&c>0?c:1,b=typeof b==="string"?
-b:"";g=(new Date).getTime();for(f=0;f<c;f++)e=a.call();a=(new Date).getTime();console.log(b," > time test ( x",c,"): ",a-g);return e}function o(a){return a?W(a)!==!0?[a]:a:[]}function tb(a,c){return W(a)===!0?a[c||0]:a}function ub(a,c){var b,f,g,e,j=!1,a=o(a),c=o(c);for(b=0,f=c.length;b<f;b++)g=c[b],e=n(a,g),e===-1&&(a.push(g),j=!0);return j}function vb(a,c){var b,f,g,e=!1,a=o(a),c=o(c);for(b=0,f=c.length;b<f;b++)g=c[b],g=n(a,g),g!==-1&&(a.splice(g,1),e=!0);return e}function wb(a){return a[Math.round(Math.random()*
-(a.length-1))]}function xb(a){return a.splice(Math.round(Math.random()*(a.length-1)),1)[0]}function n(a,c){for(var b=0,f=a.length;b<f;b++)if(c===a[b])return b;return-1}function yb(a,b){for(var d=a.length-1;d>=0;d--)if(b===a[d])return d;return-1}function zb(a,b){for(var d=[],f=0,g=a.length;f<g;f++)b===a[f]&&d.push(f);return d}function Ab(a,b){for(var d=0,f=a.length;d<f;d++)if(n(b,a[d])!==-1)return d;return-1}function Bb(a,b,d){for(var f=0,g=a.length;f<g;f++)if(d===a[f][b])return f;return-1}function Cb(a,
-b,d){for(var f=[],g=0,e=a.length;g<e;g++)d===a[g][b]&&f.push(g);return f}function Db(a,b,d){for(var f=0,g=a.length;f<g;f++)for(var e=0,j=b.length;e<j;e++)if(d[e]===a[f][b[e]])return f;return-1}function Eb(a){var a=a||{},a=a.identifier=a.identifier?a.identifier:0,c=b.pointers[a];if(typeof c==="undefined")c=b.pointers[a]={},c.id=a,c.x=c.lx=b.screenWidth*0.5,c.y=c.ly=b.screenHeight*0.5,c.deltaX=c.deltaY=c.angle=c.distance=c.distanceX=c.distanceY=0,c.direction="none";return c}function L(a){b.timeSinceInteraction=
-0;var c=e.get_pointer(a),d,f,g;if(a){d=a.position;W(d)&&d[c.id]&&(d=d[c.id]);if(typeof d==="undefined"){f=document;g=f.body;d={x:c.x,y:c.y};if(typeof a.pageX!=="undefined")d.x=a.pageX;else if(typeof a.clientX!=="undefined")d.x=a.clientX+(f&&f.scrollLeft||g&&g.scrollLeft||0)-(f&&f.clientLeft||g&&g.clientLeft||0);if(typeof a.pageY!=="undefined")d.y=a.pageY;else if(typeof a.clientY!=="undefined")d.y=a.clientY+(f&&f.scrollTop||g&&g.scrollTop||0)-(f&&f.clientTop||g&&g.clientTop||0)}if(c.x!==d.x||c.y!==
-d.y)c.x=d.x||c.x,c.y=d.y||c.y,c.deltaX=c.x-c.lx,c.deltaY=c.y-c.ly,c.lx=c.x,c.ly=c.y,c.angle=a.angle||0,c.direction=a.direction||"none"}return c}function fb(a){b.pointerInGame=!1;b.signals.onGamePointerLeft.dispatch(a)}function gb(a){b.pointerInGame=!0;b.signals.onGamePointerEntered.dispatch(a)}function db(a){b.pointerInGame===!0&&(b.signals.onGamePointerMoved.dispatch(a),r(a))}function hb(a){b.signals.onGamePointerTapped.dispatch(a,L(a));r(a)}function ib(a){b.signals.onGamePointerDoubleTapped.dispatch(a,
-L(a));r(a)}function jb(a){b.signals.onGamePointerHeld.dispatch(a,L(a));r(a)}function kb(a){b.signals.onGamePointerDragStarted.dispatch(a,e.get_pointer(a));r(a)}function eb(a){b.signals.onGamePointerDragged.dispatch(a,e.get_pointer(a));r(a)}function lb(a){b.signals.onGamePointerDragEnded.dispatch(a,e.get_pointer(a));r(a)}function mb(a){var c=a.originalEvent||a;a.wheelDelta=c.wheelDelta=(c.detail<0||c.wheelDelta>0?1:-1)*b.pointerWheelSpeed;b.signals.onGamePointerWheel.dispatch(a);r(a);a.preventDefault()}
-function nb(a){a.preventDefault()}function Fb(a){b.signals.onKeyPressed.dispatch(a);r(a)}function Gb(a){b.signals.onKeyReleased.dispatch(a);r(a)}function r(a){var c,d;typeof a==="undefined"||a.metaKey||a.ctrlKey||a.shiftKey||a.altKey||(d=a.type+"",d==="tap"||d==="doubletap"||d==="hold"||d==="dragstart"||d==="drag"||d==="dragend"||d==="mousemove"?c="pointer":d==="mousewheel"||d==="DOMMouseScroll"?(c="pointer",d="wheel"):(c=((a.which||a.key||a.keyCode)+"").toLowerCase(),c=ua.key(c),d=d.toLowerCase(),
-d=d.replace("key","")),b.signals.onGameInput.dispatch(a,c,d))}function Hb(a){b.focused=!1;b.signals.onFocusLost.dispatch(a)}function Ib(a){b.focused=!0;b.signals.onFocusGained.dispatch(a)}function wa(){var a,c;b.screenWidth=$(window).width();b.screenHeight=$(window).height();b.screenViewableWidth=b.domElements.$game.width();b.screenViewableHeight=b.domElements.$game.height();ea&&ea.resize();if(K===!0)b.signals.onWindowResized.dispatch(b.screenWidth,b.screenHeight),a=b.gameWidth=b.screenViewableWidth,
-c=b.gameHeight=b.screenViewableHeight,$(b.renderer.domElement).css({top:b.screenOffsetTop,bottom:b.screenOffsetBottom,left:b.screenOffsetLeft,right:b.screenOffsetRight}),b.renderer.setSize(a,c),b.renderTarget.width=a,b.renderTarget.height=c,b.cameraBG.aspect=b.camera.aspect=a/c,b.camera.updateProjectionMatrix(),b.cameraBG.updateProjectionMatrix(),A.reset(b.renderTarget),ha()}function Ba(a,b,d){V(!0);z.errorState!==!0&&z.generate(a,b,d);throw a+" at "+d+" in "+b;}function Ca(a){a=Da(a);return!!Modernizr.prefixed(a)}
-function Da(a){var b=a.split("-"),d=b.length;if(d==1)return b[0];for(var a=a.charAt(0)=="-"?b[0].charAt(0).toUpperCase()+b[0].substring(1):b[0],f=1;f<d;f++)a+=b[f].charAt(0).toUpperCase()+b[f].substring(1);return a}function Jb(a){return a.toLowerCase().replace(/\b[a-z]/g,function(a){return a.toUpperCase()})}function Kb(a){return a instanceof $?a.get(0):a}function y(a,c){if(b.supports.pointerEvents)c===!0?a.addClass("ignore-pointer-temporary"):a.removeClass("ignore-pointer-temporary");else if(c===
-!0)a.on("tap.pointer doubletap.pointer hold.pointer dragstart.pointer drag.pointer, dragend.pointer",function(b){b.preventDefault();b.stopPropagation();a.stop(!0).addClass("invisible");$(document.elementFromPoint(b.clientX,b.clientY)).trigger(b);a.stop(!0).removeClass("invisible");return!1});else a.off(".pointer")}function Ea(a,b,d,f){var g=function(){typeof b==="function"&&b.call(d,f)};ia(f)!==!0&&(f=new Image);f.crossOrigin="";f.src=a;f.complete?g():f.onload=g;return f}function Lb(a){var c,d,f,
-g,e,a=a||{};c=$(a.element);d=C(a.duration)?a.duration:b.domFadeDuration;f=C(a.opacity)?a.opacity:0;g=typeof a.easing==="string"?a.easing:b.domFadeEasing;e=a.callback;c.each(function(){var b=$(this),c,i,l;l=b.is(".hiding, .hidden, .invisible");i=b.is(".collapsed");b.stop(!0).removeClass("invisible hiding hidden collapsed");c=b.find("a, button").add(b);(l===!0||i===!0||a.initHidden===!0)&&b.fadeTo(0,0).css("height","");f===0?(b.addClass("hiding").trigger("hide"),y(c,!0)):(y(c,!1),b.trigger("show"));
-b.animate({opacity:f},{duration:d,easing:g,complete:function(){b.removeClass("hiding");f===0?(b.addClass("hidden").css("opacity","").trigger("hidden"),y(c,!1)):(b.trigger("shown"),f===1&&b.css("opacity",""));typeof e==="function"&&e()}})})}function Mb(a){var c,d,f,e,h,a=a||{};c=$(a.element);f=typeof a.show==="boolean"?a.show:!1;d=C(a.duration)?a.duration:b.domCollapseDuration;e=typeof a.easing==="string"?a.easing:b.domCollapseEasing;h=a.callback;c.each(function(){var b=$(this),c,i,l,q=0,m=function(){f===
-!0?b.css("height","").trigger("shown"):(b.addClass("hidden").trigger("hidden"),y(c,!1));typeof h==="function"&&h()};l=b.is(".hiding, .hidden, .invisible");i=b.is(".collapsed");if(i!==!0&&(l===!0||a.initHidden===!0))b.css("height",0).css("opacity",""),i=!0;i===f&&(b.stop(!0).removeClass("invisible hiding hidden collapsed"),c=b.find("a, button").add(b),f===!0?(b.placeholdme().appendTo("body"),i=b.height(),b.css("height",""),q=b.height(),b.css("height",i),b.placeholdme("revert"),y(c,!1),b.trigger("show")):
-(y(c,!0),b.addClass("collapsed").trigger("hide")),b.animate({height:q},{duration:d,easing:e,complete:m}))})}function Fa(){v=[];M=[];b.signals.onWorkerReset.dispatch()}function Ga(a){typeof a==="string"&&a.length>0&&v.hasOwnProperty(a)!==!0&&(ca++,v.push(a),b.signals.onWorkerTaskStarted.dispatch(a))}function Ha(a){var c=n(v,a);c!==-1&&(v.splice(c,1),M.push(a),b.signals.onWorkerTaskCompleted.dispatch(a),v.length===0&&b.signals.onWorkerTasksCompleted.dispatch())}function Ia(a,b,d,f){var e,h,j,k,i,l=
-!0;if(typeof a!=="undefined"){if(typeof a==="string"||a.hasOwnProperty("length")===!1)a=[a];a=a.slice(0);if(typeof d!=="string"||w.hasOwnProperty(d))d=N;N++;for(e=0,h=a.length;e<h;e++)j=a[e],j=m(j),k=n(t,j),i=n(u,j),k===-1&&i==-1&&(t.push(j),P.push(d),Ga(j),newLocations=!0),i===-1&&(l=!1);H=u.concat(t);w[d]=a;if(typeof b==="undefined")b=[];else if(typeof b==="function"||b.hasOwnProperty("length")===!1)b=[b];G[d]=b;typeof f!=="string"&&(f=J[Math.max(0,Math.min(J.length-1,Math.round(Math.random()*J.length)-
-1))]);O[d]=f;F[d]=[];s.push(d);l===!0?Ja(d):Ka()}}function Ka(){var a,c,d,f,e;if(E===!1&&s.length>0){E=!0;I=s[0];d=w[I].slice(0);for(a=0,c=d.length;a<c;a+=1)f=d[a],e=m(f),n(u,e)!==-1?ka(f):n(Q,e)===-1&&(Q.push(e),Nb(f))}else I=void 0,b.signals.onLoadAllCompleted.dispatch()}function Nb(a){var b,d,f,e,h=function(){ka(a,e)},j=function(b){ka(a,b)};typeof a!=="undefined"&&(f=a.type||da,b=m(a),d=la(b),d===""&&(b=ma(b)),f==="image"||Aa(d)?(e=Ea(b,function(a){e=a;h()}),na(b,{data:e})):f==="model"||f==="model_ascii"?
-(typeof R==="undefined"&&(R=new THREE.JSONLoader(!0)),R.load(b,j)):$LAB.script(b).wait(h))}function ka(a,c){var d,f,e,h,j,k,i;d=m(a);Ha(d);na(d,{data:c});oa(d);typeof b!=="undefined"&&b.signals.onLoadItemCompleted.dispatch(d);for(d=0,f=s.length;d<f;d++)e=s[d],h=w[e],k=n(h,a),k!==-1&&(j=F[e],h.splice(k,k!==-1?1:0),j.push(a),h.length===0&&(i=i||[],i.push(e)));if(typeof i!=="undefined")for(d=0,f=i.length;d<f;d++)Ja(i[d])}function Ja(a){var c,d,f,e;c=n(s,a);c!==-1&&s.splice(c,1);f=G[a];for(c=0,d=f.length;c<
-d;c++)e=f[c],typeof e!=="undefined"&&e.call(this);typeof b!=="undefined"&&b.signals.onLoadListCompleted.dispatch(a);delete w[a];delete G[a];delete O[a];delete F[a];E=!1;Ka()}function oa(a){var b,d,e,g,h=!1,a=o(a);for(b=0,d=a.length;b<d;b++)e=a[b],e=m(e),g=n(t,e),g!==-1&&(P.splice(g,1),t.splice(g,1)),g=n(u,e),g===-1&&(u.push(e),h=!0);h===!0&&(H=u.concat(t))}function pa(a,b){var d;d=m(a);return n(b,d)!==-1?!0:!1}function Ob(a){return pa(a,H)}function Pb(a){return pa(a,u)}function Qb(a){return pa(a,
-t)}function m(a){return a.path||a}function la(a){var b,d="",a=m(a);b=a.lastIndexOf(".");b!==-1&&(d=a.substr(b+1).toLowerCase());return d}function ma(a){a=qa(a);return a=a.replace(/\./g,"")+".js"}function qa(a){var b,a=m(a);b=a.lastIndexOf(".");b!==-1&&(a=a.substr(0,b));return a}function ra(a){a=m(a);return la(a)===""?ma(a):qa(a)}function La(a){var b,d,e;d=a.split(/[\\\/]/);for(a=0,b=d.length;a<b;a++){e=d[a];e=e.replace(/[^\w\.-]+/g,"");if(e===""){Ba("Invalid asset cascade","Main","N/A");return}d[a]=
-e}return d}function D(a,b){var d,f,g,h,j,k;g=e;d=m(a);f=La(d);for(j=0,k=f.length;j<k;j++)if(h=f[j],g=g[h],typeof g==="undefined")break;b=b||1;return typeof g==="undefined"&&b===1?D(ra(d),b+1):g}function Ma(a,b){var d,f,g,h,j,k;if(b instanceof p){h=f=e;d=m(a);d=La(d);for(j=0,k=d.length;j<k;j++)f=h,g=d[j],h=f[g]=f[g]||{};h instanceof p&&h.is_empty()===!1?b.is_empty()===!1&&h.merge_asset_self(b):f[g]=h=b}return h}function Rb(a){a=D(a);return a instanceof p?a.data:a}function na(a,b){var d;d=D(a);if(d instanceof
-p!==!0||b&&typeof b.data!=="undefined"&&b.data!==d.data)d=new p(a,b);return d=d.data}function Na(a,c){c=c||D(a);if(c instanceof p)c.ready=!0,c.wait=!1,typeof b.signals!=="undefined"&&typeof b.signals.onAssetReady!=="undefined"&&b.signals.onAssetReady.dispatch(a)}function sa(a,c,d,e){var g,h,j=[],k=[],i=[],l=!1,a=o(a),c=o(c);g=function(c,d){var e;e=n(k,c);e!==-1?(k.splice(e,1),i.push(c),k.length===0&&i.length===a.length&&(l===!0&&(b.signals.onAssetReady.remove(g),l=!1),h())):d!==!0&&g(ra(c),!0)};h=
-function(){var a,b,d;for(a=0,b=c.length;a<b;a++)d=c[a],d.apply(this,j);if(e instanceof p&&e.readyAutoUpdate===!0)e.on_ready()};Ia(a,function(){var c,e,f,i;for(c=0,e=a.length;c<e;c++)f=a[c],i=m(f),f=D(f),f instanceof p&&j.push(f.data),d===!0&&(k.push(i),f instanceof p&&f.ready===!0?g(i):l===!1&&(l=!0,b.signals.onAssetReady.add(g)));(d!==!0||a.length===0)&&h()})}function p(a,b){var d=this,b=b||{};b.path=a;d.merge_asset_self(b,!0);if(typeof d.path!=="undefined"){d=Ma(d.path,d);if(d===this&&this.readyAutoUpdate===
-!0&&(this.requirements.length===0||this.wait!==!0))this.on_ready();this.requirements.length>0&&sa(this.requirements,this.callbacksOnReqs,this.wait,this)}return d}window.console=window.console||{info:function(){},log:function(){},debug:function(){},warn:function(){},error:function(){}};var b=e.shared=e.shared||{};b.domElements=b.domElements||{};b.supports=b.supports||{};b.throttled={};b.spawns={};b.pointers=[];b.originLink=window.location.pathname.toString();b.pathToIcons="img/";b.pathToAssets="asset/";
-b.frameRateMax=60;b.frameRateMin=20;b.time=(new Date).getTime();b.timeLast=b.time;b.timeDeltaExpected=1E3/60;b.timeDeltaModDec=Math.pow(10,2);b.pointerWheelSpeed=120;b.pointerHoldPositionShift=10;b.pointerInGame=!0;b.throttleTimeShort=b.timeDeltaExpected*3;b.throttleTimeMedium=100;b.throttleTimeLong=250;b.throttleTimeLong=250;b.focused=!0;b.errorString="error";b.errorTypeGeneral="General";b.errorTypes=[b.errorTypeGeneral,"WebGLBrowser","WebGLComputer"];b.errorTypesOnlyOnce=["WebGLBrowser","WebGLComputer"];
-b.fadeBetweenSections=!1;b.domFadeDuration=500;b.domCollapseDuration=500;b.domFadeEasing="easeInOutCubic";b.domCollapseEasing="easeInOutCubic";b.screenWidth=0;b.screenHeight=0;b.screenViewableWidth=0;b.screenViewableHeight=0;b.screenOffsetTop=0;b.screenOffsetBottom=0;b.screenOffsetLeft=0;b.screenOffsetRight=0;E=void 0;N=void 0;s=void 0;w=void 0;F=void 0;O=void 0;G=void 0;t=void 0;P=void 0;Q=void 0;u=void 0;H=void 0;I=void 0;da=void 0;J=void 0;R=void 0;ca=void 0;v=void 0;M=void 0;var z,fa,va,ua,ea,
-ga,xa,A,K=!1,T=!1,B=!1,x=!1,Z=!1,ob=500,Oa=["js/lib/RequestAnimationFrame.js","js/lib/RequestInterval.js","js/lib/RequestTimeout.js","js/lib/signals.min.js","js/lib/jquery-1.8.2.min.js"],Pa=["js/lib/hammer.custom.js","js/lib/bootstrap.min.js","js/lib/jquery.easing-1.3.min.js","js/lib/jquery.throttle-debounce.custom.min.js","js/lib/jquery.placeholdme.js"],Sb=["js/kaiopua/utils/ErrorHandler.js","js/kaiopua/ui/UI.js","js/kaiopua/utils/KeyHelper.js"],Ra=["js/lib/three/three.min.js","js/lib/Tween.custom.min.js"],
-Ta="js/lib/three/ThreeOctree.min.js,js/lib/three/postprocessing/ShaderExtras.js,js/lib/three/postprocessing/EffectComposer.js,js/lib/three/postprocessing/RenderPass.js,js/lib/three/postprocessing/MaskPass.js,js/lib/three/postprocessing/ShaderPass.js".split(","),Wa=["js/kaiopua/core/Scene.js","js/kaiopua/core/CameraControls.js"],Za=["js/kaiopua/sections/Launcher.js"],bb=["js/kaiopua/sections/Intro.js"];$LAB.script(Oa).wait().script(Pa).wait(function(){b.domElements.$game=$("#game");b.supports.pointerEvents=
-Ca("pointer-events");b.signals={onFocusLost:new signals.Signal,onFocusGained:new signals.Signal,onKeyPressed:new signals.Signal,onKeyReleased:new signals.Signal,onGameInput:new signals.Signal,onWindowResized:new signals.Signal,onUpdated:new signals.Signal,onWorkerReset:new signals.Signal,onWorkerTaskStarted:new signals.Signal,onWorkerTaskCompleted:new signals.Signal,onWorkerTasksCompleted:new signals.Signal,onLoadItemCompleted:new signals.Signal,onLoadListCompleted:new signals.Signal,onLoadAllCompleted:new signals.Signal,
-onAssetReady:new signals.Signal,onGameReady:new signals.Signal,onGamePaused:new signals.Signal,onGameResumed:new signals.Signal,onGameUpdated:new signals.Signal,onGameStarted:new signals.Signal,onGameStartedCompleted:new signals.Signal,onGameStopped:new signals.Signal,onGameStoppedCompleted:new signals.Signal,onGamePointerLeft:new signals.Signal,onGamePointerEntered:new signals.Signal,onGamePointerMoved:new signals.Signal,onGamePointerTapped:new signals.Signal,onGamePointerDoubleTapped:new signals.Signal,
-onGamePointerHeld:new signals.Signal,onGamePointerDragStarted:new signals.Signal,onGamePointerDragged:new signals.Signal,onGamePointerDragEnded:new signals.Signal,onGamePointerWheel:new signals.Signal};$(document).on("keydown",Fb).on("keyup",Gb);b.throttled.reposition_pointer=$.throttle(b.throttleTimeShort,L);b.throttled.on_window_resized=$.throttle(b.throttleTimeLong,wa);$(window).on("mousemove",b.throttled.reposition_pointer).on("blur",Hb).on("focus",Ib).on("resize",b.throttled.on_window_resized);
-window.onerror=Ba;b.signals.onFocusLost.add(function(){x!==!0&&(Z=!0);V(!0)});b.signals.onFocusGained.add(function(){Z===!0&&(Z=!1,U(!0))});E=!1;N=0;s=[];w={};F={};O={};G={};t=[];P=[];Q=[];u=[];H=[];I="";da="script";J=[];oa(Oa);oa(Pa);ca=0;v=[];M=[];Fa();e.type=za;e.is_number=C;e.is_array=W;e.is_image=ia;e.is_image_ext=Aa;e.is_event=rb;e.extend=ja;e.time_test=sb;e.to_array=o;e.ensure_not_array=tb;e.array_cautious_add=ub;e.array_cautious_remove=vb;e.array_random_value=wb;e.array_random_value_remove=
-xb;e.index_of_value=n;e.last_index_of_value=yb;e.indices_of_value=zb;e.index_of_values=Ab;e.index_of_property=Bb;e.indices_of_property=Cb;e.index_of_properties=Db;e.css_property_supported=Ca;e.str_to_camel=Da;e.str_to_title=Jb;e.dom_extract=Kb;e.dom_generate_image=Ea;e.dom_ignore_pointer=y;e.dom_fade=Lb;e.dom_collapse=Mb;e.get_pointer=Eb;e.reposition_pointer=L;e.worker_reset=Fa;e.worker_task_start=Ga;e.worker_task_complete=Ha;e.load=Ia;e.get_is_loaded=Pb;e.get_is_loading=Qb;e.get_is_loading_or_loaded=
-Ob;e.get_asset_path=m;e.get_ext=la;e.add_default_ext=ma;e.remove_ext=qa;e.get_alt_path=ra;e.asset_register=na;e.asset_require=sa;e.asset_ready=Na;e.set_asset=Ma;e.get_asset=D;e.get_asset_data=Rb;e.set_section=S;e.start=pb;e.stop=qb;e.resume=U;e.pause=V;Object.defineProperty(e,"paused",{get:function(){return x}});Object.defineProperty(e,"started",{get:function(){return B}});Object.defineProperty(e,"setup",{get:function(){return K}});Object.defineProperty(e,"ready",{get:function(){return T}});Object.defineProperty(e,
-"focusLost",{get:function(){return Z}});$(window).trigger("resize");ya();sa(Sb,Qa,!0)});p.prototype={};p.prototype={constructor:p,merge_asset_self:function(a,b){if(typeof a!=="undefined"){this.path=a.path;this.merge_asset_data_self(a);if(typeof this.wait!=="boolean"||this.wait===!1)this.wait=a.wait===!0?a.wait:!1;if(this.ready!==!0)this.ready=!1;if(typeof this.readyAutoUpdate!=="boolean")this.readyAutoUpdate=a.hasOwnProperty("readyAutoUpdate")?a.readyAutoUpdate:!0;this.requirements=o(this.requirements);
-this.callbacksOnReqs=o(this.callbacksOnReqs);if(b===!0)this.requirements=this.requirements.concat(o(a.requirements)),this.callbacksOnReqs=this.callbacksOnReqs.concat(o(a.callbacksOnReqs))}},merge_asset_data_self:function(a){a=a.data;if(typeof a!=="undefined")typeof this.data==="undefined"||ia(a)?this.data=a:ja(a,this.data)},is_empty:function(){var a=!0;if(typeof this.data!=="undefined"||this.ready===!1&&this.requirements.length>0)a=!1;return a},on_ready:function(){console.log("[ KAIOPUA ] Module / Asset Ready: "+
-this.path);Na(this.path,this)}};return e}(KAIOPUA||{});
+/*
+ *
+ * Kaiopua.js
+ * Main module of Kaiopua engine.
+ *
+ * @author Collin Hover / http://collinhover.com/
+ *
+ */
+var KAIOPUA = (function (main) {
+	
+	// console support
+	
+	window.console = window.console || {
+		
+		info: function () {},
+		log: function () {},
+		debug: function () {},
+		warn: function () {},
+		error: function () {}
+		
+	};
+	
+	// shared
+	
+    var shared = main.shared = main.shared || {};
+	
+	shared.domElements = {};
+	shared.supports = {
+		webGL: true
+	};
+	shared.throttled = {};
+	shared.spawns = {};
+	
+	shared.pointers = [];
+	shared.originLink = window.location.pathname.toString();
+	
+	shared.pathToIcons = 'img/';
+	shared.pathToAssets = 'asset/';
+	
+	shared.frameRateMax = 60;
+	shared.frameRateMin = 20;
+	shared.time = new Date().getTime();
+	shared.timeLast = shared.time;
+	shared.timeDeltaExpected = 1000 / 60;
+	shared.timeDeltaModDec = Math.pow( 10, 2 );
+	shared.pointerWheelSpeed = 120;
+	shared.pointerHoldPositionShift = 10;
+	shared.pointerInGame = true;
+	shared.throttleTimeShort = shared.timeDeltaExpected * 3;
+	shared.throttleTimeMedium = 100;
+	shared.throttleTimeLong = 250;
+	shared.throttleTimeLong = 250;
+	shared.focused = true;
+	
+	shared.errorString = 'error';
+	shared.errorTypeGeneral = 'General';
+    shared.errorTypes = [ shared.errorTypeGeneral, 'WebGLBrowser', 'WebGLComputer' ];
+    shared.errorTypesOnlyOnce = [ 'WebGLBrowser', 'WebGLComputer' ];
+	
+	shared.fadeBetweenSections = false;
+	
+	shared.domFadeDuration = 500;
+	shared.domCollapseDuration = 500;
+	shared.domFadeEasing = 'easeInOutCubic';
+	shared.domCollapseEasing = 'easeInOutCubic';
+	
+	shared.screenWidth = 0;
+	shared.screenHeight = 0;
+	shared.screenViewableWidth = 0;
+	shared.screenViewableHeight = 0;
+	shared.screenOffsetTop = 0;
+	shared.screenOffsetBottom = 0;
+	shared.screenOffsetLeft = 0;
+	shared.screenOffsetRight = 0;
+	
+	var loader = {},
+		worker = {},
+		_ErrorHandler,
+		_Scene,
+		_CameraControls,
+		_KeyHelper,
+		_UI,
+		sectionLauncher,
+		sectionStart,
+		renderComposer,
+        renderPasses,
+		setup = false,
+		playable = false,
+		ready = false,
+		started = false,
+        paused = false,
+		focusLost = false,
+		transitionDuration = 500,
+        libsPrimaryList = [
+            "js/lib/RequestAnimationFrame.js",
+            "js/lib/RequestInterval.js",
+            "js/lib/RequestTimeout.js",
+            "js/lib/signals.min.js",
+			"js/lib/jquery-1.8.2.min.js"
+        ],
+		libsSecondaryList = [
+			"js/lib/hammer.custom.js",
+			"js/lib/bootstrap.min.js",
+			"js/lib/jquery.easing-1.3.min.js",
+			"js/lib/jquery.throttle-debounce.custom.min.js",
+			"js/lib/jquery.placeholdme.js"
+		],
+        assetsGameCompatibility = [
+			"js/kaiopua/utils/ErrorHandler.js",
+			"js/kaiopua/ui/UI.js",
+			"js/kaiopua/utils/KeyHelper.js"
+        ],
+        assetsGameFoundation = [
+            "js/lib/three/three.min.js",
+			"js/lib/Tween.custom.min.js"
+        ],
+		assetsGameFoundationExtras = [
+			"js/lib/three/ThreeOctree.min.js",
+            "js/lib/three/postprocessing/ShaderExtras.js",
+            "js/lib/three/postprocessing/EffectComposer.js",
+            "js/lib/three/postprocessing/RenderPass.js",
+            "js/lib/three/postprocessing/MaskPass.js",
+            "js/lib/three/postprocessing/ShaderPass.js"
+		],
+		assetsGameCore = [
+			"js/kaiopua/core/Scene.js",
+			"js/kaiopua/core/CameraControls.js"
+		],
+        assetsGameLauncher = [
+            "js/kaiopua/sections/Launcher.js"
+        ],
+        assetsGamePlayable = [
+			"js/kaiopua/sections/Start.js"
+        ];
+	
+	/*===================================================
+    
+    init
+    
+    =====================================================*/
+	
+    // load scripts
+    $LAB.script( libsPrimaryList ).wait().script( libsSecondaryList ).wait( init );
+    
+    function init () {
+		
+		shared.domElements.$game = $('#game');
+		
+		shared.supports.pointerEvents = css_property_supported( 'pointer-events' );
+       
+        shared.signals = {
+			
+			onFocusLost: new signals.Signal(),
+			onFocusGained: new signals.Signal(),
+    
+            onKeyPressed : new signals.Signal(),
+            onKeyReleased : new signals.Signal(),
+			onGameInput : new signals.Signal(), 
+    
+            onWindowResized : new signals.Signal(),
+			
+			onUpdated: new signals.Signal(),
+			
+			onWorkerReset : new signals.Signal(),
+			onWorkerTaskStarted : new signals.Signal(),
+			onWorkerTaskCompleted : new signals.Signal(),
+			onWorkerTasksCompleted : new signals.Signal(),
+            
+            onLoadItemCompleted : new signals.Signal(),
+            onLoadListCompleted : new signals.Signal(),
+            onLoadAllCompleted : new signals.Signal(),
+			
+			onAssetReady : new signals.Signal(),
+			
+			onGamePlayable : new signals.Signal(),
+			onGameReadyChange: new signals.Signal(),
+			onGamePaused : new signals.Signal(),
+			onGameResumed : new signals.Signal(),
+			onGameUpdated : new signals.Signal(),
+			onGameStarted : new signals.Signal(),
+			onGameStartedCompleted : new signals.Signal(),
+			onGameStopped : new signals.Signal(),
+			onGameStoppedCompleted : new signals.Signal(),
+			
+			onGamePointerLeft : new signals.Signal(),
+			onGamePointerEntered : new signals.Signal(),
+			onGamePointerMoved : new signals.Signal(),
+			onGamePointerTapped : new signals.Signal(),
+			onGamePointerDoubleTapped : new signals.Signal(),
+			onGamePointerHeld : new signals.Signal(),
+			onGamePointerDragStarted : new signals.Signal(),
+			onGamePointerDragged : new signals.Signal(),
+			onGamePointerDragEnded : new signals.Signal(),
+			onGamePointerWheel : new signals.Signal()
+            
+        };
+        
+        // add listeners for global events
+        // each listener dispatches shared signal
+		
+        $( document )
+			.on( 'keydown', on_key_pressed )
+			.on( 'keyup', on_key_released );
+		
+		shared.throttled.reposition_pointer = $.throttle( shared.throttleTimeShort, reposition_pointer );
+		shared.throttled.on_window_resized = $.throttle( shared.throttleTimeLong, on_window_resized );
+		
+		$( window )
+			.on( 'mousemove', shared.throttled.reposition_pointer )
+			.on( 'blur', on_focus_lost )
+			.on( 'focus', on_focus_gained )
+			.on( 'resize', shared.throttled.on_window_resized );
+		
+		window.onerror = on_error;
+		
+		shared.signals.onFocusLost.add( function () {
+			
+			if ( paused !== true ) {
+				
+				focusLost = true;
+			
+			}
+			
+			pause( true );
+			
+		} );
+		
+		shared.signals.onFocusGained.add( function () {
+			
+			if ( focusLost === true ) {
+				
+				focusLost = false;
+				
+				resume( true );
+				
+			}
+			
+		} );
+	
+		// loader
+		
+		loader.active = false;
+		loader.listCount = 0;
+		loader.lists = [];
+		loader.listLocations = {};
+		loader.listLoaded = {};
+		loader.listMessages = {};
+		loader.listCallbacks = {};
+		loader.loading = [];
+		loader.loadingListIDs = [];
+		loader.started = [];
+		loader.loaded = [];
+		loader.loadingOrLoaded = [];
+		loader.listCurrent = '';
+		loader.loadTypeBase = 'script';
+		loader.tips = [];
+		
+		add_loaded_locations( libsPrimaryList );
+		add_loaded_locations( libsSecondaryList );
+		
+		// init worker
+		
+		worker.taskCount = 0;
+		worker.tasksStarted = [];
+		worker.tasksCompleted = [];
+		
+		worker_reset();
+		
+		// public functions
+		
+		main.type = type;
+		main.is_number = is_number;
+		main.is_array = is_array;
+		main.is_image = is_image;
+		main.is_image_ext = is_image_ext;
+		main.is_event = is_event;
+		
+		main.extend = extend;
+		main.time_test = time_test;
+		
+		main.to_array = to_array;
+		main.ensure_not_array = ensure_not_array;
+		main.array_cautious_add = array_cautious_add;
+		main.array_cautious_remove = array_cautious_remove;
+		main.array_random_value = array_random_value;
+		main.array_random_value_remove = array_random_value_remove;
+		main.index_of_value = index_of_value;
+		main.last_index_of_value = last_index_of_value;
+		main.indices_of_value = indices_of_value;
+		main.index_of_values = index_of_values;
+		main.index_of_property = index_of_property;
+		main.indices_of_property = indices_of_property;
+		main.index_of_properties = index_of_properties;
+		
+		main.css_property_supported = css_property_supported;
+		main.str_to_camel = str_to_camel;
+		main.str_to_title = str_to_title;
+		main.dom_extract = dom_extract;
+		main.dom_generate_image = dom_generate_image;
+		main.dom_ignore_pointer = dom_ignore_pointer;
+		main.dom_fade = dom_fade;
+		main.dom_collapse = dom_collapse;
+		
+		main.get_pointer = get_pointer;
+		main.reposition_pointer = reposition_pointer;
+		
+		main.worker_reset = worker_reset;
+		main.worker_task_start = worker_task_start;
+		main.worker_task_complete = worker_task_complete;
+		
+		main.load = load;
+		main.get_is_loaded = get_is_loaded;
+		main.get_is_loading = get_is_loading;
+		main.get_is_loading_or_loaded = get_is_loading_or_loaded;
+		
+		main.get_asset_path = get_asset_path;
+		main.get_ext = get_ext;
+		main.add_default_ext = add_default_ext;
+		main.remove_ext = remove_ext;
+		main.get_alt_path = get_alt_path;
+		
+		main.asset_register = asset_register;
+		main.asset_require = asset_require;
+		main.asset_ready = asset_ready;
+		main.set_asset = set_asset;
+		main.get_asset = get_asset;
+		main.get_asset_data = get_asset_data;
+		
+		main.set_section = set_section;
+		
+		main.start = start;
+		main.stop = stop;
+		main.resume = resume;
+		main.pause = pause;
+		
+		// getters and setters
+		
+		Object.defineProperty(main, 'paused', { 
+			get : function () { return paused; }
+		});
+		
+		Object.defineProperty(main, 'started', { 
+			get : function () { return started; }
+		});
+		
+		Object.defineProperty(main, 'setup', { 
+			get : function () { return setup; }
+		});
+		
+		Object.defineProperty(main, 'playable', { 
+			get : function () { return playable; }
+		});
+		
+		Object.defineProperty( main, 'ready', { 
+			get : function () { return ready; },
+			set : function ( rdy ) {
+				
+				if ( ready !== rdy ) {
+					
+					ready = rdy;
+					
+					shared.signals.onGameReadyChange.dispatch( ready );
+					
+				}
+				
+			}
+		} );
+		
+		Object.defineProperty(main, 'focusLost', { 
+			get : function () { return focusLost; }
+		});
+		
+		// begin
+		
+		$( window ).trigger( 'resize' );
+		
+		update();
+			
+		asset_require( assetsGameCompatibility, compatibility_check, true );
+		
+    }
+	
+	/*===================================================
+    
+	compatibility
+    
+    =====================================================*/
+	
+	function compatibility_check ( err, ui, kh ) {
+		console.log('GAME: compatiblity check');
+		_ErrorHandler = err;
+		_UI = ui;
+		_KeyHelper = kh;
+		
+		// check for errors
+        
+        if ( _ErrorHandler.errorState ) {
+			
+			shared.supports.webGL = false;
+			
+            _ErrorHandler.process();
+			
+        }
+        else {
+			
+			load_game_foundation();
+			
+        }
+		
+	}
+	
+	function load_game_foundation () {
+		
+		main.asset_require( assetsGameFoundation, [ load_game_foundation_extras ], true );
+		
+	}
+	
+	function load_game_foundation_extras () {
+		
+		main.asset_require( assetsGameFoundationExtras, [ init_foundation, load_game_core ], true );
+		
+	}
+	
+	function load_game_core () {
+		
+		main.asset_require( assetsGameCore, [ init_setup, load_game_launcher ], true );
+		
+	}
+	
+	function load_game_launcher () {
+		
+		main.asset_require( assetsGameLauncher, [ init_launcher, load_game_playable ], true );
+		
+	}
+	
+	function load_game_playable () {
+		
+		main.asset_require( assetsGamePlayable, init_playable, true );
+		
+	}
+	
+	/*===================================================
+    
+	foundation
+    
+    =====================================================*/
+    
+    function init_foundation () {
+		console.log('GAME: foundation');
+		
+		// universe gravity
+		
+		shared.universeGravitySource = new THREE.Vector3( 0, 0, 0 );
+		shared.universeGravityMagnitude = new THREE.Vector3( 0, -0.4, 0 );
+		
+		// cardinal axes
+		
+		shared.cardinalAxes = {
+			up: new THREE.Vector3( 0, 1, 0 ),
+			forward: new THREE.Vector3( 0, 0, 1 ),
+			right: new THREE.Vector3( -1, 0, 0 )
+		};
+		
+		// renderer
+		
+        shared.renderer = new THREE.WebGLRenderer( { clearColor: 0x000000, clearAlpha: 0, maxLights: 8 } );
+        shared.renderer.setSize( shared.gameWidth, shared.gameHeight );
+        shared.renderer.autoClear = false;
+		
+        // render target
+        shared.renderTarget = new THREE.WebGLRenderTarget( shared.gameWidth, shared.gameHeight, { minFilter: THREE.LinearFilter, magFilter: THREE.NearestFilter } );
+		
+    }
+	
+	/*===================================================
+    
+	setup
+    
+    =====================================================*/
+    
+    function init_setup ( sc, cc ) {
+		console.log('GAME: setup');
+		// utility
+		
+		_Scene = sc;
+		_CameraControls = cc;
+		
+		// scenes
+		
+		shared.scene = new _Scene.Instance();
+		shared.sceneBG = new _Scene.Instance();
+		
+        // fog
+		
+        shared.scene.fog = undefined;
+		
+		// physics
+		
+		main.physics = shared.scene.physics;
+		
+		// camera
+		
+		shared.camera = new THREE.PerspectiveCamera(60, shared.gameWidth / shared.gameHeight, 1, 20000);
+		shared.cameraBG = new THREE.PerspectiveCamera(60, shared.gameWidth / shared.gameHeight, 1, 20000);
+		shared.camera.useQuaternion = shared.cameraBG.useQuaternion = true;
+		
+		// camera controls
+		
+		shared.cameraControls = new _CameraControls.Instance( { camera: shared.camera } );
+		shared.cameraControls.onCameraMoved.add( $.throttle( shared.throttleTimeMedium, function () {
+			
+			shared.domElements.$game.triggerHandler( 'mousemove' );
+			
+		} ) );
+		
+		// passes
+        
+        renderPasses = {
+			bg: new THREE.RenderPass( shared.sceneBG, shared.cameraBG ),
+            env: new THREE.RenderPass( shared.scene, shared.camera ),
+            screen: new THREE.ShaderPass( THREE.ShaderExtras[ "screen" ] )
+        };
+		
+		renderPasses.env.clear = false;
+        renderPasses.screen.renderToScreen = true;
+		
+        // composer
+		
+		renderComposer = new THREE.EffectComposer( shared.renderer, shared.renderTarget );
+		
+		renderComposer.addPass( renderPasses.bg );
+		renderComposer.addPass( renderPasses.env );
+		renderComposer.addPass( renderPasses.screen );
+		
+		// add renderer to display
+		
+		shared.domElements.$game.prepend( shared.renderer.domElement );
+		
+		// events
+		
+		shared.throttled.on_game_pointer_moved = $.throttle( shared.throttleTimeShort, on_game_pointer_moved );
+		shared.throttled.on_game_pointer_dragged = $.throttle( shared.throttleTimeShort, true, on_game_pointer_dragged );
+		
+		shared.domElements.$game
+			.on( 'mouseleave', on_game_pointer_left )
+			.on( 'mouseenter', on_game_pointer_entered )
+			.on( 'mousemove', shared.throttled.on_game_pointer_moved )
+			.on( 'tap', on_game_pointer_tapped )
+			.on( 'doubletap', on_game_pointer_doubletapped )
+			.on( 'hold', on_game_pointer_held )
+			.on( 'dragstart', on_game_pointer_dragstarted )
+			.on( 'drag', shared.throttled.on_game_pointer_dragged )
+			.on( 'dragend', on_game_pointer_dragended )
+			.on( 'mousewheel DOMMouseScroll', on_game_pointer_wheel )
+			.on( 'contextmenu', on_context_menu );
+		
+		setup = true;
+		
+		// resize once
+		
+		on_window_resized();
+		
+    }
+	
+	/*===================================================
+    
+    init launcher
+    
+    =====================================================*/
+	
+	function init_launcher ( launcher ) {
+		
+		sectionLauncher = launcher;
+		
+		set_section( sectionLauncher );
+		
+	}
+	
+	/*===================================================
+    
+	playable
+    
+    =====================================================*/
+	
+	function init_playable ( st ) {
+		console.log('GAME: playable');
+		
+		sectionStart = st;
+		
+		playable = true;
+		
+		shared.signals.onGamePlayable.dispatch();
+		
+	}
+	
+	/*===================================================
+    
+    section functions
+    
+    =====================================================*/
+
+    function set_section ( section, callback ) {
+		
+		var fadeBetweenSections = shared.fadeBetweenSections,
+			hadPreviousSection = false,
+			newSectionCallback = function () {
+				
+				if ( typeof shared.sectionLast !== 'undefined' ) {
+					
+					shared.sectionLast.remove();
+					
+				}
+				
+                section.show();
+				
+                shared.section = section;
+				
+				// hide blocker
+				
+				if ( fadeBetweenSections !== false ) {
+					
+					main.dom_fade( {
+						element: shared.domElements.$uiBlocker
+					} );
+					
+				}
+				
+				resume();
+				
+				if ( typeof callback !== 'undefined' ) {
+					
+					callback.call();
+					
+				}
+				
+			};
+		
+		// pause game while changing sections
+		
+		pause( true );
+		
+        // hide current section
+        if (typeof shared.section !== 'undefined') {
+			
+			hadPreviousSection = true;
+            
+            shared.sectionLast = shared.section;
+            
+            shared.sectionLast.hide();
+			
+			// block ui
+            
+			if ( fadeBetweenSections !== false ) {
+				
+				main.dom_fade( {
+					element: shared.domElements.$uiBlocker,
+					opacity: 1
+				} );
+				
+			}
+            
+        }
+		
+        // no current section
+		
+        shared.section = undefined;
+		
+		// set started
+		
+		if ( typeof startedValue !== 'undefined' ) {
+		
+			started = startedValue;
+			
+		}
+        
+        // start and show new section
+        if ( typeof section !== 'undefined' ) {
+			
+            // wait for blocker to finish fading in
+			
+			if ( fadeBetweenSections !== false && hadPreviousSection === true ) {
+				
+				window.requestTimeout( function () {
+					
+					newSectionCallback();
+					
+				}, transitionDuration );
+			
+			}
+			// no previous section, create new immediately
+			else {
+				
+				newSectionCallback();
+				
+			}
+            
+        }
+		
+    }
+	
+	/*===================================================
+    
+    start / stop
+    
+    =====================================================*/
+    
+    function start () {
+		
+		if ( playable === true ) {
+			
+			// start or resume
+			
+			if ( started === false ) {
+				console.log('GAME: START');
+				// set started
+				
+				started = true;
+				shared.signals.onGameStarted.dispatch();
+				
+				// set intro section
+				
+				set_section( sectionStart, function () {
+					
+					shared.signals.onGameStartedCompleted.dispatch();
+					
+				} );
+				
+			
+			}
+			else {
+				
+				resume();
+				
+			}
+			
+		}
+		
+    }
+	
+	function stop () {
+		
+		if ( playable === true ) {
+			console.log('GAME: STOP');
+			started = false;
+			
+			// signal
+			
+			shared.signals.onGameStopped.dispatch();
+			
+			// set launcher section
+			
+			set_section( sectionLauncher, function () {
+				
+				shared.signals.onGameStoppedCompleted.dispatch();
+				
+			});
+		
+		}
+		
+	}
+	
+	/*===================================================
+    
+    pause / resume
+    
+    =====================================================*/
+	
+    function pause ( preventDefault, $menu ) {
+		
+		// set state
+		
+        if ( paused === false ) {
+            console.log('GAME: PAUSE');
+            paused = true;
+			
+			shared.signals.onGamePaused.dispatch( preventDefault, $menu );
+			
+			// render once to ensure user is not surprised when resuming
+			
+			render();
+            
+        }
+		
+    }
+    
+    function resume ( refocused ) {
+		
+        if ( paused === true && ( _ErrorHandler.errorState !== true || started !== true ) ) {
+			console.log('GAME: RESUME');
+			paused = false;
+			
+			shared.signals.onGameResumed.dispatch( refocused );
+            
+        }
+    }
+	
+	/*===================================================
+    
+    update
+    
+    =====================================================*/
+	
+	function update () {
+		
+		var timeDelta,
+			timeDeltaMod;
+        
+        window.requestAnimationFrame( update );
+		
+		// handle time
+		
+		shared.timeLast = shared.time;
+		
+		shared.time = new Date().getTime();
+		
+		timeDelta = shared.time - shared.timeLast;
+		
+		// get time delta modifier from timeDelta vs expected refresh interval
+		
+		timeDeltaMod = Math.round( ( timeDelta / shared.timeDeltaExpected ) * shared.timeDeltaModDec ) / shared.timeDeltaModDec;
+		
+		if ( is_number( timeDeltaMod ) !== true ) {
+			
+			timeDeltaMod = 1;
+			
+		}
+		
+		// update master
+		
+		shared.signals.onUpdated.dispatch( timeDelta, timeDeltaMod );
+		
+		// update game
+		
+		if ( paused !== true && setup === true ) {
+			
+			TWEEN.update();
+			
+			if ( main.physics ) {
+				
+				main.physics.update( timeDelta, timeDeltaMod );
+				
+			}
+			
+			shared.signals.onGameUpdated.dispatch( timeDelta, timeDeltaMod );
+			
+			// finish frame
+			
+			render();
+			
+		}
+		
+	}
+	
+	/*===================================================
+    
+    render
+    
+    =====================================================*/
+    
+	function render() {
+		
+		if ( setup === true ) {
+			
+			shared.cameraControls.update();
+			
+			shared.cameraBG.quaternion.copy( shared.camera.quaternion );
+			
+			shared.renderer.setViewport( 0, 0, shared.gameWidth, shared.gameHeight );
+			
+			shared.renderer.clear();
+			
+			renderComposer.render();
+			
+		}
+		
+	}
+	
+	/*===================================================
+    
+    type checking
+    
+    =====================================================*/
+	
+	function type ( o ) {
+		return o===null?o+'':Object.prototype.toString.call(o).slice(8,-1).toLowerCase();
+	}
+	
+	function is_array ( target ) {
+		return Object.prototype.toString.call( target ) === '[object Array]';
+	}
+	
+	function is_number ( n ) {
+		return !isNaN( n ) && isFinite( n ) && typeof n !== 'boolean';
+	}
+	
+	function is_image ( target ) {
+		return ( typeof target !== 'undefined' && target.hasOwnProperty('nodeName') && target.nodeName.toLowerCase() === 'img' );
+	}
+	
+	function is_image_ext ( ext ) {
+		
+		if ( ext === 'jpg' || ext === 'jpeg' || ext === 'png' || ext === 'gif' || ext === 'bmp' ) {
+			return true;
+		}
+		else {
+			return false;
+		}
+		
+    }
+	
+	function is_event ( obj ) {
+		return obj && ( obj.type && ( obj.target || obj.srcElement ) );
+	}
+	
+	/*===================================================
+    
+    general helpers
+    
+    =====================================================*/
+	
+	// object cloning/extending
+	// copies both enumerable and non-enumerable properties
+	// copies getters and setters correctly
+	// optional: deep copying while avoiding infinite recursion
+	// deep copy only makes one copy of any object, regardless of how many times / places it is referenced
+	
+	function extend ( source, destination, deep, records ) {
+		
+		var i, l,
+			propertyNames,
+			name,
+			descriptor,
+			value,
+			valueType,
+			recordSources,
+			recordCopies,
+			recordSourceIndex,
+			recordCopyIndex,
+			recordSource,
+			recordCopy;
+		
+		if ( typeof source !== 'undefined' ) {
+			
+			destination = main.type( destination ) === 'object' ? destination : {};
+			
+			propertyNames = Object.getOwnPropertyNames( source );
+			
+			for ( i = 0, l = propertyNames.length; i < l; i++ ) {
+				
+				name = propertyNames[ i ];
+				
+				descriptor = Object.getOwnPropertyDescriptor( source, name );
+				
+				if ( destination.hasOwnProperty( name ) ) {
+					
+					delete destination[ name ];
+					
+				}
+				
+				Object.defineProperty( destination, name, descriptor );
+				
+				// if deep copy
+				
+				if ( deep === true ) {
+					
+					// get descriptor that was just set
+					
+					descriptor = Object.getOwnPropertyDescriptor( destination, name );
+					
+					value = descriptor.value;
+						
+					valueType = type( value );
+					
+					// if the value of the descriptor is an object or array
+					
+					if ( valueType === 'object' || valueType === 'array' ) {
+						
+						records = records || { sources: [], copies: [] };
+						
+						recordSources = records.sources;
+						
+						recordCopies = records.copies;
+						
+						recordSourceIndex = index_of_value( recordSources, value );
+						
+						// if value does not yet exist in records
+						
+						if ( recordSourceIndex === -1 ) {
+							
+							recordSource = recordSources[ recordSources.length ] = value;
+							
+							recordCopy = recordCopies[ recordCopies.length ] = ( valueType === 'object' ? {} : [] );
+							
+							// special case when object has a reference to itself
+							
+							if ( value === source ) {
+								value[ name ] = recordCopy;
+							}
+							
+							descriptor.value = extend( value, recordCopy, true, records );
+							
+						}
+						else {
+							
+							descriptor.value = recordCopies[ recordSourceIndex ];
+							
+						}
+						
+						// set descriptor again with new deep copied value
+					
+						Object.defineProperty( destination, name, descriptor );
+						
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+		return destination;
+		
+	}
+	
+	function time_test ( fn, iterations, message ) {
+		
+		var i,
+			ta, tb,
+			result;
+		
+		iterations = is_number( iterations ) && iterations > 0 ? iterations : 1;
+		
+		message = typeof message === 'string' ? message : '';
+		
+		ta = new Date().getTime();
+		
+		for ( i = 0; i < iterations; i++ ) {
+			
+			result = fn.call();
+			
+		}
+		
+		tb = new Date().getTime();
+		
+		console.log( message, ' > time test ( x', iterations, '): ', (tb - ta) );
+		
+		return result;
+		
+	}
+	
+	/*===================================================
+    
+    array / object helpers
+    
+    =====================================================*/
+	
+	function to_array ( target ) {
+		
+		return target ? ( is_array ( target ) !== true ? [ target ] : target ) : [];
+		
+	}
+	
+	function ensure_not_array ( target, index ) {
+		
+		return is_array ( target ) === true ? target[ index || 0 ] : target;
+		
+	}
+	
+	function array_cautious_add ( target, elements ) {
+		
+		var i, l,
+			element,
+			index,
+			added = false;
+		
+		target = to_array( target );
+		elements = to_array( elements );
+		
+		// for each element
+		
+		for ( i = 0, l = elements.length; i < l; i++ ) {
+			
+			element = elements[ i ];
+			
+			index = index_of_value( target, element );
+			
+			if ( index === -1 ) {
+				
+				target.push( element );
+				
+				added = true;
+				
+			}
+			
+		}
+		
+		return added;
+		
+	}
+	
+	function array_cautious_remove ( target, elements ) {
+		
+		var i, l,
+			element,
+			index,
+			removed = false;
+		
+		target = to_array( target );
+		elements = to_array( elements );
+		
+		// for each element
+		
+		for ( i = 0, l = elements.length; i < l; i++ ) {
+			
+			element = elements[ i ];
+			
+			index = index_of_value( target, element );
+			
+			if ( index !== -1 ) {
+				
+				target.splice( index, 1 );
+				
+				removed = true;
+				
+			}
+			
+		}
+		
+		return removed;
+		
+	}
+	
+	function array_random_value ( array ) {
+		
+		return array[ Math.round( Math.random() * ( array.length - 1 ) ) ];
+		
+	}
+	
+	function array_random_value_remove ( array ) {
+		
+		return array.splice( Math.round( Math.random() * ( array.length - 1 ) ), 1 )[ 0 ];
+		
+	}
+	
+	function index_of_value( array, value ) {
+		
+		for ( var i = 0, l = array.length; i < l; i++ ) {
+			
+			if ( value === array[ i ] ) {
+				
+				return i;
+				
+			}
+			
+		}
+		
+		return -1;
+		
+	}
+	
+	function last_index_of_value( array, value ) {
+		
+		for ( var i = array.length - 1; i >= 0; i-- ) {
+			
+			if ( value === array[ i ] ) {
+				
+				return i;
+				
+			}
+			
+		}
+		
+		return -1;
+		
+	}
+	
+	function indices_of_value( array, value ) {
+		
+		var indices = [];
+		
+		for ( var i = 0, l = array.length; i < l; i++ ) {
+			
+			if ( value === array[ i ] ) {
+				
+				indices.push( i );
+				
+			}
+			
+		}
+		
+		return indices;
+		
+	}
+	
+	function index_of_values( array, values ) {
+		
+		for ( var i = 0, l = array.length; i < l; i++ ) {
+			
+			if ( index_of_value( values, array[ i ] ) !== -1 ) {
+				
+				return i;
+				
+			}
+			
+		}
+		
+		return -1;
+		
+	}
+	
+	function index_of_property( array, property, value ) {
+		
+		for ( var i = 0, l = array.length; i < l; i++ ) {
+			
+			if ( value === array[ i ][ property ] ) {
+				
+				return i;
+				
+			}
+			
+		}
+		
+		return -1;
+		
+	}
+	
+	function indices_of_property( array, property, value ) {
+		
+		var indices = [];
+		
+		for ( var i = 0, l = array.length; i < l; i++ ) {
+			
+			if ( value === array[ i ][ property ] ) {
+				
+				indices.push( i );
+				
+			}
+			
+		}
+		
+		return indices;
+		
+	}
+	
+	function index_of_properties( array, properties, values ) {
+		
+		for ( var i = 0, il = array.length; i < il; i++ ) {
+			
+			for ( var j = 0, jl = properties.length; j < jl; j++ ) {
+				
+				if ( values[ j ] === array[ i ][ properties[ j ] ] ) {
+					
+					return i;
+					
+				}
+				
+			}
+			
+		}
+		
+		return -1;
+		
+	}
+	
+	/*===================================================
+    
+    pointer
+    
+    =====================================================*/
+	
+	function get_pointer ( parameters ) {
+		
+		parameters = parameters || {};
+		
+		var id = parameters.identifier = ( parameters.identifier ? parameters.identifier : 0 ),
+			pointer = shared.pointers[ id ];
+
+		if ( typeof pointer === 'undefined' ) {
+			
+			pointer = shared.pointers[ id ] = {};
+			pointer.id = id;
+			pointer.x = pointer.lx = shared.screenWidth * 0.5;
+			pointer.y = pointer.ly = shared.screenHeight * 0.5;
+			pointer.deltaX = pointer.deltaY = pointer.angle = pointer.distance = pointer.distanceX = pointer.distanceY = 0;
+			pointer.direction = 'none';
+		
+		}
+		
+		return pointer;
+		
+	}
+	
+	function reposition_pointer ( e ) {
+		
+		shared.timeSinceInteraction = 0;
+		
+		var pointer= main.get_pointer( e ),
+			position,
+			d,
+			b;
+		
+		if ( e ) {
+			
+			position = e.position;
+			
+			if ( is_array( position ) && position[ pointer.id ] ) {
+				
+				position = position[ pointer.id ];
+				
+			}
+			
+			if ( typeof position === 'undefined' ) {
+				
+				d = document;
+				b = d.body;
+				
+				position = {
+					x: pointer.x,
+					y: pointer.y
+				 };
+				 
+				 if (  typeof e.pageX !== 'undefined' ) position.x = e.pageX;
+				 else if ( typeof e.clientX !== 'undefined' ) position.x = e.clientX + ( d && d.scrollLeft || b && b.scrollLeft || 0 ) - ( d && d.clientLeft || b && b.clientLeft || 0 );
+				 
+				  if (  typeof e.pageY !== 'undefined' ) position.y = e.pageY;
+				 else if ( typeof e.clientY !== 'undefined' ) position.y = e.clientY + ( d && d.scrollTop || b && b.scrollTop || 0 ) - ( d && d.clientTop || b && b.clientTop || 0 );
+				
+			}
+			
+			if ( pointer.x !== position.x || pointer.y !== position.y ) {
+				
+				pointer.x = position.x || pointer.x;
+				pointer.y = position.y || pointer.y;
+				
+				pointer.deltaX = pointer.x - pointer.lx;
+				pointer.deltaY = pointer.y - pointer.ly;
+				
+				pointer.lx = pointer.x;
+				pointer.ly = pointer.y;
+				
+				pointer.angle = e.angle || 0;
+				pointer.direction = e.direction || 'none';
+				
+			}
+			
+		}
+		
+		return pointer;
+		
+	}
+	
+	/*===================================================
+    
+    event functions
+    
+    =====================================================*/
+	
+	function on_game_pointer_left ( e ) {
+		
+		shared.pointerInGame = false;
+		
+		shared.signals.onGamePointerLeft.dispatch( e );
+		
+	}
+	
+	function on_game_pointer_entered ( e ) {
+		
+		shared.pointerInGame = true;
+		
+		shared.signals.onGamePointerEntered.dispatch( e );
+		
+	}
+	
+	function on_game_pointer_moved ( e ) {
+		
+		// check if pointer is in game
+		// throttling can cause pointer move to fire after pointer leaves
+		
+		if ( shared.pointerInGame === true ) {
+			
+			// no need to reposition, handled by window mousemove
+			
+			shared.signals.onGamePointerMoved.dispatch( e );
+			
+			on_game_input( e );
+			
+		}
+		
+	}
+	
+	function on_game_pointer_tapped ( e ) {
+		
+		shared.signals.onGamePointerTapped.dispatch( e, reposition_pointer( e ) );
+		
+		on_game_input( e );
+		
+	}
+	
+	function on_game_pointer_doubletapped ( e ) {
+		
+		shared.signals.onGamePointerDoubleTapped.dispatch( e, reposition_pointer( e ) );
+		
+		on_game_input( e );
+		
+	}
+	
+	function on_game_pointer_held ( e ) {
+			
+		shared.signals.onGamePointerHeld.dispatch( e, reposition_pointer( e ) );
+		
+		on_game_input( e );
+		
+	}
+	
+	function on_game_pointer_dragstarted ( e ) {
+		
+		shared.signals.onGamePointerDragStarted.dispatch( e, main.get_pointer( e ) );
+		
+		on_game_input( e );
+		
+	}
+    
+    function on_game_pointer_dragged( e ) {
+		
+		// no reposition because pointer move takes care of it
+		
+		shared.signals.onGamePointerDragged.dispatch( e, main.get_pointer( e ) );
+		
+		on_game_input( e );
+		
+    }
+	
+	function on_game_pointer_dragended ( e ) {
+		
+		shared.signals.onGamePointerDragEnded.dispatch( e, main.get_pointer( e ) );
+		
+		on_game_input( e );
+		
+	}
+	
+	function on_game_pointer_wheel ( e ) {
+		
+		var eo = e.originalEvent || e;
+		
+		// normalize scroll across browsers
+		// simple implementation, removes acceleration
+		
+		e.wheelDelta = eo.wheelDelta = ( ( eo.detail < 0 || eo.wheelDelta > 0 ) ? 1 : -1 ) * shared.pointerWheelSpeed;
+		
+		shared.signals.onGamePointerWheel.dispatch( e );
+		
+		on_game_input( e );
+        
+        e.preventDefault();
+		
+    }
+	
+	function on_context_menu ( e ) {
+		
+		// disable right click menu while in game
+		
+		e.preventDefault();
+		
+	}
+
+    function on_key_pressed( e ) {
+		
+        shared.signals.onKeyPressed.dispatch( e );
+		
+		on_game_input( e );
+		
+    }
+
+    function on_key_released( e ) {
+		
+        shared.signals.onKeyReleased.dispatch( e );
+		
+		on_game_input( e );
+		
+    }
+	
+	function on_game_input ( e ) {
+		
+		var keyCode,
+			keyName,
+			state,
+			type;
+		
+		// check for meta keys
+		
+		if ( typeof e === 'undefined' || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey ) {
+			return;
+		}
+		
+		// handle by type
+		
+		type = ( e.type + '' );
+		
+		// special cases for pointer / mouse
+		
+		if ( type === 'tap' || type === 'doubletap' || type === 'hold' || type === 'dragstart' || type === 'drag' || type === 'dragend' || type === 'mousemove' ) {
+			
+			keyName = 'pointer';
+			state = type;
+			
+		}
+		else if ( type === 'mousewheel' || type === 'DOMMouseScroll' ) {
+			
+			keyName = 'pointer';
+			state = 'wheel';
+			
+		}
+		// fallback to key press
+		else {
+			
+			keyCode = ( ( e.which || e.key || e.keyCode ) + '' ).toLowerCase();
+			keyName = _KeyHelper.key( keyCode );
+			
+			state = type.toLowerCase();
+			state = state.replace( 'key', '' );
+			
+		}
+		
+		shared.signals.onGameInput.dispatch( e, keyName, state );
+		
+	}
+	
+	function on_focus_lost ( e ) {
+		
+		shared.focused = false;
+		
+		shared.signals.onFocusLost.dispatch( e );
+		
+	}
+	
+	function on_focus_gained ( e ) {
+		
+		shared.focused = true;
+		
+		shared.signals.onFocusGained.dispatch( e );
+		
+	}
+
+    function on_window_resized( e ) {
+		
+		var gameWidth,
+			gameHeight;
+        
+        shared.screenWidth = $(window).width();
+        shared.screenHeight = $(window).height();
+		
+		shared.screenViewableWidth = shared.domElements.$game.width();
+		shared.screenViewableHeight = shared.domElements.$game.height();
+		
+		// handle ui first
+		
+		if ( _UI ) {
+			
+			_UI.resize();
+			
+		}
+		
+		// remaining
+		
+		if ( setup === true ) {
+			
+			shared.signals.onWindowResized.dispatch( shared.screenWidth, shared.screenHeight );
+			
+			// renderer
+			
+			gameWidth = shared.gameWidth = shared.screenViewableWidth;
+			gameHeight = shared.gameHeight = shared.screenViewableHeight;
+			
+			$( shared.renderer.domElement ).css( {
+				'top': shared.screenOffsetTop,
+				'bottom': shared.screenOffsetBottom,
+				'left': shared.screenOffsetLeft,
+				'right': shared.screenOffsetRight
+			} );
+			shared.renderer.setSize( gameWidth, gameHeight );
+			shared.renderTarget.width = gameWidth;
+			shared.renderTarget.height = gameHeight;
+			
+			shared.cameraBG.aspect = shared.camera.aspect = gameWidth / gameHeight;
+			shared.camera.updateProjectionMatrix();
+			shared.cameraBG.updateProjectionMatrix();
+			
+			renderComposer.reset( shared.renderTarget );
+			
+			// re-render
+			
+			render();
+			
+		}
+        
+    }
+	
+	function on_error ( error, url, lineNumber ) {
+		
+		// pause game
+		
+        pause( true );
+		
+		// check error handler state
+		
+		if ( _ErrorHandler.errorState !== true ) {
+			
+			_ErrorHandler.generate( error, url, lineNumber );
+			
+		}
+		
+		// debug
+        
+        throw error + " at " + lineNumber + " in " + url;
+		
+	}
+	
+	/*===================================================
+    
+    css
+    
+    =====================================================*/
+	
+	function css_property_supported ( property ) {
+		
+		var i, l,
+			propertyCamel,
+			propertySupported;
+		
+		// format property to camel case
+		
+		propertyCamel = str_to_camel( property );
+		
+		// use modernizr to check for correct css
+		
+		propertySupported = Modernizr.prefixed( propertyCamel );
+		
+		// cast to opposite boolean twice and return if supported
+		
+		return !!propertySupported;
+		
+	}
+	
+	function str_to_camel ( str ) {
+		
+		// code based on camelize from prototype library
+		
+		var parts = str.split('-'), 
+			len = parts.length, 
+			camelized;
+		
+		if (len == 1) {
+			
+			return parts[0];
+			
+		}
+
+		camelized = str.charAt(0) == '-' ? parts[0].charAt(0).toUpperCase() + parts[0].substring(1) : parts[0];
+		
+		for (var i = 1; i < len; i++) {
+			
+			camelized += parts[i].charAt(0).toUpperCase() + parts[i].substring(1);
+			
+		}
+		
+		return camelized;
+		
+	}
+	
+	function str_to_title ( str ) {
+		
+		return str.toLowerCase().replace( /\b[a-z]/g, function( letter ) {
+			return letter.toUpperCase();
+		} );
+		
+	}
+	
+	/*===================================================
+    
+    dom
+    
+    =====================================================*/
+	
+	function dom_extract ( element ) {
+		
+		return element instanceof $ ? element.get( 0 ) : element;
+		
+	}
+	
+	function dom_ignore_pointer ( $element, state ) {
+		
+		// use native pointer-events when available
+		
+		if ( shared.supports.pointerEvents ) {
+			
+			if ( state === true ) {
+				
+				$element.addClass( 'ignore-pointer-temporary' );
+				
+			}
+			else {
+				
+				$element.removeClass( 'ignore-pointer-temporary' );
+			
+			}
+			
+		}
+		else {
+			
+			// fallback in-case browser does not support pointer-events property
+			// this method is incredibly slow, as it has to hide element, retrigger event to find what is under, then show again
+			
+			if ( state === true ) {
+				
+				$element.on( 'tap.pointer doubletap.pointer hold.pointer dragstart.pointer drag.pointer, dragend.pointer', 
+					function ( e ) { 
+						
+						e.preventDefault();
+						e.stopPropagation();
+						
+						$element.stop( true ).addClass( 'invisible' );
+						
+						$( document.elementFromPoint( e.clientX, e.clientY ) ).trigger( e );
+						
+						$element.stop( true ).removeClass( 'invisible' );
+						
+						return false;
+						
+					}
+				);
+				
+			}
+			else {
+				
+				$element.off( '.pointer' );
+				
+			}
+			
+		}
+		
+	}
+	
+	function dom_generate_image ( path, callback, context, image ) {
+		
+		var loadCallback = function () {
+			
+			if ( typeof callback === 'function' ) {
+				
+				callback.call( context, image );
+				
+			}
+			
+		};
+		
+		if ( is_image( image ) !== true ) {
+			
+			image = new Image();
+			
+		}
+		
+		image.crossOrigin = '';
+		image.src = path;
+		
+		if ( image.complete ) {
+			
+			loadCallback();
+		}
+		else {
+			
+			image.onload = loadCallback;
+			
+		}
+		
+		return image;
+		
+    }
+	
+	function dom_fade( parameters ) {
+		
+		var $elements,
+			duration,
+			opacity,
+			easing,
+			callback,
+			makeInvisible;
+		
+		// handle parameters
+		
+		parameters = parameters || {};
+		
+		$elements = $( parameters.element );
+		duration = is_number( parameters.duration ) ? parameters.duration : shared.domFadeDuration;
+		opacity = is_number( parameters.opacity ) ? parameters.opacity : 0;
+		easing = typeof parameters.easing === 'string' ? parameters.easing : shared.domFadeEasing;
+		callback = parameters.callback;
+		
+		// for each element
+		
+		$elements.each( function () {
+			
+			var $element = $( this ),
+				$ignore,
+				isCollapsed,
+				isHidden,
+				isInvisible,
+				makeInvisible,
+				fadeComplete = function () {
+					
+					$element.removeClass( 'hiding' );
+					
+					// if faded out completely, hide
+					
+					if ( opacity === 0 ) {
+						
+						$element.addClass( makeInvisible ? 'invisible' : 'hidden' ).css( 'opacity', '' ).trigger( 'hidden' );
+						
+						// reenable all buttons and links
+						
+						dom_ignore_pointer( $ignore, false );
+						
+					}
+					else {
+						
+						$element.trigger( 'shown' );
+						
+						if ( opacity === 1 ) {
+							
+							$element.css( 'opacity', '' );
+							
+						}
+						
+					}
+					
+					// do callback
+					
+					if ( typeof callback === 'function' ) {
+						
+						callback();
+						
+					}
+					
+				};
+			
+			isInvisible = $element.is( '.invisible' );
+			isHidden = $element.is( '.hiding, .hidden' ) || isInvisible;
+			isCollapsed = $element.is( '.collapsed' );
+			makeInvisible = isInvisible || parameters.invisible;
+			
+			// stop animations
+			
+			$element.stop( true ).removeClass( 'invisible hiding hidden collapsed' );
+			
+			$ignore = $element.find( 'a, button' ).add( $element );
+			
+			// if should start at 0 opacity
+			
+			if ( isHidden === true || isCollapsed === true || parameters.initHidden === true ) {
+				
+				$element.fadeTo( 0, 0 ).css( 'height', '' );
+				
+			}
+			
+			// handle opacity
+			
+			if ( opacity === 0 ) {
+				
+				$element.addClass( 'hiding' ).trigger( 'hide' );
+				
+				// temporarily disable all buttons and links
+				
+				dom_ignore_pointer( $ignore, true );
+				
+			}
+			else {
+				
+				dom_ignore_pointer( $ignore, false );
+				
+				$element.trigger( 'show' );
+				
+			}
+			
+			$element.animate( { opacity: opacity }, { duration: duration, easing: easing, complete: fadeComplete } );
+				
+		} );
+		
+	}
+	
+	function dom_collapse( parameters ) {
+		
+		var $elements,
+			duration,
+			show,
+			easing,
+			callback;
+		
+		// handle parameters
+		
+		parameters = parameters || {};
+		
+		$elements = $( parameters.element );
+		show = typeof parameters.show === 'boolean' ? parameters.show : false;
+		duration = is_number( parameters.duration ) ? parameters.duration : shared.domCollapseDuration;
+		easing = typeof parameters.easing === 'string' ? parameters.easing : shared.domCollapseEasing;
+		callback = parameters.callback;
+		
+		// for each element
+		
+		$elements.each( function () {
+			
+			var $element = $( this ),
+				$ignore,
+				isCollapsed,
+				isHidden,
+				isInvisible,
+				makeInvisible,
+				heightCurrent,
+				heightTarget = 0,
+				collapseComplete = function () {
+					
+					// if shown or hidden
+					
+					if ( show === true ) {
+						
+						$element.css( 'height', '' ).trigger( 'shown' );
+						
+					}
+					else {
+						
+						$element.addClass( makeInvisible ? 'invisible' : 'hidden' ).trigger( 'hidden' );
+						
+						// enable pointer
+						
+						dom_ignore_pointer( $ignore, false );
+						
+					}
+					
+					// do callback
+					
+					if ( typeof callback === 'function' ) {
+						
+						callback();
+						
+					}
+					
+				};
+			
+			// if should start from hidden
+			
+			isInvisible = $element.is( '.invisible' );
+			isHidden = $element.is( '.hiding, .hidden' ) || isInvisible;
+			isCollapsed = $element.is( '.collapsed' );
+			makeInvisible = isInvisible || parameters.invisible;
+			
+			if ( isCollapsed !== true && ( isHidden === true || parameters.initHidden === true ) ) {
+				
+				$element.css( 'height', 0 ).css( 'opacity', '' );
+				isCollapsed = true;
+				
+			}
+			
+			// if valid element and not already collapsing / collapsed to same state
+			
+			if ( isCollapsed === show ) {
+				
+				// stop any previous animation
+				
+				$element.stop( true ).removeClass( 'invisible hiding hidden collapsed' );
+				
+				$ignore = $element.find( 'a, button' ).add( $element );
+				
+				if ( show === true ) {
+					
+					// find correct current height and target height
+					
+					$element.placeholdme().appendTo( 'body' );
+					
+					heightCurrent = $element.height();
+					$element.css( 'height', '' );
+					heightTarget = $element.height();
+					$element.css( 'height', heightCurrent );
+					
+					$element.placeholdme( 'revert' );
+					
+					// enable pointer
+					
+					dom_ignore_pointer( $ignore, false );
+					
+					// show
+					
+					$element.trigger( 'show' );
+					
+				}
+				else {
+					
+					// temporarily ignore pointer
+					
+					dom_ignore_pointer( $ignore, true );
+					
+					$element.addClass( 'collapsed' ).trigger( 'hide' );
+					
+				}
+				
+				// animate
+				
+				$element.animate( { height: heightTarget }, { duration: duration, easing: easing, complete: collapseComplete } );
+				
+			}
+			
+		} );
+		
+	}
+	
+	/*===================================================
+	
+	worker
+	
+	=====================================================*/
+	
+	function worker_reset () {
+		
+		worker.tasksStarted = [];
+		worker.tasksCompleted = [];
+		
+		shared.signals.onWorkerReset.dispatch();
+		
+	}
+	
+	function worker_task_start ( id ) {
+		
+		// if does not have task yet
+		
+		if ( typeof id === 'string' && id.length > 0 && worker.tasksStarted.hasOwnProperty( id ) !== true ) {
+			
+			worker.taskCount++;
+			
+			// store
+			
+			worker.tasksStarted.push( id );
+			
+			shared.signals.onWorkerTaskStarted.dispatch( id );
+			
+		}
+		
+	}
+	
+	function worker_task_complete ( id ) {
+		
+		var index = index_of_value( worker.tasksStarted, id );
+		
+		if ( index !== -1 ) {
+			
+			worker.tasksStarted.splice( index, 1 );
+			worker.tasksCompleted.push( id );
+			
+			shared.signals.onWorkerTaskCompleted.dispatch( id );
+			
+			// check length of tasks started
+			
+			if ( worker.tasksStarted.length === 0 ) {
+				
+				shared.signals.onWorkerTasksCompleted.dispatch();
+				
+			}
+			
+		}
+		
+	}
+	
+	/*===================================================
+	
+	loading
+	
+	=====================================================*/
+	
+	function load ( locationsList, callbackList, listID, loadingMessage ) {
+		
+		var i, l,
+			location,
+			path,
+			indexLoading,
+			indexLoaded,
+			allLocationsLoaded = true,
+			assetData;
+		
+		if ( typeof locationsList !== 'undefined' ) {
+			
+			// get if list is not array
+			
+			if ( typeof locationsList === 'string' || locationsList.hasOwnProperty( 'length' ) === false ) {
+				locationsList = [locationsList];
+			}
+			
+			// make a copy of locations list
+			
+			locationsList = locationsList.slice( 0 );
+			
+			// handle list id
+			
+			if ( typeof listID !== 'string' ||  loader.listLocations.hasOwnProperty( listID )) {
+				
+				listID = loader.listCount;
+				
+			}
+			
+			// increase list count
+			
+			loader.listCount++;
+			
+			// permanent store of all loading
+			
+			for ( i = 0, l = locationsList.length; i < l; i++ ) {
+				
+				location = locationsList[ i ];
+				
+				path = get_asset_path( location );
+				
+				indexLoading = index_of_value( loader.loading, path );
+				indexLoaded = index_of_value( loader.loaded, path );
+				
+				// if not already loading or loaded item
+				// load new location
+				if ( indexLoading === -1 && indexLoaded == -1 ) {
+					
+					loader.loading.push( path );
+					
+					loader.loadingListIDs.push( listID );
+					
+					worker_task_start( path );
+					
+					newLocations = true;
+					
+				}
+				
+				// if not yet loaded, mark list for loading
+				
+				if ( indexLoaded === -1 ) {
+					
+					allLocationsLoaded = false;
+					
+				}
+				
+			}
+			
+			loader.loadingOrLoaded = loader.loaded.concat( loader.loading );
+			
+			// temporary store locations
+			
+			loader.listLocations[listID] = locationsList;
+			
+			// temporary store callback list
+			
+			if ( typeof callbackList === 'undefined' ) {
+				callbackList = [];
+			}
+			else if ( typeof callbackList === 'function' || callbackList.hasOwnProperty( 'length' ) === false ) {
+				callbackList = [callbackList];
+			}
+			
+			loader.listCallbacks[listID] = callbackList;
+			
+			// store load message
+			
+			if ( typeof loadingMessage !== 'string' ) {
+				
+				loadingMessage = loader.tips[ Math.max(0, Math.min(loader.tips.length - 1, Math.round(Math.random() * loader.tips.length) - 1)) ];
+			}
+			
+			loader.listMessages[listID] = loadingMessage;
+			
+			// init new loaded array
+			
+			loader.listLoaded[listID] = [];
+			
+			// add list ID to lists to load
+				
+			loader.lists.push(listID);
+			
+			// if all locations in list are already loaded, skip loading process
+			
+			if ( allLocationsLoaded === true ) {
+				
+				list_completed( listID );
+				
+			}
+			else {
+				
+				// start loading
+				
+				load_next_list();
+				
+			}
+			
+		}
+		
+	}
+	
+	function load_next_list () {
+		
+		var i, l,
+			locationsList,
+			location,
+			path;
+		
+		// if any lists to load
+		
+		if ( loader.active === false && loader.lists.length > 0 ) {
+			
+			loader.active = true;
+			
+			// get next list 
+			
+			loader.listCurrent = loader.lists[ 0 ];
+			
+			// get locations, make copy because already loaded items will be removed from list immediately
+			
+			locationsList = loader.listLocations[loader.listCurrent].slice( 0 );
+			
+			// for each item location
+			
+			for (i = 0, l = locationsList.length; i < l; i += 1) {
+				
+				location = locationsList[ i ];
+				
+				path = get_asset_path( location );
+				
+				// if already loaded
+				
+				if ( index_of_value( loader.loaded, path ) !== -1 ) {
+					
+					// make duplicate complete event
+					
+					load_single_completed( location );
+					
+				}
+				// if not started loading yet
+				else if ( index_of_value( loader.started, path ) === -1 ) {
+					
+					// load it
+					
+					loader.started.push( path );
+					
+					load_single( location );
+					
+				}
+				
+			}
+			
+		}
+		else {
+			
+			// no longer loading
+			
+			loader.listCurrent = undefined;
+			
+			shared.signals.onLoadAllCompleted.dispatch();
+			
+		}
+		
+	}
+	
+	function load_single ( location ) {
+		var path, 
+			ext, 
+			loadType, 
+			data,
+			defaultCallback = function ( ) {
+				load_single_completed( location, data );
+			},
+			modelCallback = function ( geometry ) {
+				load_single_completed( location, geometry );
+			};
+		
+		if ( typeof location !== 'undefined' ) {
+			
+			// load based on type of location and file extension
+			
+			// LAB handles scripts (js)
+			// THREE handles models (ascii/bin js) and images (jpg/png/gif/bmp)
+			
+			// get type
+			
+			loadType = location.type || loader.loadTypeBase;
+			
+			// get location path
+			
+			path = get_asset_path( location );
+			
+			// get extension
+			
+			ext = get_ext( path );
+			
+			// ensure path has extension
+			
+			if ( ext === '' ) {
+				
+				path = add_default_ext( path );
+				
+			}
+			
+			// type and/or extension check
+			
+			if ( loadType === 'image' || is_image_ext( ext ) ) {
+				
+				// load
+				
+				data = dom_generate_image( path, function ( image ) {
+					
+					data = image;
+					
+					defaultCallback();
+					
+				} );
+				
+				// store empty image data in assets immediately
+				
+				asset_register( path, { data: data } );
+				
+			}
+			else if ( loadType === 'model' || loadType === 'model_ascii' ) {
+				
+				// init loader if needed
+				
+				if ( typeof loader.threeJSON === 'undefined' ) {
+					loader.threeJSON = new THREE.JSONLoader( true );
+				}
+				
+				loader.threeJSON.load( path, modelCallback );
+				
+			}
+			// default to script loading
+			else {
+				
+				$LAB.script( path ).wait( defaultCallback );
+				
+			}
+			
+		}
+		
+	}
+	
+	function load_single_completed ( location, data ) {
+		var i, l,
+			listID,
+			locationsList,
+			loadedList,
+			index,
+			path,
+			loadType,
+			listsCompleted;
+		
+		// get location path and type
+		
+		path = get_asset_path( location );
+		
+		loadType = get_load_type( location );
+		
+		// complete task
+		
+		worker_task_complete( path );
+		
+		// register asset
+		
+		asset_register( path, { data: data } );
+		
+		// add as loaded
+		
+		add_loaded_locations( path );
+		
+		// shared signal
+		
+		if (typeof shared !== 'undefined') {
+			
+			shared.signals.onLoadItemCompleted.dispatch( path );
+			
+		}
+		
+		// for each list loading
+		
+		for ( i = 0, l = loader.lists.length; i < l; i++ ) {
+			
+			listID = loader.lists[ i ];
+			
+			locationsList = loader.listLocations[ listID ];
+			
+			// get index in locations list
+			
+			index = index_of_value( locationsList,location);
+			
+			// if is in list
+			
+			if ( index !== -1 ) {
+				
+				loadedList = loader.listLoaded[ listID ];
+				
+				// remove location from locations list
+				
+				locationsList.splice(index, index !== -1 ? 1 : 0);
+				
+				// add location to loaded list
+				
+				loadedList.push( location );
+				
+				// if current list is complete, defer until all checked
+				
+				if ( locationsList.length === 0 ) {
+					
+					listsCompleted = listsCompleted || [];
+					
+					listsCompleted.push( listID );
+					
+				}
+				
+			}
+			
+		}
+		
+		// complete any completed lists
+		if ( typeof listsCompleted !== 'undefined' ) {
+			
+			for ( i = 0, l = listsCompleted.length; i < l; i++ ) {
+				
+				list_completed( listsCompleted[ i ] );
+				
+			}
+			
+		}
+		
+	}
+	
+	function list_completed( listID ) {
+		var i, l, 
+			callbackList, 
+			callback,
+			listIndex;
+		
+		// remove list from all lists to load
+		
+		listIndex = index_of_value( loader.lists, listID );
+		
+		if ( listIndex !== -1 ) {
+			
+			loader.lists.splice( listIndex, 1 );
+			
+		}
+		
+		// do callbacks before clear
+		
+		callbackList = loader.listCallbacks[ listID ];
+		
+		for ( i = 0, l = callbackList.length; i < l; i++ ) {
+			
+			callback = callbackList[ i ];
+			
+			if ( typeof callback !== 'undefined' ) {
+				
+				callback.call( this );
+				
+			}
+			
+		}
+		
+		// shared signal
+		
+		if (typeof shared !== 'undefined') {
+			
+			shared.signals.onLoadListCompleted.dispatch( listID );
+			
+		}
+		
+		// clear
+		
+		delete loader.listLocations[ listID ];
+		
+		delete loader.listCallbacks[ listID ];
+		
+		delete loader.listMessages[ listID ];
+		
+		delete loader.listLoaded[ listID ];
+		
+		loader.active = false;
+		
+		// start next list
+		
+		load_next_list();
+		
+	}
+	
+	function add_loaded_locations ( locationsList ) {
+		
+		var i, l,
+			location,
+			path,
+			indexLoaded,
+			indexLoading,
+			locationAdded = false;
+		
+		locationsList = to_array( locationsList );
+		
+		// for each location
+		
+		for ( i = 0, l = locationsList.length; i < l; i++ ) {
+			
+			location = locationsList[ i ];
+			
+			path = get_asset_path( location );
+			
+			// update all loading
+			
+			indexLoading = index_of_value( loader.loading, path );
+			
+			if ( indexLoading !== -1 ) {
+				
+				loader.loadingListIDs.splice( indexLoading, 1 );
+				
+				loader.loading.splice( indexLoading, 1 );
+				
+			}
+			
+			// update all loaded
+			
+			indexLoaded = index_of_value( loader.loaded, path );
+			
+			if ( indexLoaded === -1 ) {
+				
+				loader.loaded.push( path );
+				
+				locationAdded = true;
+				
+			}
+			
+		}
+		
+		if ( locationAdded === true ) {
+			
+			loader.loadingOrLoaded = loader.loaded.concat( loader.loading );
+			
+		}
+		
+	}
+	
+	function get_is_path_in_list ( location, list ) {
+		
+		var path,
+			index;
+		
+		path = get_asset_path( location );
+		
+		index = index_of_value( list, path );
+		
+		if ( index !== -1 ) {
+			
+			return true;
+			
+		}
+		else {
+			
+			return false;
+			
+		}
+		
+	}
+	
+	function get_is_loading_or_loaded ( location ) {
+		
+		return get_is_path_in_list( location, loader.loadingOrLoaded );
+		
+	}
+	
+	function get_is_loaded ( location ) {
+		
+		return get_is_path_in_list( location, loader.loaded );
+		
+	}
+	
+	function get_is_loading ( location ) {
+		
+		return get_is_path_in_list( location, loader.loading );
+		
+	}
+	
+	function get_load_type ( location ) {
+		
+		return location.type || loader.loadTypeBase;
+		
+	}
+	
+	/*===================================================
+    
+	loading helpers
+    
+    =====================================================*/
+	
+	function get_asset_path( location ) {
+		
+		return location.path || location;
+		
+	}
+	
+	function get_ext( location ) {
+		
+        var path, dotIndex, ext = '';
+		
+		path = get_asset_path( location );
+        
+        dotIndex = path.lastIndexOf('.');
+        
+        if ( dotIndex !== -1 ) {
+            ext = path.substr( dotIndex + 1 ).toLowerCase();
+        }
+        
+        return ext;
+        
+    }
+	
+	function add_default_ext( location ) {
+		
+		var path = remove_ext( location );
+		
+		path = path.replace(/\./g, "") + ".js";
+		
+		return path;
+		
+	}
+	
+	function remove_ext ( location ) {
+		
+		var path, dotIndex;
+		
+        path = get_asset_path( location );
+        
+        dotIndex = path.lastIndexOf('.');
+        
+        if ( dotIndex !== -1 ) {
+            path = path.substr( 0, dotIndex );
+        }
+		
+		return path;
+		
+	}
+	
+	function get_alt_path ( location ) {
+		
+		var path, ext;
+		
+		path = get_asset_path( location );
+		ext = get_ext( path );
+		
+		// if has no extension, add default
+		
+		if ( ext === '' ) {
+			
+			return add_default_ext( path );
+			
+		}
+		// if has extension, remove
+		else {
+			
+			return remove_ext( path );
+			
+		}
+		
+	}
+	
+	/*===================================================
+    
+    asset handling
+    
+    =====================================================*/
+	
+	function asset_path_cascade( path ) {
+		
+		var i, l,
+			cascade,
+			part,
+			dotIndex;
+		
+		// split path based on \ or /
+		// each split is a parent module
+		// last is actual module
+		
+		cascade = path.split(/[\\\/]/);
+		
+		for ( i = 0, l = cascade.length; i < l; i++ ) {
+			
+			part = cascade[ i ];
+			
+			// remove all non-alphanumeric
+			
+			part = part.replace(/[^\w\.-]+/g, "");
+			
+			// cannot be empty
+			
+			if ( part === '' ) {
+				
+				on_error ( 'Invalid asset cascade', 'Main', 'N/A' );
+				
+				return;
+				
+			}
+			
+			cascade[ i ] = part;
+			
+		}
+		
+		return cascade;
+		
+	}
+	
+	function get_asset ( location, attempts ) {
+		
+		var path,
+			cascade,
+			parent,
+			assetName,
+			asset,
+			i, l;
+		
+		// init parent and asset
+		
+		asset = parent = main;
+		
+		// cascade path
+		
+		path = get_asset_path( location );
+		
+		cascade = asset_path_cascade( path );
+		
+		// get asset
+		
+		for ( i = 0, l = cascade.length; i < l; i++ ) {
+			
+			// set as parent for next
+			
+			parent = asset;
+			
+			assetName = cascade[ i ];
+			
+			asset = parent[ assetName ];
+			
+			// if not a valid cascade point
+			
+			if ( typeof asset === 'undefined' ) {
+				
+				break;
+				
+			}
+			
+		}
+		
+		// check attempts
+		
+		attempts = attempts || 1;
+		
+		// if no asset and this is first attempt at finding
+		if ( typeof asset === 'undefined' ) {
+			
+			// try again with alternate path
+			
+			if ( attempts === 1 ) {
+				
+				return get_asset( get_alt_path( path ), attempts + 1 );
+				
+			}
+			
+		}
+		
+		return asset;
+		
+	}
+	
+	function set_asset ( location, assetNew ) {
+		
+		var path,
+			cascade,
+			parent,
+			assetName,
+			asset,
+			data,
+			dataNew,
+			i, l;
+		
+		// if new asset passed
+		
+		if ( assetNew instanceof GameAsset ) {
+			
+			// init parent and asset
+			
+			asset = parent = main;
+			
+			// cascade path
+			
+			path = get_asset_path( location );
+			
+			cascade = asset_path_cascade( path );
+			
+			// setup asset path
+			
+			for ( i = 0, l = cascade.length; i < l; i++ ) {
+				
+				// set as parent for next
+				
+				parent = asset;
+				
+				// get name of current point in cascade
+				
+				assetName = cascade[ i ];
+				
+				// get or build asset
+				
+				asset = parent[ assetName ] = parent[ assetName ] || {};
+				
+			}
+			
+			// if asset at path and is not empty
+			
+			if ( asset instanceof GameAsset && asset.is_empty() === false ) {
+				
+				// if new asset is not empty
+				
+				if ( assetNew.is_empty() === false ) {
+					
+					// merge new asset into current
+					
+					asset.merge_asset_self( assetNew );
+					
+				}
+				
+			}
+			// else replace current empty asset with new asset
+			else {
+				
+				parent[ assetName ] = asset = assetNew;
+				
+			}
+			
+		}
+		
+		return asset;
+		
+	}
+	
+	function get_asset_data ( location ) {
+		
+		var asset,
+			data;
+		
+		// get asset at location
+		
+		asset = get_asset( location );
+		
+		// asset data, assume asset is data if not instance of asset
+				
+		data = ( asset instanceof GameAsset ) ? asset.data : asset;
+		
+		return data;
+		
+	}
+	
+	function asset_register( path, parameters ) {
+		
+		var assetNew,
+			dataNew,
+			assetCurrent = get_asset( path );
+		
+		if ( assetCurrent instanceof GameAsset !== true || ( parameters && typeof parameters.data !== 'undefined' && parameters.data !== assetCurrent.data ) ) {
+			
+			// initialize new asset
+			
+			assetNew = new GameAsset( path, parameters );
+			
+			dataNew = assetNew.data;
+			
+		}
+		else {
+			
+			dataNew = assetCurrent.data;
+			
+		}
+		
+		// asset is usually only useful internally, return data instead
+		
+		return dataNew;
+		
+	}
+	
+	function asset_ready ( path, asset ) {
+		
+		var i, l;
+		
+		asset = asset || get_asset( path );
+		
+		if ( asset instanceof GameAsset ) {
+			
+			// ready and not waiting
+			
+			asset.ready = true;
+			
+			asset.wait = false;
+			
+			// dispatch signal
+			
+			if ( typeof shared.signals !== 'undefined' && typeof shared.signals.onAssetReady !== 'undefined' ) {
+				
+				shared.signals.onAssetReady.dispatch( path );
+				
+			}
+			
+		}
+		
+	}
+	
+	function asset_require( requirements, callbackList, waitForAssetsReady, assetSource ) {
+		
+		var callback_outer,
+			on_asset_ready,
+			on_all_assets_ready,
+			assetsRequired = [],
+			assetsWaitingFor = [],
+			assetsReady = [],
+			listeningForReadySignal = false;
+		
+		// get if arguments are not array
+		
+		requirements = to_array( requirements );
+		
+		callbackList = to_array( callbackList );
+		
+		// modify original callback to wrap in new function
+		// that parses requirements and applies each asset as argument to callback
+		// also handle if each asset required needs to be ready before triggering callback
+		
+		on_asset_ready = function ( path, secondAttempt ) {
+			
+			var indexWaiting;
+			
+			indexWaiting = index_of_value( assetsWaitingFor, path );
+			
+			// if waiting for asset to be ready
+			
+			if ( indexWaiting !== -1 ) {
+				
+				assetsWaitingFor.splice( indexWaiting, 1 );
+				
+				assetsReady.push( path );
+				
+				// check if no more to wait for
+				
+				if ( assetsWaitingFor.length === 0 && assetsReady.length === requirements.length ) {
+					
+					// remove signal
+					
+					if ( listeningForReadySignal === true ) {
+						
+						shared.signals.onAssetReady.remove( on_asset_ready );
+						
+						listeningForReadySignal = false;
+						
+					}
+					
+					on_all_assets_ready();
+					
+				}
+				
+			}
+			// make one extra attempt with alternative path to check if waiting for asset to be ready
+			else if ( secondAttempt !== true ) {
+				
+				on_asset_ready( get_alt_path( path ), true );
+				
+			}
+			
+		};
+		
+		on_all_assets_ready = function () {
+			
+			var i, l,
+				callback;
+			
+			// apply all required assets to original callbacks
+			
+			for ( i = 0, l = callbackList.length; i < l; i++ ) {
+				
+				callback = callbackList[ i ];
+				
+				callback.apply( this, assetsRequired );
+				
+			}
+			
+			// if source asset passed and needs auto ready update
+			
+			if ( assetSource instanceof GameAsset && assetSource.readyAutoUpdate === true ) {
+				
+				assetSource.on_ready();
+				
+			}
+			
+		};
+		
+		callback_outer = function () {
+			
+			var i, l,
+				location,
+				path,
+				asset;
+			
+			// find all assets
+			
+			for ( i = 0, l = requirements.length; i < l; i++ ) {
+				
+				location = requirements[ i ];
+				
+				path = get_asset_path( location );
+				
+				// get asset
+				
+				asset = get_asset( location );
+				
+				// add data to required list
+				
+				if ( asset instanceof GameAsset ) {
+					
+					assetsRequired.push( asset.data );
+					
+				}
+				
+				// if needed ready
+				
+				if ( waitForAssetsReady === true ) {
+					
+					assetsWaitingFor.push( path );
+					
+					// check ready status
+					
+					if ( asset instanceof GameAsset && asset.ready === true ) {
+						
+						on_asset_ready( path );
+						
+					}
+					// asset not ready, listen for ready signal if not already
+					else if ( listeningForReadySignal === false ) {
+						
+						listeningForReadySignal = true;
+						
+						shared.signals.onAssetReady.add( on_asset_ready );
+						
+					}
+					
+				}
+				
+			}
+			
+			// if not waiting for assets to be ready
+			
+			if ( waitForAssetsReady !== true || requirements.length === 0 ) {
+				
+				on_all_assets_ready();
+				
+			}
+			
+		};
+		
+		// pass all requirements to loader
+		
+		load( requirements, callback_outer );
+		
+	}
+	
+	/*===================================================
+    
+    asset instance
+    
+    =====================================================*/
+	
+	function GameAsset ( path, parameters ) {
+		
+		var assetNew = this;
+		
+		// handle parameters
+		
+		parameters = parameters || {};
+		
+		parameters.path = path;
+		
+		assetNew.merge_asset_self( parameters, true );
+		
+		// if asset has path
+		
+		if ( typeof assetNew.path !== 'undefined' ) {
+			
+			// store this new asset
+			// returned asset from store is new asset merged into current asset if exists
+			// or this new asset if no assets at path yet
+			
+			assetNew = set_asset( assetNew.path, assetNew );
+			
+			// regardless of storage results
+			// handle this new asset's readiness and requirements
+			
+			if ( assetNew === this && this.readyAutoUpdate === true && ( this.requirements.length === 0 || this.wait !== true ) ) {
+				
+				this.on_ready();
+				
+			}
+			
+			if ( this.requirements.length > 0 ) {
+				
+				asset_require( this.requirements, this.callbacksOnReqs, this.wait, this );
+			
+			}
+			
+		}
+		
+		return assetNew;
+		
+	}
+	
+	GameAsset.prototype = new Object();
+	
+	GameAsset.prototype = {
+		constructor: GameAsset,
+		merge_asset_self: function ( asset, includeRequirements ) {
+			
+			var readyCallbackIndex;
+			
+			// TODO:
+			// make sure merging accounts for new requirements and loading
+			
+			if ( typeof asset !== 'undefined' ) {
+				
+				this.path = asset.path;
+				
+				// merge asset data into this data
+				
+				this.merge_asset_data_self( asset );
+				
+				// if either asset is waiting
+				
+				if ( typeof this.wait !== 'boolean' || this.wait === false ) {
+				
+					if ( asset.wait === true ) {
+						
+						this.wait = asset.wait;
+						
+					}
+					else {
+						
+						this.wait = false;
+						
+					}
+					
+				}
+				
+				// if asset is not ready
+				
+				if ( this.ready !== true ) {
+					
+					this.ready = false;
+					
+				}
+				
+				// requirements basics
+				
+				if ( typeof this.readyAutoUpdate !== 'boolean' ) {
+				
+					if ( asset.hasOwnProperty( 'readyAutoUpdate' ) ) {
+						
+						this.readyAutoUpdate = asset.readyAutoUpdate;
+						
+					}
+					else {
+						
+						this.readyAutoUpdate = true;
+						
+					}
+					
+				}
+				
+				this.requirements = to_array( this.requirements );
+				
+				this.callbacksOnReqs = to_array( this.callbacksOnReqs );
+				
+				// if should also copy requirements
+				
+				if ( includeRequirements === true ) {
+				
+					this.requirements = this.requirements.concat( to_array( asset.requirements ) );
+					
+					this.callbacksOnReqs = this.callbacksOnReqs.concat( to_array( asset.callbacksOnReqs ) );
+					
+				}
+				
+			}
+			
+		},
+		merge_asset_data_self: function ( source ) {
+			
+			var dataSrc = source.data;
+			
+			// if source data exists
+			
+			if ( typeof dataSrc !== 'undefined' ) {
+				
+				// if this data does not exist or source data is image, set as data instead of merging, as merging causes issues
+				
+				if ( typeof this.data === 'undefined' || is_image( dataSrc ) ) {
+					
+					this.data = dataSrc;
+					
+				}
+				else {
+					
+					// copy properties of source asset data into this data
+					// order is important to ensure this data remains an instance of whatever it is
+					
+					extend( dataSrc, this.data );
+					
+				}
+				
+			}
+			
+		},
+		is_empty: function () {
+			
+			var isEmpty = true;
+			
+			if ( typeof this.data !== 'undefined' || ( this.ready === false && this.requirements.length > 0 ) ) {
+				
+				isEmpty = false;
+				
+			}
+			
+			return isEmpty;
+			
+		},
+		on_ready: function () {
+			console.log( '[ KAIOPUA ] Module / Asset Ready: ' + this.path );
+			asset_ready( this.path, this );
+			
+		}
+	};
+    
+    return main; 
+    
+} ( KAIOPUA || {} ) );

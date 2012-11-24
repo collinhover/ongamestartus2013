@@ -1,2 +1,118 @@
-(function(c){function e(a){d.Instance.call(this,a);this.affecting=[]}function f(a){var b;b=c.index_of_property(this.affecting,"object",a);b===-1?(a={object:a},this.affecting.push(a)):a=this.affecting[b];return a}function g(a){a=c.index_of_property(this.affecting,"object",a);if(a!==-1)return this.affecting.splice(a,1)[0]}c.shared=c.shared||{};var b={},d;c.asset_register("js/kaiopua/physics/Obstacle.js",{data:b,requirements:["js/kaiopua/core/Model.js"],callbacksOnReqs:function(a){d=a;b.Instance=e;b.Instance.prototype=
-new d.Instance;b.Instance.prototype.constructor=b.Instance;b.Instance.prototype.affect=f;b.Instance.prototype.unaffect=g},wait:!0})})(KAIOPUA);
+/*
+ *
+ * Obstacle.js
+ * General collision based obstacle.
+ *
+ * @author Collin Hover / http://collinhover.com/
+ *
+ */
+(function (main) {
+    
+    var shared = main.shared = main.shared || {},
+		assetPath = "js/kaiopua/physics/Obstacle.js",
+		_Obstacle = {},
+		_Model;
+	
+	/*===================================================
+    
+    public properties
+    
+    =====================================================*/
+	
+	main.asset_register( assetPath, { 
+		data: _Obstacle,
+		requirements: [
+			"js/kaiopua/core/Model.js"
+		],
+		callbacksOnReqs: init_internal,
+		wait: true
+	});
+	
+	/*===================================================
+    
+    internal init
+    
+    =====================================================*/
+	
+	function init_internal ( m ) {
+		
+		// modules
+		
+		_Model = m;
+		
+		// instance
+		
+		_Obstacle.Instance = Obstacle;
+		_Obstacle.Instance.prototype = new _Model.Instance();
+		_Obstacle.Instance.prototype.constructor = _Obstacle.Instance;
+		
+		_Obstacle.Instance.prototype.affect = affect;
+		_Obstacle.Instance.prototype.unaffect = unaffect;
+		
+	}
+	
+	/*===================================================
+    
+    obstacle
+    
+    =====================================================*/
+	
+	function Obstacle ( parameters ) {
+		
+		// prototype constructor
+		
+		_Model.Instance.call( this, parameters );
+		
+		// properties
+		
+		this.affecting = [];
+		
+	}
+	
+	/*===================================================
+    
+    affect
+    
+    =====================================================*/
+	
+	function affect ( object ) {
+		
+		var affected,
+			index;
+		
+		index = main.index_of_property( this.affecting, 'object', object );
+		
+		if ( index === -1 ) {
+			
+			affected = {
+				object: object
+			};
+			
+			this.affecting.push( affected );
+			
+		}
+		else {
+			
+			affected = this.affecting[ index ];
+			
+		}
+		
+		return affected;
+		
+	}
+	
+	function unaffect ( object ) {
+		
+		var index;
+		
+		index = main.index_of_property( this.affecting, 'object', object );
+		
+		if ( index !== -1 ) {
+			
+			return this.affecting.splice( index, 1 )[ 0 ];
+			
+		}
+		
+	}
+	
+} ( KAIOPUA ) );

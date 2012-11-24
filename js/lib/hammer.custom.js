@@ -1,11 +1,879 @@
-var HAMMER=function(j){var u,m,d,e,p;function E(a){$(document)[a?"off":"on"]("selectstart",L);$("html")[a?"removeClass":"addClass"]("unselectable");document.unselectable=a?"off":"on"}function F(a){var a={down:a>=45&&a<135,left:a>=135||a<=-135,up:a<-45&&a>-135,right:a>=-45&&a<=45},b,c;for(c in a)if(a[c]){b=c;break}return b}function y(a){a=a||window.event;if(r){for(var b=[],c=a.touches.length>0?a.touches:a.changedTouches,g=0,d=c.length;g<d;g++)a=c[g],b.push({x:a.pageX,y:a.pageY});return b}else return b=
-document,c=b.body,[{x:a.pageX||a.clientX+(b&&b.scrollLeft||c&&c.scrollLeft||0)-(b&&b.clientLeft||c&&c.clientLeft||0),y:a.pageY||a.clientY+(b&&b.scrollTop||c&&c.scrollTop||0)-(b&&b.clientTop||c&&c.clientTop||0)}]}function G(a,b){if(a.length==2&&b.length==2){var c,g;c=a[0].x-a[1].x;g=a[0].y-a[1].y;var d=Math.sqrt(c*c+g*g);c=b[0].x-b[1].x;g=b[0].y-b[1].y;return Math.sqrt(c*c+g*g)/d}return 0}function H(a,b){if(a.length==2&&b.length==2){var c,g;c=a[0].x-a[1].x;g=a[0].y-a[1].y;var d=Math.atan2(g,c)*180/
-Math.PI;c=b[0].x-b[1].x;g=b[0].y-b[1].y;return Math.atan2(g,c)*180/Math.PI-d}return 0}function L(){return!1}function M(a,b,c){for(var b=b.split(" "),d=0,e=b.length;d<e;d++)a.addEventListener?a.addEventListener(b[d],c,!1):document.attachEvent&&a.attachEvent("on"+b[d],c)}function i(a,b){var c,d,e,f=!1;for(c=0,d=v.length;c<d;c++)if(e=v[c],typeof e["on"+a]==="function"){b.touches=y(b.originalEvent);b.position=b.position||b.touches;b.type=a;if(!b.target)b.target=e.element;e["on"+a].call(e,b);f=!0;break}return f}
-function I(a){var b=a.type;if(b===z)w===!0&&(e=y(a),s.transform(a)||s.drag(a)),a.preventDefault();else if(b===A||b===B){$(window).off(z+" "+A+" "+B,I);if(w===!0){if(h!=="transform"&&a.touches&&a.touches.length>0)return!1;typeof o!=="undefined"&&(clearTimeout(o),o=void 0);b=h=="drag";s.swipe(a);b?(i("dragend",{originalEvent:a,direction:n,distance:k,angle:l}),E(!0)):h=="transform"?i("transformend",{originalEvent:a,center:p,scale:G(d,e),rotation:H(d,e)}):s.tap(J);K=h;i("release",{originalEvent:a,gesture:h})}v=
-[];C=!1;h=null;d=void 0;e=void 0;p=void 0;w=q=!1;l=k=0}}var f={prevent_default:!1,css_hacks:!0,swipe:!0,swipe_time:200,swipe_min_distance:20,drag:!0,drag_vertical:!0,drag_horizontal:!0,drag_min_distance:20,transform:!0,scale_treshold:0.1,rotation_treshold:15,tap:!0,tap_double:!0,tap_max_interval:200,tap_max_distance:10,tap_double_distance:20,hold:!0,hold_timeout:500},r=Modernizr?Modernizr.touch:"ontouchstart"in window,N=r?"touchstart":"mousedown",z=r?"touchmove":"mousemove",A=r?"touchend":"mouseup",
-B=r?"touchcancel":"",w=!1,O=0,C=!1,v=[],J;d=void 0;e=void 0;p=void 0;var k=0,l=0,n=0,q=!1,h,K,t={x:0,y:0},D,x,o;u=void 0;m=void 0;var s={hold:function(a){f.hold&&(h="hold",typeof o!=="undefined"&&(clearTimeout(o),o=void 0),o=setTimeout(function(){h=="hold"&&i("hold",{originalEvent:a,position:d})},f.hold_timeout))},swipe:function(a){if(e){var b=e[0].x-d[0].x,c=e[0].y-d[0].y;k=Math.sqrt(b*b+c*c);var g=(new Date).getTime()-x;f.swipe&&f.swipe_time>g&&k>f.swipe_min_distance&&(l=Math.atan2(e[0].y-d[0].y,
-e[0].x-d[0].x)*180/Math.PI,n=F(l),h="swipe",i("swipe",{originalEvent:a,direction:n,distance:k,distanceX:b,distanceY:c,angle:l}))}},drag:function(a){var b=e[0].x-d[0].x,c=e[0].y-d[0].y,g;k=Math.sqrt(b*b+c*c);if(f.drag&&k>f.drag_min_distance||h=="drag")l=Math.atan2(e[0].y-d[0].y,e[0].x-d[0].x)*180/Math.PI,n=F(l),g=n=="up"||n=="down",(g&&!f.drag_vertical||!g&&!f.drag_horizontal)&&k>f.drag_min_distance||(h="drag",q&&(i("dragstart",{originalEvent:a,position:d,direction:n,distance:k,distanceX:b,distanceY:c,
-angle:l}),q=!1),i("drag",{originalEvent:a,direction:n,distance:k,distanceX:b,distanceY:c,angle:l}))},transform:function(a){var b,c;if(f.transform){if((a.touches?a.touches.length:1)!=2)return!1;b=H(d,e);c=G(d,e);if(h!="drag"&&(h=="transform"||Math.abs(1-c)>f.scale_treshold||Math.abs(b)>f.rotation_treshold))return h="transform",p={x:(e[0].x+e[1].x)/2-m,y:(e[0].y+e[1].y)/2-u},q&&(q=!1,i("transformstart",{originalEvent:a,position:d,center:p,scale:c,rotation:b})),i("transform",{originalEvent:a,center:p,
-scale:c,rotation:b}),!0}return!1},tap:function(a){var b=(new Date).getTime(),c=b-x,g;if(!f.hold||f.hold&&f.hold_timeout>c)t&&f.tap_double&&K=="tap"&&x-D<f.tap_max_interval&&t&&d&&Math.max(Math.abs(t[0].x-d[0].x),Math.abs(t[0].y-d[0].y))<f.tap_double_distance?(h="double_tap",D=null,i("doubletap",{originalEvent:a,position:d})):(c=e?Math.abs(e[0].x-d[0].x):0,g=e?Math.abs(e[0].y-d[0].y):0,k=Math.max(c,g),k<f.tap_max_distance&&(h="tap",D=b,t=d,f.tap&&i("tap",{originalEvent:a,position:d})))}};j.options=
-f;j.option=function(a,b){typeof b!=="undefined"&&(f[a]=b);return f[a]};j.Instance=function(a){var b=this;b.id=O++;b.element=a;M(a,N,function(a){var e,f,h,i,j;if(C!==!0)C=!0,J=a,x=(new Date).getTime(),d=y(a),w=q=!0,l=k=0,e=b.element,f=e.getBoundingClientRect(),h=e.clientTop||document.body.clientTop||0,i=e.clientLeft||document.body.clientLeft||0,j=window.pageYOffset||e.scrollTop||document.body.scrollTop,e=window.pageXOffset||e.scrollLeft||document.body.scrollLeft,u=f.top+j-h,m=f.left+e-i,E(!1),$(window).on(z+
-" "+A+" "+B,I),s.hold(a);v.push(b)})};return j}(HAMMER||{});(function(j){j.each("hold,tap,doubletap,transformstart,transform,transformend,dragstart,drag,dragend,swipe,release".split(","),function(u,m){j.event.special[m]={setup:function(){var d=j(this);d.data("hammerjs")||d.data("hammerjs",new HAMMER.Instance(this));d.data("hammerjs")["on"+m]=function(e){d.trigger(j.Event(m,e))}},teardown:function(){var d=j(this).data("hammerjs");d&&d["on"+m]&&delete d["on"+m]}}})})(jQuery);
+/*
+ * Hammer.JS
+ * version 0.6.1
+ * author: Eight Media
+ * https://github.com/EightMedia/hammer.js
+ *
+ * Reworked by Collin Hover / collinhover.com
+ * HAMMER is new global, and HAMMER.Instance( element ) gives an element touch gesture capabilities
+ * This solves issues where a HAMMERed child of a HAMMERed element was causing broken behavior or no event bubbling
+ *
+ */
+var HAMMER = ( function ( main ) {
+	
+	var options = {
+			// prevent the default event or not... might be buggy when false
+			prevent_default    : false,
+			css_hacks          : true,
+
+			swipe              : true,
+			swipe_time         : 200,   // ms
+			swipe_min_distance : 20, // pixels
+
+			drag               : true,
+			drag_vertical      : true,
+			drag_horizontal    : true,
+			// minimum distance before the drag event starts
+			drag_min_distance  : 20, // pixels
+
+			// pinch zoom and rotation
+			transform          : true,
+			scale_treshold     : 0.1,
+			rotation_treshold  : 15, // degrees
+
+			tap                : true,
+			tap_double         : true,
+			tap_max_interval   : 200,
+			tap_max_distance   : 10,
+			tap_double_distance: 20,
+
+			hold               : true,
+			hold_timeout       : 500
+		},
+		_has_touch = ( Modernizr ? Modernizr.touch : 'ontouchstart' in window ),
+		_event_name_start = _has_touch ? 'touchstart' : 'mousedown',
+		_event_name_move = _has_touch ? 'touchmove' : 'mousemove',
+		_event_name_end = _has_touch ? 'touchend' : 'mouseup',
+		_event_name_cancel = _has_touch ? 'touchcancel' : '',
+		_mousedown = false,
+		_hammer_count = 0,
+		_hammering = false,
+		_hammer_instances = [],
+		_event_start,
+		_pos = {},
+		_distance = 0,// holds the distance that has been moved
+		_angle = 0,// holds the exact angle that has been moved
+		_direction = 0,// holds the direction that has been moved
+		_fingers = 0,// how many fingers are on the screen
+		_first = false,
+		_gesture,
+		_prev_gesture,
+		_prev_tap_pos = {x: 0, y: 0},
+		_prev_tap_end_time,
+		_touch_start_time,
+		_hold_timer,
+		_offset = {},
+		_gestures = {
+			// hold gesture
+			// fired on touchstart
+			hold : function( event )
+			{
+				
+				// when one finger is on the screen
+				
+				if( options.hold ) {
+					
+					_gesture = 'hold';
+					
+					// clear previous hold
+					
+					if ( typeof _hold_timer !== 'undefined' ) {
+						clearTimeout(_hold_timer);
+						_hold_timer = undefined;
+					}
+					
+					// init new hold timer
+					
+					_hold_timer = setTimeout( function() {
+						
+						if(_gesture == 'hold') {
+							
+							triggerEvent( "hold", {
+								originalEvent   : event,
+								position: _pos.start
+							} );
+							
+						}
+						
+					}, options.hold_timeout);
+					
+				}
+				
+			},
+
+			// swipe gesture
+			// fired on touchend
+			swipe : function( event )
+			{
+				if(!_pos.move) {
+					return;
+				}
+
+				// get the distance we moved
+				var _distance_x = _pos.move[0].x - _pos.start[0].x;
+				var _distance_y = _pos.move[0].y - _pos.start[0].y;
+				_distance = Math.sqrt(_distance_x*_distance_x + _distance_y*_distance_y);
+
+				// compare the kind of gesture by time
+				var now = new Date().getTime();
+				var touch_time = now - _touch_start_time;
+
+				if(options.swipe && (options.swipe_time > touch_time) && (_distance > options.swipe_min_distance)) {
+					// calculate the angle
+					_angle = getAngle(_pos.start[0], _pos.move[0]);
+					_direction = getDirectionFromAngle(_angle);
+
+					_gesture = 'swipe';
+					
+					triggerEvent( 'swipe', {
+						originalEvent   : event,
+						direction       : _direction,
+						distance        : _distance,
+						distanceX       : _distance_x,
+						distanceY       : _distance_y,
+						angle           : _angle
+					} );
+					
+				}
+			},
+			
+			// drag gesture
+			// fired on mousemove
+			drag : function( event )
+			{
+				
+				var _distance_x = _pos.move[0].x - _pos.start[0].x,
+					_distance_y = _pos.move[0].y - _pos.start[0].y,
+					is_vertical;
+				
+				_distance = Math.sqrt(_distance_x * _distance_x + _distance_y * _distance_y);
+				
+				// drag
+				// minimal movement required
+				if(options.drag && (_distance > options.drag_min_distance) || _gesture == 'drag') {
+					// calculate the angle
+					_angle = getAngle(_pos.start[0], _pos.move[0]);
+					_direction = getDirectionFromAngle(_angle);
+
+					// check the movement and stop if we go in the wrong direction
+					is_vertical = (_direction == 'up' || _direction == 'down');
+					if(((is_vertical && !options.drag_vertical) || (!is_vertical && !options.drag_horizontal))
+						&& (_distance > options.drag_min_distance)) {
+						return;
+					}
+
+					_gesture = 'drag';
+					
+					// on the first time trigger the start event
+					if( _first ) {
+						
+						triggerEvent( 'dragstart', {
+							originalEvent   : event,
+							position: _pos.start,
+							direction       : _direction,
+							distance        : _distance,
+							distanceX       : _distance_x,
+							distanceY       : _distance_y,
+							angle           : _angle
+						} );
+
+						_first = false;
+						
+					}
+					
+					// drag
+					
+					triggerEvent( 'drag', {
+						originalEvent   : event,
+						direction       : _direction,
+						distance        : _distance,
+						distanceX       : _distance_x,
+						distanceY       : _distance_y,
+						angle           : _angle
+					} );
+					
+				}
+			},
+			
+			// transform gesture
+			// fired on touchmove
+			transform : function( event )
+			{
+				
+				var rotation,
+					scale;
+				
+				if(options.transform) {
+					if(countFingers(event) != 2) {
+						return false;
+					}
+
+					rotation = calculateRotation(_pos.start, _pos.move);
+					scale = calculateScale(_pos.start, _pos.move);
+
+					if(_gesture != 'drag' &&
+						(_gesture == 'transform' || Math.abs(1-scale) > options.scale_treshold || Math.abs(rotation) > options.rotation_treshold)) {
+						_gesture = 'transform';
+
+						_pos.center = {  x: ((_pos.move[0].x + _pos.move[1].x) / 2) - _offset.left,
+							y: ((_pos.move[0].y + _pos.move[1].y) / 2) - _offset.top };
+
+						// on the first time trigger the start event
+						if( _first ) {
+							
+							_first = false;
+							
+							triggerEvent( 'transformstart', {
+								originalEvent   : event,
+								position: _pos.start,
+								center			: _pos.center,
+								scale           : scale,
+								rotation        : rotation
+							} );
+							
+						}
+						
+						// trigger transform
+						
+						triggerEvent( 'transform', {
+							originalEvent   : event,
+							center			: _pos.center,
+							scale           : scale,
+							rotation        : rotation
+						} );
+
+						return true;
+					}
+				}
+
+				return false;
+			},
+			
+			// tap and double tap gesture
+			// fired on touchend
+			tap : function( event )
+			{
+				
+				var now = new Date().getTime(),
+					touchTime = now - _touch_start_time,
+					isDoubleTap,
+					distanceX,
+					distanceY;
+				
+				// dont fire when hold is fired
+				if( options.hold && !( options.hold && options.hold_timeout > touchTime ) ) {
+					return;
+				}
+
+				// when previous event was tap and the tap was max_interval ms ago
+				isDoubleTap = (function(){
+					
+					if (_prev_tap_pos && options.tap_double && _prev_gesture == 'tap' && (_touch_start_time - _prev_tap_end_time) < options.tap_max_interval) {
+						return (_prev_tap_pos && _pos.start && Math.max( Math.abs(_prev_tap_pos[0].x - _pos.start[0].x), Math.abs(_prev_tap_pos[0].y - _pos.start[0].y) ) < options.tap_double_distance);
+					}
+					
+					return false;
+					
+				})();
+				
+				if( isDoubleTap ) {
+					_gesture = 'double_tap';
+					_prev_tap_end_time = null;
+					
+					triggerEvent( 'doubletap', {
+						originalEvent   : event,
+						position: _pos.start
+					} );
+					
+				}
+				// single tap is single touch
+				else {
+					
+					distanceX = (_pos.move) ? Math.abs(_pos.move[0].x - _pos.start[0].x) : 0;
+					distanceY = (_pos.move) ? Math.abs(_pos.move[0].y - _pos.start[0].y) : 0;
+					_distance = Math.max(distanceX, distanceY);
+					
+					if(_distance < options.tap_max_distance) {
+						_gesture = 'tap';
+						_prev_tap_end_time = now;
+						_prev_tap_pos = _pos.start;
+						
+						if(options.tap) {
+							
+							triggerEvent( 'tap', {
+								originalEvent   : event,
+								position: _pos.start
+							} );
+							
+						}
+						
+					}
+					
+				}
+
+			}
+
+		};
+	
+	
+	// public properties
+	
+	main.options = options;
+	
+	/**
+	 * option setter/getter
+	 * @param   string  key
+	 * @param   mixed   value
+	 * @return  mixed   value
+	 */
+	main.option = function(key, val) {
+		if( typeof val !== 'undefined' ) {
+			options[key] = val;
+		}
+
+		return options[key];
+	};
+	
+	// 
+	/**
+	 * toggles text selection attributes ON (true) or OFF (false)
+	 * based on jquery.event.drag by Three Dub Media
+	 * @param   boolean  state
+	 */
+	function allowTextSelect ( state ) {
+		
+		$( document )[ state ? "off" : "on" ]( "selectstart", killEvent )
+		$( 'html' )[ state ? "removeClass" : "addClass" ]( "unselectable" );
+		document.unselectable = state ? "off" : "on";
+		
+	}
+	
+	/**
+	 * angle to direction define
+	 * @param  float    angle
+	 * @return string   direction
+	 */
+	function getDirectionFromAngle( angle )
+	{
+		var directions = {
+			down: angle >= 45 && angle < 135, //90
+			left: angle >= 135 || angle <= -135, //180
+			up: angle < -45 && angle > -135, //270
+			right: angle >= -45 && angle <= 45 //0
+		};
+
+		var direction, key;
+		for(key in directions){
+			if(directions[key]){
+				direction = key;
+				break;
+			}
+		}
+		return direction;
+	}
+	
+	/**
+	 * count the number of fingers in the event
+	 * when no fingers are detected, one finger is returned (mouse pointer)
+	 * @param  event
+	 * @return int  fingers
+	 */
+	function countFingers( event )
+	{
+		// there is a bug on android (until v4?) that touches is always 1,
+		// so no multitouch is supported, e.g. no, zoom and rotation...
+		return event.touches ? event.touches.length : 1;
+	}
+	
+	/**
+	 * get the x and y positions from the event object
+	 * @param  event
+	 * @return array  [{ x: int, y: int }]
+	 */
+	function getXYfromEvent( event )
+	{
+		event = event || window.event;
+
+		// no touches, use the event pageX and pageY
+		if(!_has_touch) {
+			var doc = document,
+				body = doc.body;
+
+			return [{
+				x: event.pageX || event.clientX + ( doc && doc.scrollLeft || body && body.scrollLeft || 0 ) - ( doc && doc.clientLeft || body && body.clientLeft || 0 ),
+				y: event.pageY || event.clientY + ( doc && doc.scrollTop || body && body.scrollTop || 0 ) - ( doc && doc.clientTop || body && body.clientTop || 0 )
+			}];
+		}
+		// multitouch, return array with positions
+		else {
+			var pos = [], src, touches = event.touches.length > 0 ? event.touches : event.changedTouches;
+			for(var t=0, len=touches.length; t<len; t++) {
+				src = touches[t];
+				pos.push({ x: src.pageX, y: src.pageY });
+			}
+			return pos;
+		}
+	}
+	
+	/**
+	 * calculate the angle between two points
+	 * @param   object  pos1 { x: int, y: int }
+	 * @param   object  pos2 { x: int, y: int }
+	 */
+	function getAngle( pos1, pos2 )
+	{
+		return Math.atan2(pos2.y - pos1.y, pos2.x - pos1.x) * 180 / Math.PI;
+	}
+
+
+	/**
+	 * calculate the scale size between two fingers
+	 * @param   object  pos_start
+	 * @param   object  pos_move
+	 * @return  float   scale
+	 */
+	function calculateScale(pos_start, pos_move)
+	{
+		if(pos_start.length == 2 && pos_move.length == 2) {
+			var x, y;
+
+			x = pos_start[0].x - pos_start[1].x;
+			y = pos_start[0].y - pos_start[1].y;
+			var start_distance = Math.sqrt((x*x) + (y*y));
+
+			x = pos_move[0].x - pos_move[1].x;
+			y = pos_move[0].y - pos_move[1].y;
+			var end_distance = Math.sqrt((x*x) + (y*y));
+
+			return end_distance / start_distance;
+		}
+
+		return 0;
+	}
+
+
+	/**
+	 * calculate the rotation degrees between two fingers
+	 * @param   object  pos_start
+	 * @param   object  pos_move
+	 * @return  float   rotation
+	 */
+	function calculateRotation(pos_start, pos_move)
+	{
+		if(pos_start.length == 2 && pos_move.length == 2) {
+			var x, y;
+
+			x = pos_start[0].x - pos_start[1].x;
+			y = pos_start[0].y - pos_start[1].y;
+			var start_rotation = Math.atan2(y, x) * 180 / Math.PI;
+
+			x = pos_move[0].x - pos_move[1].x;
+			y = pos_move[0].y - pos_move[1].y;
+			var end_rotation = Math.atan2(y, x) * 180 / Math.PI;
+
+			return end_rotation - start_rotation;
+		}
+
+		return 0;
+	}
+	
+	/**
+	 * cancel event
+	 * @param   object  event
+	 * @return  void
+	 */
+	function cancelEvent(event)
+	{
+		event = event || window.event;
+		if(event.preventDefault){
+			event.preventDefault();
+			event.stopPropagation();
+		}else{
+			event.returnValue = false;
+			event.cancelBubble = true;
+		}
+	}
+	
+	function killEvent () {
+		
+		return false;
+		
+	}
+	
+	/**
+	 * reset the internal vars to the start values
+	 */
+	function reset()
+	{
+		
+		_hammering = false;
+		_fingers = 0;
+		_gesture = null;
+		_pos = {};
+		_first = false;
+		_mousedown = false;
+		_distance = 0;
+		_angle = 0;
+		
+	}
+	
+	/**
+	 * find if element is (inside) given parent element
+	 * @param   object  element
+	 * @param   object  parent
+	 * @return  bool    inside
+	 */
+	function isInsideHammer(parent, child) {
+		// get related target for IE
+		if(!child && window.event && window.event.toElement){
+			child = window.event.toElement;
+		}
+
+		if(parent === child){
+			return true;
+		}
+
+		// loop over parentNodes of child until we find hammer element
+		if(child){
+			var node = child.parentNode;
+			while(node !== null){
+				if(node === parent){
+					return true;
+				};
+				node = node.parentNode;
+			}
+		}
+		return false;
+	}
+	
+	/**
+	 * attach event
+	 * @param   node    element
+	 * @param   string  types
+	 * @param   object  callback
+	 */
+	function addEvent( element, types, callback ) {
+		
+		types = types.split(" ");
+		
+		for(var t= 0,len=types.length; t<len; t++) {
+			if(element.addEventListener){
+				element.addEventListener(types[t], callback, false);
+			}
+			else if(document.attachEvent){
+				element.attachEvent("on"+ types[t], callback);
+			}
+		}
+		
+	}
+	
+	/**
+	 * trigger an event/callback by name with params
+	 * @param string eventName
+	 * @param object eventObject
+	 */
+	function triggerEvent( eventName, eventObject )
+	{
+		
+		var i, il,
+			hammerInstance,
+			triggered = false;
+		
+		// for each hammer instance in gesture
+		
+		for ( i = 0, il = _hammer_instances.length; i < il; i++ ) {
+			
+			hammerInstance = _hammer_instances[ i ];
+
+			// trigger callback
+			
+			if( typeof hammerInstance["on"+ eventName] === 'function' ) {
+				
+				// update event object
+				
+				eventObject.touches = getXYfromEvent( eventObject.originalEvent );
+				eventObject.position = eventObject.position || eventObject.touches;
+				eventObject.type = eventName;
+				
+				// if event does not yet have a target
+				
+				if ( !eventObject.target ) {
+					
+					eventObject.target = hammerInstance.element;
+					
+				}
+				
+				hammerInstance["on"+ eventName].call( hammerInstance, eventObject );
+				
+				// only trigger hammer vent once from first hammer instance that is listening for it
+				// hammer event will propagate similar to a native event
+				
+				triggered = true;
+				break;
+				
+			}
+			
+		}
+		
+		return triggered;
+		
+	}
+	
+	/**
+	 * handle start event/callback for a hammmer instance
+	 * @param object hammerInstance
+	 * @param event 
+	 */
+	function on_start ( hammerInstance, event ) {
+		
+		var element,
+			box,
+			clientTop,
+			clientLeft,
+			scrollTop,
+			scrollLeft;
+		
+		// must stop before starting again
+		
+		if ( _hammering !== true ) {
+			
+			_hammering = true;
+			
+			// global properties
+			
+			_event_start = event;
+			_fingers = countFingers( event );
+			_touch_start_time = new Date().getTime();
+			_pos.start = getXYfromEvent(event);
+			_first = true;
+			_mousedown = true;
+			_distance = 0;
+			_angle = 0;
+			
+			// get offset
+			// borrowed from jquery offset https://github.com/jquery/jquery/blob/master/src/offset.js
+			
+			element = hammerInstance.element;
+			
+			box = element.getBoundingClientRect();
+			clientTop  = element.clientTop  || document.body.clientTop  || 0;
+			clientLeft = element.clientLeft || document.body.clientLeft || 0;
+			scrollTop  = window.pageYOffset || element.scrollTop  || document.body.scrollTop;
+			scrollLeft = window.pageXOffset || element.scrollLeft || document.body.scrollLeft;
+			
+			_offset = {
+				top: box.top + scrollTop - clientTop,
+				left: box.left + scrollLeft - clientLeft
+			};
+			
+			// disable text selection
+			
+			allowTextSelect( false );
+			
+			// add global listeners to properly handle move and end
+			
+			$( window ).on( _event_name_move + ' ' + _event_name_end + ' ' + _event_name_cancel, on_step );
+			
+			// hold gesture
+			
+			_gestures.hold( event );
+			
+		}
+		
+		// add this instance to hammer instances
+		
+		_hammer_instances.push( hammerInstance );
+		
+	}
+	
+	/**
+	 * handle stepping of gesture on global level
+	 * @param event 
+	 */
+	function on_step ( event ) {
+		
+		var type = event.type,
+			index,
+			dragging;
+		
+		// move
+		if ( type === _event_name_move ) {
+			
+			if ( _mousedown === true ) {
+				
+				// event properties
+				
+				_pos.move = getXYfromEvent( event );
+				
+				// gestures
+
+				if(!_gestures.transform( event )) {
+					_gestures.drag( event );
+				}
+				
+			}
+			
+			// don't allow mobile to drag window
+			
+			event.preventDefault();
+			
+		}
+		// end
+		else if ( type === _event_name_end || type === _event_name_cancel ) {
+			
+			// remove global listeners
+			
+			$( window ).off( _event_name_move + ' ' + _event_name_end + ' ' + _event_name_cancel, on_step );
+			
+			// if mouse held down
+			
+			if ( _mousedown === true ) {
+				
+				// event properties
+				
+				if( _gesture !== 'transform' && event.touches && event.touches.length > 0 ) {
+					return false;
+				}
+				
+				// clear hold timer
+				
+				if ( typeof _hold_timer !== 'undefined' ) {
+					clearTimeout(_hold_timer);
+					_hold_timer = undefined;
+				}
+				
+				// store if dragging
+				
+				dragging = _gesture == 'drag';
+				
+				// calculate swipe
+				
+				_gestures.swipe( event );
+				
+				// drag gesture
+				// dragstart is triggered, so dragend is possible
+				if(dragging) {
+					
+					triggerEvent( 'dragend', {
+						originalEvent   : event,
+						direction       : _direction,
+						distance        : _distance,
+						angle           : _angle
+					} );
+					
+					// enable text selection
+					
+					allowTextSelect( true );
+					
+				}
+				// transform
+				// transformstart is triggered, so transformed is possible
+				else if(_gesture == 'transform') {
+					
+					triggerEvent( 'transformend', {
+						originalEvent   : event,
+						center	        : _pos.center,
+						scale           : calculateScale(_pos.start, _pos.move),
+						rotation        : calculateRotation(_pos.start, _pos.move)
+					} );
+					
+				}
+				else {
+					
+					_gestures.tap( _event_start );
+					
+				}
+
+				_prev_gesture = _gesture;
+
+				// release event
+				
+				triggerEvent( 'release', {
+					originalEvent   : event,
+					gesture         : _gesture
+				} );
+				
+			}
+			
+			// clear instances list
+			
+			_hammer_instances = [];
+			
+			// reset vars
+			reset();
+			
+		}
+		
+	}
+	
+	/**
+	 * create a hammer instance and gives an element touch events, use "new HAMMER.Instance( element )"
+	 * @param node element
+	 */
+	main.Instance = function HammerInstance ( element ) {
+		
+		var me = this;
+		
+		me.id = _hammer_count++;
+		me.element = element;
+		
+		function startGesture ( event ) {
+			
+			on_start( me, event );
+			
+		}
+
+		// start gesture local to each element
+		
+		addEvent( element, _event_name_start, startGesture );
+		
+	}
+	
+	return main;
+	
+} ( HAMMER || {} ) );
+
+/*
+ * adds jQuery to Hammer.JS
+ * version 0.9
+ * author: Damien Antipa
+ * https://github.com/dantipa/hammer.js
+ *
+ * Reworked by Collin Hover / collinhover.com
+ */
+(function ($) {
+    var hammerEvents = ['hold','tap','doubletap','transformstart','transform','transformend','dragstart','drag','dragend','swipe','release'];
+
+    $.each(hammerEvents, function(i, eventName) {
+
+        $.event.special[eventName] = {
+			
+			setup: function(data, namespaces, eventHandle) {
+                var $target = $(this),
+                    hammer;
+
+                if (!$target.data('hammerjs')) {
+                    $target.data('hammerjs', new HAMMER.Instance(this));
+                }
+
+                hammer = $target.data('hammerjs');
+
+                hammer['on'+ eventName] = function ( event ) {
+					
+                    $target.trigger( $.Event( eventName, event ) );
+					
+                };
+				
+            },
+
+            teardown: function(namespaces) {
+                var $target = $(this),
+                    hammer = $target.data('hammerjs');
+				
+                if(hammer && hammer['on'+ eventName]) {
+                    delete hammer['on'+ eventName];
+                }
+            }
+        };
+    });
+}(jQuery));

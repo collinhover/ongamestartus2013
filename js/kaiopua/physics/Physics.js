@@ -1,11 +1,694 @@
-(function(e){function y(a){a=a||{};k.universeGravitySource=a.universeGravitySource instanceof THREE.Vector3?a.universeGravitySource:k.universeGravitySource;k.universeGravityMagnitude=a.universeGravityMagnitude instanceof THREE.Vector3?a.universeGravityMagnitude:k.universeGravityMagnitude;this.utilVec31Update=new THREE.Vector3;this.utilVec32Update=new THREE.Vector3;this.utilVec33Update=new THREE.Vector3;this.utilVec31Apply=new THREE.Vector3;this.utilVec31Velocity=new THREE.Vector3;this.utilVec32Velocity=
-new THREE.Vector3;this.utilVec33Velocity=new THREE.Vector3;this.utilVec34Velocity=new THREE.Vector3;this.utilQ1Velocity=new THREE.Quaternion;this.octree=new THREE.Octree;this.bodies=[];this.bodiesGravity=[];this.bodiesDynamic=[];this.obstacles=[]}function z(a){p.call(this,a,!0)}function A(a){p.call(this,a)}function p(a,b){var d,h,c;if(typeof a!=="undefined"&&a.rigidBody instanceof o.Instance)d=a.rigidBody,h=d.collider,d.velocityMovement.reset(),d.velocityGravity.reset(),c=e.index_of_value(this.bodies,
-d),b===!0?(d.setupOnNextUpdate=!0,c===-1&&this.bodies.push(d),d.gravitySource===!0&&e.array_cautious_add(this.bodiesGravity,d),d.dynamic===!0?e.array_cautious_add(this.bodiesDynamic,d):this.octree.add(a,h instanceof o.MeshCollider?!0:!1),a instanceof n.Instance&&e.array_cautious_add(this.obstacles,a)):(c!==-1&&this.bodies.splice(c,1),d.gravitySource===!0&&e.array_cautious_remove(this.bodiesGravity,d),d.dynamic===!0?e.array_cautious_remove(this.bodiesDynamic,d):this.octree.remove(a),a instanceof n.Instance&&
-e.array_cautious_remove(this.obstacles,a));if(typeof a.children!=="undefined")for(d=0,h=a.children.length;d<h;d++)c=a.children[d],p.call(this,c,b)}function B(a,b){var d,h,c,f,j,e=this.utilVec31Update,i=this.utilVec32Update,g=this.utilVec33Update,l,m,n;for(d=0,h=this.bodiesDynamic.length;d<h;d++)c=this.bodiesDynamic[d],f=c.object,m=c.velocityGravity,n=c.velocityMovement,c.setupOnNextUpdate===!0?(c.setupOnNextUpdate=!1,f.updateMatrixWorld(!0),c.change_gravity_body(c.find_gravity_body_closest(this.bodiesGravity)),
-l=1):l=c.lerpDelta,j=c.gravityBody,j instanceof o.Instance?(j=j.object,e.copy(j.matrixWorld.getPosition()),i.copy(c.gravityMagnitude||k.universeGravityMagnitude)):(e.copy(k.universeGravitySource),i.copy(k.universeGravityMagnitude)),i.multiplyScalar(b),m.forceDelta.addSelf(i),t.rotate_relative_to_source(f.quaternion,f.position,e,c.axes.up,c.axes.forward,l,c),u.call(this,c,n),g.sub(f.position,e).normalize(),m.relativeTo=g,u.call(this,c,m),c.find_gravity_body(this.bodiesGravity,a)}function u(a,b){var d=
-b==a.velocityGravity,h=a.object,c=h.position,f=b.forceRotated,j,e,i,g,k,m,o,v=this.utilVec31Velocity,p=this.utilVec32Velocity,t=this.utilVec33Velocity,q=this.utilVec34Velocity,r,u,s;b.update();if(a.dynamic!==!0||f.isZero()===!0)b.clear();else{b.moving=!0;j=f.length();e=a.bounds_in_direction(f).length();g={octrees:this.octree,origin:c,direction:f,offsets:b.offsetsRotated,far:j+(b===a.velocityMovement?a.radius:e),ignore:h};i=w.raycast(g);d&&i&&h.jumping===!0&&(f.multiplyScalar(-1),(m=w.raycast(g))?
-b.forceInternal.set(0,0,0):f.multiplyScalar(-1));m=x.call(this,c,b,i,j,e,!0);if(i&&b.options.collisionAngleThreshold<b.options.collisionAngleThresholdMax&&(v.copy(f).normalize(),q.copy(i.normal),i.object.matrixWorld.rotateAxis(q),f=l.angle_between_vectors(v,q),f=Math.PI-f,f>=b.options.collisionAngleThreshold)){if(b!==a.velocityMovement)u=a.velocityMovement.forceRotated,u.dot(q)<0?(a.velocityMovement.dampingPre.multiplyScalar(a.velocityMovement.options.dampingDecay),(o=a.velocityMovement.intersection&&
-i)&&a.velocityMovement.dampingPre.multiplyScalar(0)):l.clamp_scalar(a.velocityMovement.dampingPre.addScalar(1-a.velocityMovement.options.dampingDecay),0,1);f<b.options.collisionAngleThresholdMax&&(p.copy(l.axis_between_vectors(v,q)),t.copy(l.axis_between_vectors(q,p)),r=l.q_to_axis(v,t),r instanceof THREE.Quaternion&&(m=!1,b.rotate(r),k=w.raycast(g),x.call(this,c,b,k,j,e),b.rotate(r.inverse())))}if(b.collision)s=b.collision.object;if((s||d!==!0)&&b.obstacle instanceof n.Instance&&b.obstacle!==s)b.obstacle.unaffect(h),
-delete b.obstacle;if(s instanceof n.Instance)b.obstacle=s,s.affect(h,{velocity:b});d&&r instanceof THREE.Quaternion!==!0&&l.clamp_scalar(a.velocityMovement.dampingPre.addScalar(1-a.velocityMovement.options.dampingDecay),0,1);if(r instanceof THREE.Quaternion&&o!==!0&&!k)b.sliding=!0;else if(i)b.sliding=!1;m===!0?b.clear():b.damp()}}function x(a,b,d,e,c,f){var g;b.forceApplied.copy(b.forceRotated);d&&(c=d.distance-c,c-e<=0&&(b.forceApplied.multiplyScalar(c/e),g=!0));a.addSelf(b.forceApplied);if(f===
-!0)return b.intersection=d,g===!0?(b.collision=d,b.moving=!1):b.collision=!1,g}var k=e.shared=e.shared||{},g={},o,n,w,l,t;e.asset_register("js/kaiopua/physics/Physics.js",{data:g,requirements:"js/kaiopua/physics/RigidBody.js,js/kaiopua/physics/Obstacle.js,js/kaiopua/utils/MathHelper.js,js/kaiopua/utils/VectorHelper.js,js/kaiopua/utils/RayHelper.js,js/kaiopua/utils/ObjectHelper.js,js/kaiopua/utils/PhysicsHelper.js,js/lib/three/ThreeOctree.min.js".split(","),callbacksOnReqs:function(a,b,d,e,c,f,j){o=
-a;n=b;l=e;w=c;t=j;g.Instance=y;g.Instance.prototype={};g.Instance.prototype.constructor=g.Instance;g.Instance.prototype.add=z;g.Instance.prototype.remove=A;g.Instance.prototype.update=B},wait:!0})})(KAIOPUA);
+/*
+ *
+ * Physics.js
+ * Simple raycasting based physics using octree for faster casting.
+ *
+ * @author Collin Hover / http://collinhover.com/
+ *
+ */
+(function (main) {
+    
+    var shared = main.shared = main.shared || {},
+		assetPath = "js/kaiopua/physics/Physics.js",
+		_Physics = {},
+		_RigidBody,
+		_Obstacle,
+		_RayHelper,
+		_MathHelper,
+		_VectorHelper,
+		_ObjectHelper,
+		_PhysicsHelper;
+	
+	/*===================================================
+    
+    public properties
+    
+    =====================================================*/
+	
+	main.asset_register( assetPath, { 
+		data: _Physics,
+		requirements: [
+			"js/kaiopua/physics/RigidBody.js",
+			"js/kaiopua/physics/Obstacle.js",
+			"js/kaiopua/utils/MathHelper.js",
+			"js/kaiopua/utils/VectorHelper.js",
+			"js/kaiopua/utils/RayHelper.js",
+			"js/kaiopua/utils/ObjectHelper.js",
+			"js/kaiopua/utils/PhysicsHelper.js",
+			"js/lib/three/ThreeOctree.min.js"
+		],
+		callbacksOnReqs: init_internal,
+		wait: true
+	});
+	
+	/*===================================================
+    
+    internal init
+    
+    =====================================================*/
+	
+	function init_internal ( rb, ob, mh, vh, rh, oh, ph ) {
+		
+		_RigidBody = rb;
+		_Obstacle = ob;
+		_MathHelper = mh;
+		_VectorHelper = vh;
+		_RayHelper = rh;
+		_ObjectHelper = oh;
+		_PhysicsHelper = ph;
+		
+		// instance
+		
+		_Physics.Instance = Physics;
+		_Physics.Instance.prototype = {};
+		_Physics.Instance.prototype.constructor = _Physics.Instance;
+		
+		_Physics.Instance.prototype.add = add;
+		_Physics.Instance.prototype.remove = remove;
+		_Physics.Instance.prototype.update = update;
+		
+	}
+	
+	/*===================================================
+    
+	instance
+    
+    =====================================================*/
+	
+	function Physics ( parameters ) {
+		
+		// handle parameters
+		
+		parameters = parameters || {};
+		
+		// shared
+		
+		shared.universeGravitySource = parameters.universeGravitySource instanceof THREE.Vector3 ? parameters.universeGravitySource : shared.universeGravitySource;
+		shared.universeGravityMagnitude = parameters.universeGravityMagnitude instanceof THREE.Vector3 ? parameters.universeGravityMagnitude : shared.universeGravityMagnitude;
+		
+		// util
+		
+		this.utilVec31Update = new THREE.Vector3();
+		this.utilVec32Update = new THREE.Vector3();
+		this.utilVec33Update = new THREE.Vector3();
+		this.utilVec31Apply = new THREE.Vector3();
+		this.utilVec31Velocity = new THREE.Vector3();
+		this.utilVec32Velocity = new THREE.Vector3();
+		this.utilVec33Velocity = new THREE.Vector3();
+		this.utilVec34Velocity = new THREE.Vector3();
+		this.utilQ1Velocity = new THREE.Quaternion();
+		
+		// octree
+		
+		this.octree = new THREE.Octree();
+		
+		// properties
+		
+		this.bodies = [];
+		this.bodiesGravity = [];
+		this.bodiesDynamic = [];
+		
+		this.obstacles = [];
+		
+	}
+	
+	/*===================================================
+    
+	add / remove
+    
+    =====================================================*/
+	
+	function add ( object ) {
+		
+		modify_bodies.call( this, object, true );
+		
+	}
+	
+	function remove( object ) {
+		
+		modify_bodies.call( this, object );
+		
+	}
+	
+	function modify_bodies ( object, adding ) {
+		
+		var i, l,
+			rigidBody,
+			collider,
+			index,
+			child;
+		
+		if ( typeof object !== 'undefined' && object.rigidBody instanceof _RigidBody.Instance ) {
+			
+			rigidBody = object.rigidBody;
+			collider = rigidBody.collider;
+			
+			// zero out velocities
+			
+			rigidBody.velocityMovement.reset();
+			rigidBody.velocityGravity.reset();
+			
+			// get indices
+			
+			index = main.index_of_value( this.bodies, rigidBody );
+			
+			// if adding
+			
+			if ( adding === true ) {
+				
+				// snap rotation on next update
+				
+				rigidBody.setupOnNextUpdate = true;
+				
+				// bodies
+				
+				if ( index === -1 ) {
+					
+					this.bodies.push( rigidBody );
+					
+				}
+				
+				// gravity bodies
+				
+				if ( rigidBody.gravitySource === true ) {
+					
+					main.array_cautious_add( this.bodiesGravity, rigidBody );
+					
+				}
+				
+				// dynamic body
+				
+				if ( rigidBody.dynamic === true ) {
+					
+					main.array_cautious_add( this.bodiesDynamic, rigidBody );
+					
+				}
+				// static colliders in octree and split by faces if collider is mesh
+				else {
+					
+					this.octree.add( object, collider instanceof _RigidBody.MeshCollider ? true : false );
+					
+				}
+				
+				// obstacle
+				
+				if ( object instanceof _Obstacle.Instance ) {
+					
+					main.array_cautious_add( this.obstacles, object );
+					
+				}
+				
+			}
+			// default to remove
+			else {
+				
+				// bodies
+				
+				if ( index !== -1 ) {
+					
+					this.bodies.splice( index, 1 );
+					
+				}
+				
+				// gravity bodies
+				
+				if ( rigidBody.gravitySource === true ) {
+					
+					main.array_cautious_remove( this.bodiesGravity, rigidBody );
+					
+				}
+				
+				// dynamic colliders
+				
+				if ( rigidBody.dynamic === true ) {
+					
+					main.array_cautious_remove( this.bodiesDynamic, rigidBody );
+					
+				}
+				// static colliders in octree
+				else {
+					
+					this.octree.remove( object );
+					
+				}
+				
+				// obstacle
+				
+				if ( object instanceof _Obstacle.Instance ) {
+					
+					main.array_cautious_remove( this.obstacles, object );
+					
+				}
+				
+			}
+			
+		}
+		
+		// search for physics in children
+		
+		if ( typeof object.children !== 'undefined' ) {
+			
+			for ( i = 0, l = object.children.length; i < l; i++ ) {
+				
+				child = object.children[ i ];
+				
+				modify_bodies.call( this, child, adding );
+				
+			}
+			
+		}
+		
+	}
+	
+	/*===================================================
+    
+    update
+    
+    =====================================================*/
+	
+	function update ( timeDelta, timeDeltaMod ) {
+		
+		var i, l,
+			j, k,
+			rigidBody,
+			object,
+			gravityBody,
+			gravityMesh,
+			gravityOrigin = this.utilVec31Update,
+			gravityMagnitude = this.utilVec32Update,
+			gravityUp = this.utilVec33Update,
+			lerpDelta,
+			velocityGravity,
+			velocityMovement;
+		
+		// dynamic bodies
+		
+		for ( i = 0, l = this.bodiesDynamic.length; i < l; i++ ) {
+			
+			rigidBody = this.bodiesDynamic[ i ];
+			
+			// properties
+			
+			object = rigidBody.object;
+			
+			velocityGravity = rigidBody.velocityGravity;
+			
+			velocityMovement = rigidBody.velocityMovement;
+			
+			// setup
+			
+			if ( rigidBody.setupOnNextUpdate === true ) {
+				
+				rigidBody.setupOnNextUpdate = false;
+				
+				object.updateMatrixWorld( true );
+				rigidBody.change_gravity_body( rigidBody.find_gravity_body_closest( this.bodiesGravity ) );
+				
+				lerpDelta = 1;
+				
+			}
+			else {
+				
+				lerpDelta = rigidBody.lerpDelta;
+				
+			}
+			
+			// if has gravity body
+			
+			gravityBody = rigidBody.gravityBody;
+			
+			if ( gravityBody instanceof _RigidBody.Instance ) {
+				
+				gravityMesh = gravityBody.object;
+				
+				gravityOrigin.copy( gravityMesh.matrixWorld.getPosition() );
+				
+				gravityMagnitude.copy( rigidBody.gravityMagnitude || shared.universeGravityMagnitude );
+				
+			}
+			// else use world gravity
+			else {
+				
+				gravityOrigin.copy( shared.universeGravitySource );
+				
+				gravityMagnitude.copy( shared.universeGravityMagnitude );
+				
+			}
+			
+			// add non rotated gravity to gravity velocity
+			
+			gravityMagnitude.multiplyScalar( timeDeltaMod );
+			
+			velocityGravity.forceDelta.addSelf( gravityMagnitude );
+			
+			// rotate to stand on source
+			
+			_PhysicsHelper.rotate_relative_to_source( object.quaternion, object.position, gravityOrigin, rigidBody.axes.up, rigidBody.axes.forward, lerpDelta, rigidBody );
+			
+			// movement velocity
+			
+			handle_velocity.call( this, rigidBody, velocityMovement );
+			
+			// find up direction and set relative rotation of gravity
+			
+			gravityUp.sub( object.position, gravityOrigin ).normalize();
+			
+			velocityGravity.relativeTo = gravityUp;
+			
+			// gravity velocity
+			
+			handle_velocity.call( this, rigidBody, velocityGravity );
+			
+			// update gravity body
+			
+			rigidBody.find_gravity_body( this.bodiesGravity, timeDelta );
+			
+		}
+		
+	}
+	
+	/*===================================================
+    
+    velocity
+    
+    =====================================================*/
+	
+	function handle_velocity ( rigidBody, velocity ) {
+		
+		var forGravity = velocity == rigidBody.velocityGravity,
+			object = rigidBody.object,
+			position = object.position,
+			force = velocity.force,
+			forceRotated = velocity.forceRotated,
+			forceLength,
+			forceScalar,
+			damping = velocity.damping,
+			dampingPre = velocity.dampingPre,
+			boundingRadius,
+			intersection,
+			intersectionParameters,
+			intersectionAlt,
+			intersectionJump,
+			intersectionDouble,
+			direction = this.utilVec31Velocity,
+			axisInitial = this.utilVec32Velocity,
+			axisDown = this.utilVec33Velocity,
+			angle,
+			angleInverted,
+			normalOfIntersected = this.utilVec34Velocity,
+			angleFixCollisionQ,
+			moveForceRotated,
+			obstacle,
+			clear;
+		
+		// update velocity
+		
+		velocity.update();
+		
+		// if moving / movable
+		
+		if ( rigidBody.dynamic !== true || forceRotated.isZero() === true ) {
+			
+			velocity.clear();
+			
+			return;
+			
+		} 
+		else {
+			
+			velocity.moving = true;
+			
+		}
+		
+		// get length
+		
+		forceLength = forceRotated.length();
+		
+		// get bounding radius
+		//boundingRadius = rigidBody.radius;
+		
+		// get bounding radius in direction of velocity
+		// more accurate than plain radius, but about 4x more cost
+		boundingRadius = rigidBody.bounds_in_direction( forceRotated ).length();
+		
+		// get intersection
+		// for now ignores dynamic bodies
+		// allow a longer search for movement velocity
+		
+		intersectionParameters = {
+			octrees: this.octree,
+			origin: position,
+			direction: forceRotated,
+			offsets: velocity.offsetsRotated,
+			far: forceLength + ( velocity === rigidBody.velocityMovement ? rigidBody.radius : boundingRadius ),
+			ignore: object
+		};
+		
+		intersection = _RayHelper.raycast( intersectionParameters );
+		
+		if ( forGravity && intersection ) {
+			
+			// jumping needs a pre-application check in opposite direction of velocity to ensure the intersection application does not force rigid body through ground
+			
+			if ( object.jumping === true ) {
+				
+				// reverse force
+				
+				forceRotated.multiplyScalar( -1 );
+				
+				intersectionJump = _RayHelper.raycast( intersectionParameters );
+				
+				// clear force
+				
+				if ( intersectionJump ) {
+					
+					//forceRotated.set( 0, 0, 0 );
+					velocity.forceInternal.set( 0, 0, 0 );
+					
+				}
+				// revert force, jump is safe
+				else {
+					
+					forceRotated.multiplyScalar( -1 );
+					
+				}
+				
+			}
+			
+		}
+		
+		// velocity primary application
+		
+		clear = apply_velocity.call( this, position, velocity, intersection, forceLength, boundingRadius, true );
+		
+		// gravity offsets may allow character to walk up steep walls
+		// check intersection normal vs normal of velocity, and compare angle between to velocity.options.collisionAngleThreshold
+		
+		if ( intersection && velocity.options.collisionAngleThreshold < velocity.options.collisionAngleThresholdMax ) {
+			
+			direction.copy( forceRotated ).normalize();
+			
+			// normal is local to object intersected, so rotate normal accordingly
+			
+			normalOfIntersected.copy( intersection.normal );
+			intersection.object.matrixWorld.rotateAxis( normalOfIntersected );
+			
+			// invert the angle between velocity direction and normal of intersected
+			// the perfect collision is an intersection normal direction opposite of the velocity direction
+			
+			angle = _VectorHelper.angle_between_vectors( direction, normalOfIntersected );
+			angleInverted = ( Math.PI - angle );
+			
+			if ( angleInverted >= velocity.options.collisionAngleThreshold ) {
+				
+				// pre damp movement force, if movement force rotated and normal of intersected are in opposite directions ( dot < 0 )
+				// this should allow characters to continue to walk over small objects with bad angles
+				
+				if ( velocity !== rigidBody.velocityMovement ) {
+					
+					moveForceRotated = rigidBody.velocityMovement.forceRotated;
+					
+					if ( moveForceRotated.dot( normalOfIntersected ) < 0 ) {
+						
+						rigidBody.velocityMovement.dampingPre.multiplyScalar( rigidBody.velocityMovement.options.dampingDecay );
+						
+						// if this velocity and movement velocity intersecting something, assume a large object with bad angle
+						
+						intersectionDouble = rigidBody.velocityMovement.intersection && intersection;
+						
+						if ( intersectionDouble ) {
+							
+							rigidBody.velocityMovement.dampingPre.multiplyScalar( 0 );
+							
+						}
+						
+					}
+					// revert movement pre damping
+					else {
+						
+						_VectorHelper.clamp_scalar( rigidBody.velocityMovement.dampingPre.addScalar( 1 - rigidBody.velocityMovement.options.dampingDecay ), 0, 1 );
+						
+					}
+					
+				}
+				
+				// if inverted angle is below max
+				
+				if ( angleInverted < velocity.options.collisionAngleThresholdMax ) {
+					
+					// find axis perpendicular to normal of intersected and in general direction of velocity
+					
+					axisInitial.copy( _VectorHelper.axis_between_vectors( direction, normalOfIntersected ) );
+					axisDown.copy( _VectorHelper.axis_between_vectors( normalOfIntersected, axisInitial ) );
+					angleFixCollisionQ = _VectorHelper.q_to_axis( direction, axisDown );
+					
+					if ( angleFixCollisionQ instanceof THREE.Quaternion ) {
+						
+						// do not clear force
+						
+						clear = false;
+						
+						// rotate velocity with new fixed rotation
+						
+						velocity.rotate( angleFixCollisionQ );
+						
+						// redo raycast with new fixed rotation of velocity force
+						
+						intersectionAlt = _RayHelper.raycast( intersectionParameters );
+						
+						// secondary velocity application
+						
+						apply_velocity.call( this, position, velocity, intersectionAlt, forceLength, boundingRadius );
+						
+						// revert rotation back to original
+						
+						velocity.rotate( angleFixCollisionQ.inverse() );
+						
+					}
+					
+				}
+				
+			}
+			
+		}
+		
+		// obstacles
+		
+		if ( velocity.collision ) {
+			
+			obstacle = velocity.collision.object;
+			
+		}
+		
+		// if any collision object found or when not for gravity velocity
+		// gravity should retain obstacle until another collision found
+		// movement should shed obstacle as soon as not colliding with that obstacle
+		
+		if ( ( obstacle || forGravity !== true ) && velocity.obstacle instanceof _Obstacle.Instance && velocity.obstacle !== obstacle ) {
+			
+			velocity.obstacle.unaffect( object );
+			delete velocity.obstacle;
+			
+		}
+		
+		if ( obstacle instanceof _Obstacle.Instance ) {
+			
+			velocity.obstacle = obstacle;
+			
+			obstacle.affect( object, { velocity: velocity } );
+			
+		}
+		
+		// gravity velocity extras
+		
+		if ( forGravity ) {
+			
+			// revert movement pre damping
+			
+			if ( angleFixCollisionQ instanceof THREE.Quaternion !== true ) {
+				
+				_VectorHelper.clamp_scalar( rigidBody.velocityMovement.dampingPre.addScalar( 1 - rigidBody.velocityMovement.options.dampingDecay ), 0, 1 );
+				
+			}
+			
+		}
+		// sliding
+		
+		if ( angleFixCollisionQ instanceof THREE.Quaternion && intersectionDouble !== true && !intersectionAlt ) {
+			
+			velocity.sliding = true;
+			
+		}
+		else if ( intersection ) {
+			
+			velocity.sliding = false;
+			
+		}
+		
+		// damp velocity
+		
+		if ( clear === true ) {
+			
+			velocity.clear();
+			
+		}
+		else {
+			
+			velocity.damp();
+			
+		}
+		
+	}
+	
+	function apply_velocity ( position, velocity, intersection, forceLength, boundingRadius, record ) {
+		
+		var intersectionToBoundsDist,
+			colliding;
+		
+		velocity.forceApplied.copy( velocity.forceRotated );
+		
+		if ( intersection ) {
+			
+			// modify velocity based on intersection distances to avoid passing through or into objects
+			
+			intersectionToBoundsDist = intersection.distance - boundingRadius;
+			
+			if ( intersectionToBoundsDist - forceLength <= 0 ) {
+				
+				velocity.forceApplied.multiplyScalar( intersectionToBoundsDist /  forceLength );
+				
+				colliding = true;
+				
+			}
+			
+		}
+		
+		// add velocity to position
+		
+		position.addSelf( velocity.forceApplied );
+		
+		// record
+		
+		if ( record === true ) {
+			
+			velocity.intersection = intersection;
+			
+			if ( colliding === true ) {
+				
+				velocity.collision = intersection;
+				velocity.moving = false;
+				
+			}
+			else {
+				
+				velocity.collision = false;
+				
+			}
+			
+			return colliding;
+			
+		}
+		
+	}
+	
+} ( KAIOPUA ) );

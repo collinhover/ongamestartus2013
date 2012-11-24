@@ -1,14 +1,1071 @@
-(function(t){function w(b,e){var d,a=B,c=C,f=D;f.origin.copy(b.origin);f.direction.copy(b.direction);f.near=b.near;f.far=b.far;f.precision=b.precision;if(e instanceof THREE.Mesh)d=e.matrixWorld,a.extractPosition(d),a.extractRotation(d),c.getInverse(a),c.multiplyVector3(f.origin),c.rotateAxis(f.direction);return f}function $(b,e){return b.distance-e.distance}function E(b){if(!(b instanceof q.Collider))if(b instanceof q.Instance)return b.collider;else if(b.rigidBody instanceof q.Instance)return b.rigidBody.collider;
-else if(b.object&&b.object.rigidBody instanceof q.Instance)return b.object.rigidBody.collider;return b}function aa(b){var e,d,a,c,f,h,g=F,m=G,j,i=H,l,k,p,n;e=I;d=J;var o,q,r,u=[],s,v,b=b||{};j=t.is_array(b.offsets)&&b.offsets.length>0?b.offsets:[i];k=t.to_array(b.objects).slice(0);n=t.to_array(b.colliders).slice(0);o=t.to_array(b.octrees);q=b.hierarchySearch;r=b.hierarchyIntersect;a=b.camera;c=b.pointer;i=b.ignore;typeof c!=="undefined"&&typeof a!=="undefined"?(e.x=c.x/K.screenWidth*2-1,e.y=-(c.y/
-K.screenHeight)*2+1,e.z=0.5,d.unprojectVector(e,a),m.copy(a.position),g.direction.copy(e.subSelf(a.position))):(m.copy(b.origin||b.ray.origin),g.direction.copy(b.direction||b.ray.direction));g.direction.normalize();g.far=t.is_number(b.far)&&b.far>0?b.far:Number.MAX_VALUE;for(e=0,d=j.length;e<d;e++){a=j[e];g.origin.copy(m).addSelf(a);l=k.slice(0);if(l.length>0){if(q!==!1)if(r===!0)l=x.extract_children_from_objects(l,l);else for(a=0,c=l.length;a<c;a++){p=l[a];f=x.extract_children_from_objects(p);s=
-L(g,f);for(f=0,h=s.length;f<h;f++)s[f].ancestor=p;u=u.concat(s)}u=u.concat(L(g,l))}l=n.slice(0);for(a=0,c=o.length;a<c;a++)l=l.concat(o[a].search(g.origin,g.far,!0,g.direction));l.length>0&&(u=u.concat(ba(g,l)))}u.sort($);if(b.allIntersections===!0)return u;else{if(t.is_array(i))for(e=0,d=u.length;e<d;e++){if(g=u[e],m=g.object||g.mesh,t.index_of_value(i,m)===-1){v=g;break}}else v=u[0];b.objectOnly===!0&&v&&(v=r!==!0&&v.ancestor?v.ancestor:v.object);return v}}function L(b,e){var d,a,c=[],f;for(d=0,
-a=e.length;d<a;d++)f=e[d],f=y(b,f),f.distance<Number.MAX_VALUE&&c.push(f);return c}function ba(b,e){var d,a,c=[],f;for(d=0,a=e.length;d<a;d++)f=ca(b,e[d]),f.distance<Number.MAX_VALUE&&c.push(f);return c}function ca(b,e){var d,a=E(e);if(a instanceof q.PlaneCollider){var c=b.direction.dot(a.normal),f=a.point.dot(a.normal);d={object:a.rigidBody.object,distance:Number.MAX_VALUE,normal:new THREE.Vector3,point:new THREE.Vector3};if(c<0&&(c=(f-b.origin.dot(a.normal))/c,c>0))d.distance=c,d.normal.copy(a.normal),
-d.point.copy(b.direction).multiplyScalar(d.distance).addSelf(b.origin);return d}else if(a instanceof q.SphereCollider){d=M.sub(a.center,b.origin);var h=d.lengthSq(),c={object:a.rigidBody.object,distance:Number.MAX_VALUE,normal:new THREE.Vector3,point:new THREE.Vector3};if(h<a.radiusSq)c.distance=-1;else if(f=d.dot(b.direction.clone()),!(f<=0)&&(a=a.radiusSq-(h-f*f),a>=0&&(a=Math.abs(f)-Math.sqrt(a),a<=b.far)))c.distance=a,c.normal.copy(d).multiplyScalar(-1).normalize(),c.point.copy(b.direction).multiplyScalar(c.distance).addSelf(b.origin);
-return c}else return a instanceof q.BoxCollider?N(b,a):a instanceof q.MeshCollider?(d=N(b,a.box),d.distance<Number.MAX_VALUE&&(d=y(b,e,a)),d):y(b,e,a)}function N(b,e){var d=e.rigidBody.object,a=w(b,d),c=O.copy(e.min),f=P.copy(e.max),h=a.origin,g=a.direction,m=a.far,j,i,l,k=0,p=0,n=0;l=i=j=0;var o=!0,a={object:d,distance:Number.MAX_VALUE,normal:new THREE.Vector3,point:new THREE.Vector3};if(typeof d!=="undefined")d=d.scale,c.multiplySelf(d),f.multiplySelf(d);if(h.x<c.x){k=c.x-h.x;k/=g.x;if(k>m)return a;
-o=!1;j=-1}else if(h.x>f.x){k=f.x-h.x;k/=g.x;if(k>m)return a;o=!1;j=1}if(h.y<c.y){p=c.y-h.y;p/=g.y;if(p>m)return a;o=!1;i=-1}else if(h.y>f.y){p=f.y-h.y;p/=g.y;if(p>m)return a;o=!1;i=1}if(h.z<c.z){n=c.z-h.z;n/=g.z;if(n>m)return a;o=!1;l=-1}else if(h.z>f.z){n=f.z-h.z;n/=g.z;if(n>m)return a;o=!1;l=1}d=0;p>k&&(d=1,k=p);n>k&&(d=2,k=n);if(o)return a.distance=-1,a.point.sub(f,c),a;if(d===0){i=h.y+g.y*k;if(i<c.y||i>f.y)return a;l=h.z+g.z*k;if(l<c.z||l>f.z)return a;a.normal.set(j,0,0);a.point.set(h.x+g.x*k,
-i,l)}else if(d===1){j=h.x+g.x*k;if(j<c.x||j>f.x)return a;l=h.z+g.z*k;if(l<c.z||l>f.z)return a;a.normal.set(0,i,0);a.point.set(j,h.y+g.y*k,l)}else if(d===2){j=h.x+g.x*k;if(j<c.x||j>f.x)return a;i=h.y+g.y*k;if(i<c.y||i>f.y)return a;a.normal.set(0,0,l);a.point.set(j,i,h.z+g.z*k)}a.distance=k;return a}function y(b,e,d){var a,c,f,h,g,m,j,i,l,k,p,n,o=Number.MAX_VALUE,s,r={distance:Number.MAX_VALUE,normal:new THREE.Vector3,point:new THREE.Vector3};if(d instanceof q.Collider)m=d.rigidBody;m instanceof q.Instance?
-(d=m.object,j=m.geometry):(d=e.object||e,j=d.geometry);r.object=d;typeof e.faces!=="undefined"&&(i=t.to_array(e.faces));if(typeof i==="undefined"||i.length===0){i=d.matrixWorld instanceof THREE.Matrix4?d.matrixWorld.getMaxScaleOnAxis():1;i*=j.boundingSphere.radius;m=b.origin;c=b.direction;e=d.matrixWorld.getPosition();a=Q.sub(e,m).dot(c);m=R.add(m,S.copy(c).multiplyScalar(a));c=T.distance_between(m,e);if(c>i)return r;i=j.faces}e=j.vertices;m=d.material instanceof THREE.MeshFaceMaterial;j=m===!0?j.materials:
-null;p=w(b,d);for(b=0,a=i.length;b<a;b++){k=i[b];c=m===!0?j[k.materialIndex]:d.material;if(typeof c!=="undefined")l=c.side;c=e[k.a];f=e[k.b];h=e[k.c];k instanceof THREE.Face4?(g=e[k.d],n=z(p,c,f,g,o,l),c=n.distance,c<o&&(o=c,s=k,r.normal.copy(n.normal),r.point.copy(n.point)),n=z(p,f,h,g,o,l)):n=z(p,c,f,h,o,l,k.normal);c=n.distance;c<o&&(o=c,s=k,r.normal.copy(n.normal),r.point.copy(n.point))}r.distance=o;r.face=s;r.normal.normalize();return r}function z(b,e,d,a,c,f,h){var g=U,m=V,j=b.origin,i=b.direction;
-typeof h==="undefined"?(g.sub(d,e),m.sub(a,d),h=A.cross(g,m)):h=A.copy(h);f===THREE.BackSide&&h.multiplyScalar(-1);g=i.dot(h);if(!(g<0))if(f===THREE.DoubleSide)h.multiplyScalar(-1),g*=-1;else return{distance:Number.MAX_VALUE};f=h.dot(e);m=j.dot(h);f-=m;if(f>0||f<g*b.far||f<g*c)return{distance:Number.MAX_VALUE};f/=g;b=W.copy(i).multiplyScalar(f).addSelf(j);a=X.sub(a,e);c=Y.sub(d,e);i=Z.sub(b,e);e=a.dot(a);d=a.dot(c);a=a.dot(i);j=c.dot(c);c=c.dot(i);i=1/(e*j-d*d);j=(j*a-d*c)*i;j<-0.01||j>1.01?e=!0:
-(e=(e*c-d*a)*i,e=e<-0.01||e>1.01||j+e>1.01);return e?{distance:Number.MAX_VALUE}:{distance:f,point:b,normal:h}}var K=t.shared=t.shared||{},s={},q,T,x,F,D,J,B,C,O,P,G,H,I,Q,R,S,X,Y,Z,M,U,V,A,W;t.asset_register("js/kaiopua/utils/RayHelper.js",{data:s,requirements:["js/kaiopua/physics/RigidBody.js","js/kaiopua/utils/MathHelper.js","js/kaiopua/utils/VectorHelper.js","js/kaiopua/utils/SceneHelper.js"],callbacksOnReqs:function(b,e,d,a){q=b;T=d;x=a;F=new THREE.Ray;D=new THREE.Ray;J=new THREE.Projector;B=
-new THREE.Matrix4;C=new THREE.Matrix4;O=new THREE.Vector3;P=new THREE.Vector3;G=new THREE.Vector3;H=new THREE.Vector3;I=new THREE.Vector3;Q=new THREE.Vector3;R=new THREE.Vector3;S=new THREE.Vector3;X=new THREE.Vector3;Y=new THREE.Vector3;Z=new THREE.Vector3;M=new THREE.Vector3;U=new THREE.Vector3;V=new THREE.Vector3;A=new THREE.Vector3;W=new THREE.Vector3;s.extract_collider=E;s.localize_ray=w;s.raycast=aa},wait:!0})})(KAIOPUA);
+/*
+ *
+ * RayHelper.js
+ * Contains utility functionality for basic type checking.
+ * 
+ * based on collision code by bartek drozdz / http://everyday3d.com/
+ *
+ * @author Collin Hover / http://collinhover.com/
+ *
+ */
+(function (main) {
+    
+    var shared = main.shared = main.shared || {},
+		assetPath = "js/kaiopua/utils/RayHelper.js",
+		_RayHelper = {},
+		_RigidBody,
+		_MathHelper,
+		_VectorHelper,
+		_SceneHelper,
+		utilRay1Casting,
+		utilRay1Localize,
+		utilProjector1Casting,
+		utilMat41Localize,
+		utilMat42Localize,
+		utilVec31Box,
+		utilVec32Box,
+		utilVec31Casting,
+		utilVec32Casting,
+		utilVec33Casting,
+		utilVec31DistanceIntersection,
+		utilVec32DistanceIntersection,
+		utilVec33DistanceIntersection,
+		utilVec31PointTriangle,
+		utilVec32PointTriangle,
+		utilVec33PointTriangle,
+		utilVec31Sphere,
+		utilVec31Triangle,
+		utilVec32Triangle,
+		utilVec33Triangle,
+		utilVec34Triangle;
+    
+    /*===================================================
+    
+    public properties
+    
+    =====================================================*/
+	
+	main.asset_register( assetPath, {
+		data: _RayHelper,
+		requirements: [
+			"js/kaiopua/physics/RigidBody.js",
+			"js/kaiopua/utils/MathHelper.js",
+			"js/kaiopua/utils/VectorHelper.js",
+			"js/kaiopua/utils/SceneHelper.js"
+		],
+		callbacksOnReqs: init_internal,
+		wait: true
+	} );
+	
+	/*===================================================
+    
+    internal init
+    
+    =====================================================*/
+	
+	function init_internal ( rb, mh, vh, sh ) {
+		
+		// reqs
+		
+		_RigidBody = rb;
+		_MathHelper = mh;
+		_VectorHelper = vh;
+		_SceneHelper = sh;
+		
+		// utility
+		
+		utilRay1Casting = new THREE.Ray();
+		utilRay1Localize = new THREE.Ray();
+		utilProjector1Casting = new THREE.Projector();
+		utilMat41Localize = new THREE.Matrix4();
+		utilMat42Localize = new THREE.Matrix4();
+		utilVec31Box = new THREE.Vector3();
+		utilVec32Box = new THREE.Vector3();
+		utilVec31Casting = new THREE.Vector3();
+		utilVec32Casting = new THREE.Vector3();
+		utilVec33Casting = new THREE.Vector3();
+		utilVec31DistanceIntersection = new THREE.Vector3();
+		utilVec32DistanceIntersection = new THREE.Vector3();
+		utilVec33DistanceIntersection = new THREE.Vector3();
+		utilVec31PointTriangle = new THREE.Vector3();
+		utilVec32PointTriangle = new THREE.Vector3();
+		utilVec33PointTriangle = new THREE.Vector3();
+		utilVec31Sphere = new THREE.Vector3();
+		utilVec31Triangle = new THREE.Vector3();
+		utilVec32Triangle = new THREE.Vector3();
+		utilVec33Triangle = new THREE.Vector3();
+		utilVec34Triangle = new THREE.Vector3();
+		
+		// functions
+		
+		_RayHelper.extract_collider = extract_collider;
+		_RayHelper.localize_ray = localize_ray;
+		
+		_RayHelper.raycast = raycast;
+		
+	}
+	
+	/*===================================================
+    
+    helpers
+    
+    =====================================================*/
+	
+	function localize_ray ( ray, object ) {
+		
+		var matrixObj,
+			matrixObjCopy = utilMat41Localize,
+			mt = utilMat42Localize,
+			rt = utilRay1Localize;
+		
+		rt.origin.copy( ray.origin );
+		rt.direction.copy( ray.direction );
+		rt.near = ray.near;
+		rt.far = ray.far;
+		rt.precision = ray.precision;
+		
+		if ( object instanceof THREE.Mesh ) {
+			
+			matrixObj = object.matrixWorld;
+			
+			// get copy of object world matrix without scale applied
+			// matrix with scale does not seem to invert correctly
+			
+			matrixObjCopy.extractPosition( matrixObj );
+			matrixObjCopy.extractRotation( matrixObj );
+			
+			// invert copy
+			
+			mt.getInverse( matrixObjCopy );
+			
+			mt.multiplyVector3( rt.origin );
+			mt.rotateAxis( rt.direction );
+			
+		}
+
+		return rt;
+
+	}
+	
+	function distance_from_intersection ( origin, direction, position ) {
+		
+		var difference = utilVec31DistanceIntersection.sub( position, origin ),
+			dot = difference.dot( direction ),
+			intersect = utilVec32DistanceIntersection.add( origin, utilVec33DistanceIntersection.copy( direction ).multiplyScalar( dot ) );
+		
+		return _VectorHelper.distance_between( intersect, position );
+		
+	}
+	
+	function point_outside_triangle ( p, a, b, c ) {
+		
+		// slight imprecision (i.e. point can be on edge or very slightly outside triangle) adds a lot of stability
+
+		var v0 = utilVec31PointTriangle.sub( c, a );
+		var v1 = utilVec32PointTriangle.sub( b, a );
+		var v2 = utilVec33PointTriangle.sub( p, a );
+
+		var dot00 = v0.dot( v0 );
+		var dot01 = v0.dot( v1 );
+		var dot02 = v0.dot( v2 );
+		var dot11 = v1.dot( v1 );
+		var dot12 = v1.dot( v2 );
+
+		var invDenom = 1 / ( dot00 * dot11 - dot01 * dot01 );
+		var u = ( dot11 * dot02 - dot01 * dot12 ) * invDenom;
+		if ( u < -0.01 || u > 1.01 ) return true;
+		var v = ( dot00 * dot12 - dot01 * dot02 ) * invDenom;
+		return v < -0.01 || v > 1.01 || u + v > 1.01;
+
+	}
+	
+	function sort_intersections ( a, b ) {
+		
+		return a.distance - b.distance;
+		
+	}
+	
+	function extract_collider( source ) {
+		
+		// collider
+		if ( source instanceof _RigidBody.Collider ) {
+			
+			return source;
+			
+		}
+		// rigidBody
+		else if ( source instanceof _RigidBody.Instance ) {
+			
+			return source.collider;
+			
+		}
+		// object 3d
+		else if ( source.rigidBody instanceof _RigidBody.Instance ) {
+			
+			return source.rigidBody.collider;
+			
+		}
+		// octree object
+		else if ( source.object && source.object.rigidBody instanceof _RigidBody.Instance ) {
+			
+			return source.object.rigidBody.collider;
+			
+		}
+		
+		return source;
+		
+	}
+	
+	/*===================================================
+    
+    raycasting
+    
+    =====================================================*/
+	
+	function raycast ( parameters ) {
+		
+		var i, il,
+			j, jl,
+			k, kl,
+			ray = utilRay1Casting,
+			origin = utilVec31Casting,
+			offsets,
+			offset,
+			offsetNone = utilVec32Casting,
+			offsetColliders,
+			offsetObjects,
+			ignore,
+			objects,
+			object,
+			children,
+			colliders,
+			camera,
+			pointer,
+			pointerPosition = utilVec33Casting,
+			projector = utilProjector1Casting,
+			octrees,
+			hierarchySearch,
+			hierarchyIntersect,
+			intersections = [],
+			childIntersections,
+			intersectionPotential,
+			intersectedObject,
+			intersection;
+		
+		// handle parameters
+		
+		parameters = parameters || {};
+		
+		offsets = main.is_array( parameters.offsets ) && parameters.offsets.length > 0 ? parameters.offsets : [ offsetNone ];
+		objects = main.to_array( parameters.objects ).slice( 0 );
+		colliders = main.to_array( parameters.colliders ).slice( 0 );
+		octrees = main.to_array( parameters.octrees );
+		hierarchySearch = parameters.hierarchySearch;
+		hierarchyIntersect = parameters.hierarchyIntersect;
+		camera = parameters.camera;
+		pointer = parameters.pointer;
+		ignore = parameters.ignore;
+		
+		// if using pointer
+		
+		if ( typeof pointer !== 'undefined' && typeof camera !== 'undefined' ) {
+			
+			// get corrected pointer position
+			
+			pointerPosition.x = ( pointer.x / shared.screenWidth ) * 2 - 1;
+			pointerPosition.y = -( pointer.y / shared.screenHeight ) * 2 + 1;
+			pointerPosition.z = 0.5;
+			
+			// unproject pointer position
+			
+			projector.unprojectVector( pointerPosition, camera );
+			
+			// set ray
+
+			origin.copy( camera.position );
+			ray.direction.copy( pointerPosition.subSelf( camera.position ) );
+			
+		}
+		else {
+			
+			origin.copy( parameters.origin || parameters.ray.origin );
+			ray.direction.copy( parameters.direction || parameters.ray.direction );
+			
+		}
+		
+		// normalize ray direction
+		
+		ray.direction.normalize();
+		
+		// ray length
+		
+		if ( main.is_number( parameters.far ) && parameters.far > 0 ) {
+			
+			ray.far = parameters.far;
+			
+		}
+		else {
+			
+			ray.far = Number.MAX_VALUE;
+			
+		}
+		
+		// for each offset
+		
+		for ( i = 0, il = offsets.length; i < il; i++ ) {
+			
+			// offset ray
+			
+			offset = offsets[ i ];
+			
+			ray.origin.copy( origin ).addSelf( offset );
+			
+			// objects
+			
+			offsetObjects = objects.slice( 0 );
+			
+			if ( offsetObjects.length > 0 ) {
+			
+				// account for hierarchy
+				
+				if ( hierarchySearch !== false ) {
+					
+					// if intersection of hierarchy allowed, add all object children to objects list
+					
+					if ( hierarchyIntersect === true ) {
+						
+						offsetObjects = _SceneHelper.extract_children_from_objects( offsetObjects, offsetObjects );
+					
+					}
+					// else raycast children and add reference to ancestor
+					else {
+						
+						for ( j = 0, jl = offsetObjects.length; j < jl; j++ ) {
+							
+							object = offsetObjects[ j ];
+							
+							children = _SceneHelper.extract_children_from_objects( object );
+							
+							childIntersections = raycast_objects( ray, children );
+							
+							for ( k = 0, kl = childIntersections.length; k < kl; k++ ) {
+								
+								childIntersections[ k ].ancestor = object;
+								
+							}
+							
+							intersections = intersections.concat( childIntersections );
+							
+						}
+						
+					}
+					
+				}
+				
+				// raycast objects
+				
+				intersections = intersections.concat( raycast_objects( ray, offsetObjects ) );
+				
+			}
+			
+			// colliders
+			
+			offsetColliders = colliders.slice( 0 );
+			
+			for ( j = 0, jl = octrees.length; j < jl; j++ ) {
+				
+				offsetColliders = offsetColliders.concat( octrees[ j ].search( ray.origin, ray.far, true, ray.direction ) );
+				
+			}
+			
+			if ( offsetColliders.length > 0 ) {
+				
+				// TODO: improve performance of raycast_colliders
+				// raycast_colliders supports casting non-planar quads
+				// but is about 25 - 40% slower than alternative, which should not be the case just because of non-planar quads 
+				
+				intersections = intersections.concat( raycast_colliders( ray, offsetColliders ) );
+				//intersections = intersections.concat( ray.intersectOctreeObjects( offsetColliders ) );
+				
+			}
+			
+		}
+		
+		// sort intersections
+		
+		intersections.sort( sort_intersections );
+		
+		// if all required
+		
+		if ( parameters.allIntersections === true ) {
+			
+			return intersections;
+			
+		}
+		// else return nearest
+		else {
+			
+			// if any objects to ignore
+			
+			if ( main.is_array( ignore ) ) {
+				
+				for ( i = 0, il = intersections.length; i < il; i++ ) {
+					
+					intersectionPotential = intersections[ i ];
+					
+					intersectedObject = intersectionPotential.object || intersectionPotential.mesh;
+					
+					if ( main.index_of_value( ignore, intersectedObject ) === -1 ) {
+						
+						intersection = intersectionPotential;
+						break;
+						
+					}
+					
+				}
+			
+			}
+			// else use first
+			else {
+				
+				intersection = intersections[ 0 ];
+				
+			}
+			
+			// if needs object only
+			
+			if ( parameters.objectOnly === true && intersection ) {
+				
+				if ( hierarchyIntersect !== true && intersection.ancestor ) {
+					
+					intersection = intersection.ancestor;
+					
+				}
+				else {
+					
+					intersection = intersection.object;
+					
+				}
+				
+			}
+			
+			return intersection;
+		
+		}
+		
+	}
+	
+	/*===================================================
+    
+    collisions
+    
+    =====================================================*/
+	
+	function raycast_objects ( ray, objects ) {
+		
+		var i, l,
+			intersections = [],
+			intersection,
+			object;
+		
+		for ( i = 0, l = objects.length; i < l; i++ ) {
+
+			object = objects[ i ];
+			
+			// ray cast object
+			
+			intersection = raycast_mesh( ray, object );
+			
+			// store
+			
+			if ( intersection.distance < Number.MAX_VALUE ) {
+				
+				intersections.push( intersection );
+				
+			}
+			
+		}
+		
+		return intersections;
+		
+	}
+	
+	function raycast_colliders ( ray, sources ) {
+
+		var i, l,
+			intersections = [],
+			intersection,
+			distance;
+		
+		for ( i = 0, l = sources.length; i < l; i++ ) {
+			
+			// ray cast collider of object
+			
+			intersection = raycast_collider( ray, sources[ i ] );
+			
+			if ( intersection.distance < Number.MAX_VALUE ) {
+				
+				intersections.push( intersection );
+				
+			}
+
+		}
+		
+		return intersections;
+
+	}
+
+	function raycast_collider ( ray, source ) {
+		
+		var intersection,
+			collider = extract_collider( source );
+		
+		// cast by type
+		
+		if ( collider instanceof _RigidBody.PlaneCollider ) {
+			
+			return raycast_plane( ray, collider );
+			
+		}
+		else if ( collider instanceof _RigidBody.SphereCollider ) {
+			
+			return raycast_sphere( ray, collider );
+			
+		}
+		else if ( collider instanceof _RigidBody.BoxCollider ) {
+			
+			return raycast_box( ray, collider );
+			
+		}
+		else if ( collider instanceof _RigidBody.MeshCollider ) {
+			
+			intersection = raycast_box( ray, collider.box );
+			
+			if ( intersection.distance < Number.MAX_VALUE ) {
+				
+				intersection = raycast_mesh( ray, source, collider );
+				
+			}
+			
+			return intersection;
+			
+		}
+		else {
+			
+			// TODO: should not be casting colliders when source has none
+			
+			return raycast_mesh( ray, source, collider );
+			
+		}
+
+	}
+	
+	function raycast_plane ( r, collider ) {
+
+		var t = r.direction.dot( collider.normal ),
+			d = collider.point.dot( collider.normal ),
+			ds,
+			intersection = {
+				object: collider.rigidBody.object,
+				distance: Number.MAX_VALUE,
+				normal: new THREE.Vector3(),
+				point: new THREE.Vector3()
+			};
+
+		if( t < 0 ) {
+			
+			ds = ( d - r.origin.dot( collider.normal ) ) / t;
+			
+			if( ds > 0 ) {
+				
+				intersection.distance = ds;
+				intersection.normal.copy( collider.normal );
+				intersection.point.copy( r.direction ).multiplyScalar( intersection.distance ).addSelf( r.origin );
+				
+				return intersection;
+				
+			}
+			
+		}
+		
+		return intersection;
+
+	}
+
+	function raycast_sphere ( r, collider ) {
+
+		var difference = utilVec31Sphere.sub( collider.center, r.origin ),
+			diffLengthSq = difference.lengthSq(),
+			a,
+			t,
+			distance,
+			intersection = {
+				object: collider.rigidBody.object,
+				distance: Number.MAX_VALUE,
+				normal: new THREE.Vector3(),
+				point: new THREE.Vector3()
+			};
+		
+		// inside
+		
+		if ( diffLengthSq < collider.radiusSq ) {
+			
+			// TODO: distance and normal to closest side
+			//intersection.normal.set( 0, yn, 0);
+			intersection.distance = -1;
+			
+			return intersection;
+		}
+		
+		a = difference.dot( r.direction.clone() );
+		
+		if ( a <= 0 ) {
+			
+			return intersection;
+			
+		}
+
+		t = collider.radiusSq - ( diffLengthSq - a * a );
+		
+		if ( t >= 0 ) {
+		
+			distance = Math.abs( a ) - Math.sqrt( t );
+			
+			if ( distance <= r.far ) {
+				
+				intersection.distance = distance;
+				intersection.normal.copy( difference ).multiplyScalar( -1 ).normalize();
+				intersection.point.copy( r.direction ).multiplyScalar( intersection.distance ).addSelf( r.origin );
+				
+			}
+			
+		}
+
+		return intersection;
+
+	}
+	
+	function raycast_box ( ray, collider ) {
+		
+		var rigidBody = collider.rigidBody,
+			object = rigidBody.object,
+			rt = localize_ray( ray, object ),
+			abMin = utilVec31Box.copy( collider.min ),
+			abMax = utilVec32Box.copy( collider.max ),
+			origin = rt.origin,
+			direction = rt.direction,
+			far = rt.far,
+			scale,
+			x, y, z,
+			xt = 0, yt = 0, zt = 0,
+			xn = 0, yn = 0, zn = 0,
+			ins = true,
+			which,
+			t,
+			intersection = {
+				object: object,
+				distance: Number.MAX_VALUE,
+				normal: new THREE.Vector3(),
+				point: new THREE.Vector3()
+			};
+		
+		// account for object
+		
+		if ( typeof object !== 'undefined' ) {
+			
+			scale = object.scale;
+			
+			abMin.multiplySelf( scale );
+			abMax.multiplySelf( scale );
+			
+		}
+		
+		// x
+		
+		if( origin.x < abMin.x ) {
+			
+			xt = abMin.x - origin.x;
+			xt /= direction.x;
+			if ( xt > far ) return intersection;
+			ins = false;
+			xn = -1;
+			
+		}
+		else if ( origin.x > abMax.x ) {
+			
+			xt = abMax.x - origin.x;
+			xt /= direction.x;
+			if ( xt > far ) return intersection;
+			ins = false;
+			xn = 1;
+			
+		}
+		
+		// y
+		
+		if( origin.y < abMin.y ) {
+			
+			yt = abMin.y - origin.y;
+			yt /= direction.y;
+			if ( yt > far ) return intersection;
+			ins = false;
+			yn = -1;
+			
+		}
+		else if( origin.y > abMax.y ) {
+			
+			yt = abMax.y - origin.y;
+			yt /= direction.y;
+			if ( yt > far ) return intersection;
+			ins = false;
+			yn = 1;
+			
+		}
+		
+		// z
+		
+		if( origin.z < abMin.z ) {
+			
+			zt = abMin.z - origin.z;
+			zt /= direction.z;
+			if ( zt > far ) return intersection;
+			ins = false;
+			zn = -1;
+			
+		}
+		else if( origin.z > abMax.z ) {
+			
+			zt = abMax.z - origin.z;
+			zt /= direction.z;
+			if ( zt > far ) return intersection;
+			ins = false;
+			zn = 1;
+			
+		}
+		
+		// find side
+		
+		which = 0;
+		t = xt;
+		
+		if( yt > t ) {
+			
+			which = 1;
+			t = yt;
+			
+		}
+		
+		if ( zt > t ) {
+			
+			which = 2;
+			t = zt;
+			
+		}
+		
+		// inside
+		
+		if( ins ) {
+			
+			// TODO: distance and normal to closest side
+			//intersection.normal.set( 0, yn, 0);
+			intersection.distance = -1;
+			intersection.point.sub( abMax, abMin );
+			
+			return intersection;
+			
+		}
+		
+		// find normal and point
+		
+		if( which === 0 ) {
+			
+			y = origin.y + direction.y * t;
+			if ( y < abMin.y || y > abMax.y )  return intersection;
+			z = origin.z + direction.z * t;
+			if ( z < abMin.z || z > abMax.z ) return intersection;
+			
+			intersection.normal.set( xn, 0, 0 );
+			intersection.point.set( origin.x + direction.x * t, y, z );
+			
+		}
+		else if ( which === 1 ) {
+			
+			x = origin.x + direction.x * t;
+			if ( x < abMin.x || x > abMax.x ) return intersection;
+			z = origin.z + direction.z * t;
+			if ( z < abMin.z || z > abMax.z ) return intersection;
+			
+			intersection.normal.set( 0, yn, 0) ;
+			intersection.point.set( x, origin.y + direction.y * t, z );
+			
+		}
+		else if ( which === 2 ) {
+			
+			x = origin.x + direction.x * t;
+			if ( x < abMin.x || x > abMax.x ) return intersection;
+			y = origin.y + direction.y * t;
+			if ( y < abMin.y || y > abMax.y ) return intersection;
+			
+			intersection.normal.set( 0, 0, zn );
+			intersection.point.set( x, y, origin.z + direction.z * t );
+			
+		}
+		
+		intersection.distance = t;
+		
+		return intersection;
+		
+	}
+	
+	function raycast_mesh ( ray, source, collider ) {
+		
+		var i, l,
+			p0,
+			p1,
+			p2,
+			p3,
+			rigidBody,
+			object,
+			geometry,
+			scale,
+			radiusScaled,
+			vertices,
+			isFaceMaterial,
+			materials,
+			material,
+			side,
+			faces,
+			face,
+			rayLocal,
+			collision,
+			distance,
+			distanceMin = Number.MAX_VALUE,
+			faceMin,
+			intersection = {
+				distance: Number.MAX_VALUE,
+				normal: new THREE.Vector3(),
+				point: new THREE.Vector3()
+			};
+		
+		// extract object and geometry
+		
+		if ( collider instanceof _RigidBody.Collider ) {
+			
+			rigidBody = collider.rigidBody;
+			
+		}
+		
+		if ( rigidBody instanceof _RigidBody.Instance ) {
+			
+			object = rigidBody.object;
+			geometry = rigidBody.geometry;
+			
+		}
+		else {
+			
+			object = source.object || source;
+			geometry = object.geometry;
+			
+		}
+		
+		intersection.object = object;
+		
+		// source has specific list of faces to test
+		// most likely an octree search result
+		
+		if ( typeof source.faces !== 'undefined' ) {
+			
+			faces = main.to_array( source.faces );
+			
+		}
+		
+		// no faces given, check distance and test all faces
+		
+		if ( typeof faces === 'undefined' || faces.length === 0 ) {
+			
+			// test distance to object
+			
+			scale = object.matrixWorld instanceof THREE.Matrix4 ? object.matrixWorld.getMaxScaleOnAxis() : 1;
+			radiusScaled = geometry.boundingSphere.radius * scale;
+			distance = distance_from_intersection( ray.origin, ray.direction, object.matrixWorld.getPosition() );
+			
+			if ( distance > radiusScaled ) {
+				
+				return intersection;
+				
+			}
+			
+			faces = geometry.faces;
+			
+		}
+		
+		vertices = geometry.vertices;
+		isFaceMaterial = object.material instanceof THREE.MeshFaceMaterial;
+		// in the future, change to: object.material.materials
+		materials = isFaceMaterial === true ? geometry.materials : null;
+		
+		// make ray local to object
+		
+		rayLocal = localize_ray( ray, object );
+		
+		// for each face
+		
+		for( i = 0, l = faces.length; i < l; i ++ ) {
+			
+			face = faces[ i ];
+			
+			// instead of skipping when no material, leave side blank and assume is front side
+			
+			material = isFaceMaterial === true ? materials[ face.materialIndex ] : object.material;
+			if ( typeof material !== 'undefined' ) side = material.side;
+			
+			p0 = vertices[ face.a ];
+			p1 = vertices[ face.b ];
+			p2 = vertices[ face.c ];
+			
+			if ( face instanceof THREE.Face4 ) {
+				
+				p3 = vertices[ face.d ];
+				
+				collision = raycast_triangle( rayLocal, p0, p1, p3, distanceMin, side );
+				distance = collision.distance;
+				
+				if( distance < distanceMin ) {
+					
+					distanceMin = distance;
+					faceMin = face;
+					intersection.normal.copy( collision.normal );
+					intersection.point.copy( collision.point );
+					
+				}
+				
+				collision = raycast_triangle( rayLocal, p1, p2, p3, distanceMin, side );
+				distance = collision.distance;
+				
+				if( distance < distanceMin ) {
+					
+					distanceMin = distance;
+					faceMin = face;
+					intersection.normal.copy( collision.normal );
+					intersection.point.copy( collision.point );
+					
+				}
+				
+			}
+			else {
+				
+				collision = raycast_triangle( rayLocal, p0, p1, p2, distanceMin, side, face.normal );
+				distance = collision.distance;
+				
+				if( distance < distanceMin ) {
+					
+					distanceMin = distance;
+					faceMin = face;
+					intersection.normal.copy( collision.normal );
+					intersection.point.copy( collision.point );
+					
+				}
+				
+			}
+			
+		}
+		
+		intersection.distance = distanceMin;
+		intersection.face = faceMin;
+		intersection.normal.normalize();
+		
+		return intersection;
+		
+	}
+	
+	function raycast_triangle ( ray, p0, p1, p2, distanceMin, side, normal ) {
+		
+		var e1 = utilVec31Triangle,
+			e2 = utilVec32Triangle,
+			origin = ray.origin,
+			direction = ray.direction,
+			dotDirectionNormal,
+			planeDistance,
+			dotOriginNormal,
+			point,
+			distance;
+		
+		// calculate normal if not provided
+		
+		if ( typeof normal === 'undefined' ) {
+			
+			e1.sub( p1, p0 );
+			e2.sub( p2, p1 );
+			
+			normal = utilVec33Triangle.cross( e1, e2 );
+			
+		}
+		else {
+			
+			normal = utilVec33Triangle.copy( normal );
+			
+		}
+		
+		// angle between ray direction and triangle normal
+		
+		if ( side === THREE.BackSide ) {
+			
+			normal.multiplyScalar( -1 );
+			
+		}
+		
+		dotDirectionNormal = direction.dot( normal );
+		
+		// ray and triangle are parallel ( = ) or facing similar direction ( > )
+		
+		if ( !( dotDirectionNormal < 0 ) ) {
+			
+			if ( side === THREE.DoubleSide ) {
+				
+				normal.multiplyScalar( -1 );
+				dotDirectionNormal *= -1;
+				
+			}
+			else {
+				
+				return { distance: Number.MAX_VALUE };
+				
+			}
+		
+		}
+		
+		// distance along ray from origin to triangle plane
+		
+		planeDistance = normal.dot( p0 );
+		dotOriginNormal = origin.dot( normal );
+		
+		distance = planeDistance - dotOriginNormal;
+		
+		// distance > 0 would take us behind ray, as dotDirectionNormal must be negative
+		// so distance should be negative or zero at this point
+		
+		if ( distance > 0 || distance < dotDirectionNormal * ray.far || distance < dotDirectionNormal * distanceMin ) {
+			
+			return { distance: Number.MAX_VALUE };
+			
+		}
+		
+		// complete distance
+
+		distance = distance / dotDirectionNormal;
+		
+		// ray has point in plane of triangle, now we need to know if point is inside triangle
+		
+		point = utilVec34Triangle.copy( direction ).multiplyScalar( distance ).addSelf( origin );
+		
+		if ( point_outside_triangle( point, p0, p1, p2 ) ) {
+			
+			return { distance: Number.MAX_VALUE };
+			
+		}
+		
+		return { distance: distance, point: point, normal: normal };
+
+	}
+	
+} (KAIOPUA) );
