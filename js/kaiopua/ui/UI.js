@@ -788,6 +788,11 @@
 			
 		}
 		
+		main.dom_fade( {
+			element: shared.domElements.$navMainAlt,
+			duration: 0
+		} );
+		
 		if ( shared.domElements.$menuToggleDefault.length > 0 ) {
 			
 			shared.domElements.$menuToggleDefault.trigger( 'tap' );
@@ -968,14 +973,6 @@
 		
 		paused = false;
 		
-		// hide resume button
-		
-		main.dom_fade( {
-			element: shared.domElements.$buttonsGameResume,
-			duration: 0,
-			invisible: true
-		} );
-		
 		// unblock ui
 		
 		main.dom_fade( {
@@ -988,11 +985,6 @@
 				
 				shared.domElements.$social.removeClass( 'blocking' );
 				shared.domElements.$sponsorsLite.removeClass( 'hidden' );
-				
-				main.dom_fade( {
-					element: shared.domElements.$navMainAlt,
-					duration: 0
-				} );
 				
 				open_default_menu();
 				
@@ -1033,13 +1025,31 @@
 			}
 			
 		}
-		else if ( main.started === true && main.paused !== true ) {
+		
+		 if ( main.started === true && main.paused !== true ) {
 			
 			// show pause button
 			
 			main.dom_fade( {
 				element: shared.domElements.$buttonsGamePause,
 				opacity: 1
+			} );
+			
+		}
+		else if ( typeof $menuActive !== 'undefined' ) {
+			
+			main.dom_fade( {
+				element: shared.domElements.$buttonsGameResume,
+				opacity: 1
+			} );
+			
+		}
+		else {
+			
+			main.dom_fade( {
+				element: shared.domElements.$buttonsGameResume,
+				duration: 0,
+				invisible: true
 			} );
 			
 		}

@@ -8,32 +8,32 @@
  *	screen
  *	convolution
  *	film
- * 	bokeh
- *  sepia
+ * bokeh
+ * sepia
  *	dotscreen
  *	vignette
- *  bleachbypass
+ * bleachbypass
  *	basic
- *  dofmipmap
- *  focus
- *  triangleBlur
- *  horizontalBlur + verticalBlur
- *  horizontalTiltShift + verticalTiltShift
- *  blend
- *  fxaa
- *  luminosity
- *  colorCorrection
- *  normalmap
- *  ssao
- *  colorify
- *  unpackDepthRGBA
+ * dofmipmap
+ * focus
+ * triangleBlur
+ * horizontalBlur + verticalBlur
+ * horizontalTiltShift + verticalTiltShift
+ * blend
+ * fxaa
+ * luminosity
+ * colorCorrection
+ * normalmap
+ * ssao
+ * colorify
+ * unpackDepthRGBA
  */
 
 THREE.ShaderExtras = {
 
 	/* -------------------------------------------------------------------------
 	//	Full-screen textured quad shader
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'screen': {
 
@@ -78,17 +78,17 @@ THREE.ShaderExtras = {
 
 	/* ------------------------------------------------------------------------
 	//	Convolution shader
-	//	  - ported from o3d sample to WebGL / GLSL
-	//			http://o3d.googlecode.com/svn/trunk/samples/convolution.html
+	//	- ported from o3d sample to WebGL / GLSL
+	//	http://o3d.googlecode.com/svn/trunk/samples/convolution.html
 	------------------------------------------------------------------------ */
 
 	'convolution': {
 
 		uniforms: {
 
-			"tDiffuse" : 		{ type: "t", value: null },
+			"tDiffuse" :	{ type: "t", value: null },
 			"uImageIncrement" : { type: "v2", value: new THREE.Vector2( 0.001953125, 0.0 ) },
-			"cKernel" : 		{ type: "fv1", value: [] }
+			"cKernel" :	{ type: "fv1", value: [] }
 
 		},
 
@@ -145,7 +145,7 @@ THREE.ShaderExtras = {
 	// Film grain & scanlines shader
 
 	//	- ported from HLSL to WebGL / GLSL
-	//	  http://www.truevision3d.com/forums/showcase/staticnoise_colorblackwhite_scanline_shaders-t18698.0.html
+	//	http://www.truevision3d.com/forums/showcase/staticnoise_colorblackwhite_scanline_shaders-t18698.0.html
 
 	// Screen Space Static Postprocessor
 	//
@@ -159,7 +159,7 @@ THREE.ShaderExtras = {
 
 	// This version is provided under a Creative Commons Attribution 3.0 License
 	// http://creativecommons.org/licenses/by/3.0/
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'film': {
 
@@ -1234,7 +1234,7 @@ THREE.ShaderExtras = {
 
 				"}",
 
-			"}",
+			"}"
 
 		].join("\n")
 
