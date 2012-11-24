@@ -477,8 +477,7 @@
 		shared.signals.onWorkerTaskCompleted.add( worker_task_complete );
 		shared.signals.onWorkerTasksCompleted.add( worker_tasks_complete );
 		
-		shared.signals.onGamePlayable.add( handle_game_state );
-		shared.signals.onGameReadyChange.add( handle_game_state );
+		shared.signals.onGameStateChange.add( handle_game_state );
 		shared.signals.onGameStarted.add( start );
 		shared.signals.onGameStartedCompleted.add( start_complete );
 		shared.signals.onGameStopped.add( stop );
@@ -563,7 +562,7 @@
 		
 		// add into worker started progress bar
 		
-		shared.domElements.$workerProgressBarStarted.append( $( '<img src="img/bar_vertical_rev_64.png" id="' + id + '" class="iconk-tiny-widthFollow-tight work-task">' ) );
+		shared.domElements.$workerProgressBarStarted.prepend( $( '<img src="img/bar_vertical_rev_64.png" id="' + id + '" class="iconk-tiny-widthFollow-tight work-task">' ) );
 		
 	}
 	
@@ -709,6 +708,10 @@
 		// add tooltip to start button
 		
 		if ( shared.supports.webGL !== true ) {
+			
+			shared.domElements.$gameState
+				.find( '.state-loading' )
+					.text( 'No WebGL' );
 			
 			shared.domElements.$buttonsGameStart
 				.tooltip( 'destroy' )

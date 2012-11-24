@@ -10444,11 +10444,6 @@ a:hover,
   -moz-box-sizing: border-box;
   box-sizing: border-box;
 }
-#worker .worker-bar .progress-bar {
-  display: inline-block;
-  *display: inline;
-  zoom: 1;
-}
 #worker .worker-bar-left {
   position: absolute;
   right: 50%;
@@ -10625,7 +10620,7 @@ a[class*="game"]:not( .disabled ):hover h6,
   border: 5px solid rgba(0, 0, 0, 0.1);
 }
 .sponsor {
-  background-image: url("app/../img/sponsor_unknown.png");
+  background-image: url("../img/sponsor_unknown.png");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: 50% 50%;

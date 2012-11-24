@@ -172,8 +172,9 @@ var KAIOPUA = (function (main) {
 			
 			onAssetReady : new signals.Signal(),
 			
+			onGameStateChange: new signals.Signal(),
 			onGamePlayable : new signals.Signal(),
-			onGameReadyChange: new signals.Signal(),
+			onGameReady: new signals.Signal(),
 			onGamePaused : new signals.Signal(),
 			onGameResumed : new signals.Signal(),
 			onGameUpdated : new signals.Signal(),
@@ -359,7 +360,8 @@ var KAIOPUA = (function (main) {
 					
 					ready = rdy;
 					
-					shared.signals.onGameReadyChange.dispatch( ready );
+					shared.signals.onGameReady.dispatch( ready );
+					shared.signals.onGameStateChange.dispatch( ready );
 					
 				}
 				
@@ -397,6 +399,8 @@ var KAIOPUA = (function (main) {
         if ( _ErrorHandler.errorState ) {
 			
 			shared.supports.webGL = false;
+			
+			shared.signals.onGameStateChange.dispatch();
 			
             _ErrorHandler.process();
 			
@@ -590,6 +594,7 @@ var KAIOPUA = (function (main) {
 		playable = true;
 		
 		shared.signals.onGamePlayable.dispatch();
+		shared.signals.onGameStateChange.dispatch();
 		
 	}
 	
