@@ -10,7 +10,7 @@
 			color: @backgroundScifiHighlight;
 		}
 		
-		&:hover {
+		&:not( .disabled ):hover {
 			color: @backgroundScifiHighlight;
 			p, h6 {
 				color: @backgroundScifiHighlight;
@@ -24,29 +24,29 @@
 /* buttons
 -------------------------------------------------------------------------------*/
 
-.btn-semicircle-left, .btn-semicircle-right {
-	padding: @playerPadding * 0.5;
+.btn-tab-left, .btn-tab-right {
+	background: @backgroundScifi;
 	opacity: 0.5;
 	.transition(e('opacity .3s linear, padding .3s ease-out'));
 	
-	&:hover {
+	&:not( .disabled ):hover {
+		background: @backgroundScifiHighlight;
 		opacity: 1;
 		.transition(e('opacity .3s linear, padding .3s ease-out'));
 	}
+	
 }
 
-.btn-semicircle-left {
+.btn-tab-left {
+	padding: @uiPanePaddingRight * 0.5 @uiPanePaddingRight @uiPanePaddingRight * 0.5 @uiPanePaddingRight;
 	float: right;
-	&:hover {
-		padding-right: @playerPadding;
+	&:not( .disabled ):hover {
+		padding-right: @uiPanePaddingRight * 2;
 	}
 }
-.btn-semicircle-right {
-	&:hover {
-		padding-left: @playerPadding;
+.btn-tab-right {
+	padding: @uiPanePaddingRight * 0.5 @uiPanePaddingRight @uiPanePaddingRight * 0.5 @uiPanePaddingRight;
+	&:not( .disabled ):hover {
+		padding-left: @uiPanePaddingLeft * 2;
 	}
-}
-
-#gameResumeMain {
-	position: absolute;
 }

@@ -2,25 +2,91 @@
 -------------------------*/
 
 #statusActive {
-	margin-top: 60px;
-	margin-bottom: 60px;
 	position: absolute;
 	bottom: 0;
 	left: 0;
 	right: 0;
+}
+
+.status-item {
+	padding: @baseLineHeight * 0.5;
+	margin-bottom: @baseLineHeight * 0.5;
+	background: @statusBackground;
+	color: @statusColor;
 	
-	& > * {
-		padding-left: 20px;
-		padding-right: 20px;
-		margin-bottom: 10px;
-		background: #191919;
-		color: @textColorInverse;
-		.box-shadow( 8px -8px 0px 1px rgba(0, 0, 0, 0.1) );
+	&:last-child {
+		margin-bottom: 0;
+	}
+}
+
+/* ready state
+-------------------------*/
+
+.state-loading {
+	display: none;
+	&.active {
+		.inline-block;
+		color: @btnDangerBackground;
+	}
+}
+
+.state-usable {
+	display: none;
+	&.active {
+		.inline-block;
+		color: @btnWarningBackground;
+	}
+}
+	
+.state-ready {
+	display: none;
+	&.active {
+		.inline-block;
+		color: @btnSuccessBackground;
+	}
+}
+
+/* worker 
+-------------------------*/
+
+#worker {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	
+	.worker-bar {
+		.inline-block;
+		padding: 6px 11px;
+		margin-left: 1px;
+		margin-right: 1px;
+		background: @statusBackground;
+		color: @statusColor;
+		border: 1px solid @statusBackground;
+		border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+		.border-radius( @baseLineHeight * 0.25 );
+		.box-sizing( border-box );
 		
-		&:last-child {
-			margin-bottom: 0;
+		.progress-bar {
+			.inline-block;
 		}
-		
+	}
+	
+	.worker-bar-left {
+		position: absolute;
+		right: 50%;
+		margin-right: @workerTextWidth * 0.5 + 1px;
+		bottom: 0;
+	}
+	
+	.worker-bar-right {
+		position: absolute;
+		left: 50%;
+		margin-left: @workerTextWidth * 0.5 + 1px;
+		bottom: 0;
+	}
+	
+	#workerStatusText {
+		width: @workerTextWidth;
 	}
 	
 }

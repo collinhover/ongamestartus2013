@@ -24,8 +24,10 @@ var KAIOPUA = (function (main) {
 	
     var shared = main.shared = main.shared || {};
 	
-	shared.domElements = shared.domElements || {};
-	shared.supports = shared.supports || {};
+	shared.domElements = {};
+	shared.supports = {
+		webGL: true
+	};
 	shared.throttled = {};
 	shared.spawns = {};
 	
@@ -78,11 +80,12 @@ var KAIOPUA = (function (main) {
 		_CameraControls,
 		_KeyHelper,
 		_UI,
-		_Launcher,
-		_Intro,
+		sectionLauncher,
+		sectionStart,
 		renderComposer,
         renderPasses,
 		setup = false,
+		playable = false,
 		ready = false,
 		started = false,
         paused = false,
@@ -126,8 +129,8 @@ var KAIOPUA = (function (main) {
         assetsGameLauncher = [
             "js/kaiopua/sections/Launcher.js"
         ],
-        assetsGameExtras = [
-			"js/kaiopua/sections/Intro.js"
+        assetsGamePlayable = [
+			"js/kaiopua/sections/Start.js"
         ];
 	
 	/*===================================================
@@ -169,7 +172,8 @@ var KAIOPUA = (function (main) {
 			
 			onAssetReady : new signals.Signal(),
 			
-			onGameReady: new signals.Signal(),
+			onGamePlayable : new signals.Signal(),
+			onGameReadyChange: new signals.Signal(),
 			onGamePaused : new signals.Signal(),
 			onGameResumed : new signals.Signal(),
 			onGameUpdated : new signals.Signal(),
@@ -343,9 +347,24 @@ var KAIOPUA = (function (main) {
 			get : function () { return setup; }
 		});
 		
-		Object.defineProperty(main, 'ready', { 
-			get : function () { return ready; }
+		Object.defineProperty(main, 'playable', { 
+			get : function () { return playable; }
 		});
+		
+		Object.defineProperty( main, 'ready', { 
+			get : function () { return ready; },
+			set : function ( rdy ) {
+				
+				if ( ready !== rdy ) {
+					
+					ready = rdy;
+					
+					shared.signals.onGameReadyChange.dispatch( ready );
+					
+				}
+				
+			}
+		} );
 		
 		Object.defineProperty(main, 'focusLost', { 
 			get : function () { return focusLost; }
@@ -377,14 +396,12 @@ var KAIOPUA = (function (main) {
         
         if ( _ErrorHandler.errorState ) {
 			
-            _ErrorHandler.process();
+			shared.supports.webGL = false;
 			
-			shared.signals.onGameReady.dispatch();
+            _ErrorHandler.process();
 			
         }
         else {
-			
-			shared.supports.webGL = true;
 			
 			load_game_foundation();
 			
@@ -412,13 +429,13 @@ var KAIOPUA = (function (main) {
 	
 	function load_game_launcher () {
 		
-		main.asset_require( assetsGameLauncher, [ init_launcher, load_game_extras ], true );
+		main.asset_require( assetsGameLauncher, [ init_launcher, load_game_playable ], true );
 		
 	}
 	
-	function load_game_extras () {
+	function load_game_playable () {
 		
-		main.asset_require( assetsGameExtras, init_ready, true );
+		main.asset_require( assetsGamePlayable, init_playable, true );
 		
 	}
 	
@@ -553,28 +570,28 @@ var KAIOPUA = (function (main) {
 	
 	function init_launcher ( launcher ) {
 		
-		_Launcher = launcher;
+		sectionLauncher = launcher;
 		
-		set_section( _Launcher );
+		set_section( sectionLauncher );
 		
 	}
 	
 	/*===================================================
     
-	ready
+	playable
     
     =====================================================*/
-    
-    function init_ready ( intro ) {
-		console.log('GAME: ready');
+	
+	function init_playable ( st ) {
+		console.log('GAME: playable');
 		
-		_Intro = intro;
+		sectionStart = st;
 		
-		ready = true;
+		playable = true;
 		
-		shared.signals.onGameReady.dispatch();
+		shared.signals.onGamePlayable.dispatch();
 		
-    }
+	}
 	
 	/*===================================================
     
@@ -689,7 +706,7 @@ var KAIOPUA = (function (main) {
     
     function start () {
 		
-		if ( ready === true ) {
+		if ( playable === true ) {
 			
 			// start or resume
 			
@@ -702,7 +719,7 @@ var KAIOPUA = (function (main) {
 				
 				// set intro section
 				
-				set_section( _Intro, function () {
+				set_section( sectionStart, function () {
 					
 					shared.signals.onGameStartedCompleted.dispatch();
 					
@@ -722,7 +739,7 @@ var KAIOPUA = (function (main) {
 	
 	function stop () {
 		
-		if ( ready === true ) {
+		if ( playable === true ) {
 			console.log('GAME: STOP');
 			started = false;
 			
@@ -732,7 +749,7 @@ var KAIOPUA = (function (main) {
 			
 			// set launcher section
 			
-			set_section( _Launcher, function () {
+			set_section( sectionLauncher, function () {
 				
 				shared.signals.onGameStoppedCompleted.dispatch();
 				
@@ -1764,7 +1781,8 @@ var KAIOPUA = (function (main) {
 			duration,
 			opacity,
 			easing,
-			callback;
+			callback,
+			makeInvisible;
 		
 		// handle parameters
 		
@@ -1784,6 +1802,8 @@ var KAIOPUA = (function (main) {
 				$ignore,
 				isCollapsed,
 				isHidden,
+				isInvisible,
+				makeInvisible,
 				fadeComplete = function () {
 					
 					$element.removeClass( 'hiding' );
@@ -1792,7 +1812,7 @@ var KAIOPUA = (function (main) {
 					
 					if ( opacity === 0 ) {
 						
-						$element.addClass( 'hidden' ).css( 'opacity', '' ).trigger( 'hidden' );
+						$element.addClass( makeInvisible ? 'invisible' : 'hidden' ).css( 'opacity', '' ).trigger( 'hidden' );
 						
 						// reenable all buttons and links
 						
@@ -1821,8 +1841,10 @@ var KAIOPUA = (function (main) {
 					
 				};
 			
-			isHidden = $element.is( '.hiding, .hidden, .invisible' );
+			isInvisible = $element.is( '.invisible' );
+			isHidden = $element.is( '.hiding, .hidden' ) || isInvisible;
 			isCollapsed = $element.is( '.collapsed' );
+			makeInvisible = isInvisible || parameters.invisible;
 			
 			// stop animations
 			
@@ -1889,6 +1911,8 @@ var KAIOPUA = (function (main) {
 				$ignore,
 				isCollapsed,
 				isHidden,
+				isInvisible,
+				makeInvisible,
 				heightCurrent,
 				heightTarget = 0,
 				collapseComplete = function () {
@@ -1902,7 +1926,7 @@ var KAIOPUA = (function (main) {
 					}
 					else {
 						
-						$element.addClass( 'hidden' ).trigger( 'hidden' );
+						$element.addClass( makeInvisible ? 'invisible' : 'hidden' ).trigger( 'hidden' );
 						
 						// enable pointer
 						
@@ -1922,8 +1946,10 @@ var KAIOPUA = (function (main) {
 			
 			// if should start from hidden
 			
-			isHidden = $element.is( '.hiding, .hidden, .invisible' );
+			isInvisible = $element.is( '.invisible' );
+			isHidden = $element.is( '.hiding, .hidden' ) || isInvisible;
 			isCollapsed = $element.is( '.collapsed' );
+			makeInvisible = isInvisible || parameters.invisible;
 			
 			if ( isCollapsed !== true && ( isHidden === true || parameters.initHidden === true ) ) {
 				

@@ -51,11 +51,11 @@
 		 - Transparency is not recommended (iOS will put a black BG behind the icon) -->
     
 	<!-- LESS for development only -->
-	<!--<link rel="stylesheet/less" type="text/css" href="less/main.less">
-	<script src="js/lib/less-1.3.1.min.js" type="text/javascript"></script> -->
+	<link rel="stylesheet/less" type="text/css" href="less/main.less">
+	<script src="js/lib/less-1.3.1.min.js" type="text/javascript"></script>
 	
 	<!-- CSS -->
-	<link rel="stylesheet" type="text/css" href="css/main.css">
+	<!--<link rel="stylesheet" type="text/css" href="css/main.css">-->
 	
 	<!-- setup javascript only -->
 	<script src="js/lib/modernizr-2.6.2.min.js"></script>
@@ -91,40 +91,60 @@
 		
 		<div id="uiPlayer" class="ignore-pointer">
 			
-			<div id="uiPlayerColumnLeft" class="ignore-pointer">
-			
-				<div id="playerState" class="invisible">
+			<div class="ui-pane-column-left ignore-pointer">
+				
+				<div class="ui-pane-body ignore-pointer">
 					
-					<div class="player-health progress progress-danger">
-						<div class="bar" style="width: 100%;"></div>
-						<img src="img/heart_rev_64.png" class="iconk dim">
+					<ul class="unstyled nav-game nav-skewed-upright nav-opacity-lite tab-toggles">
+						<li>
+							<a href="#" class="game-pause btn btn-inverse btn-tab-right">
+								<img src="img/pause_64.png" class="iconk-large">
+							</a>
+						</li>
+					</ul>
+					
+					<div id="playerState" class="invisible">
+						
+						<div class="player-health progress progress-danger">
+							<div class="bar" style="width: 100%;"></div>
+							<img src="img/heart_rev_64.png" class="iconk dim">
+						</div>
+						
 					</div>
 					
 				</div>
 				
-				<a href="#" id="gamePauseMain" class="game-pause btn btn-inverse btn-circle btn-semicircle-right hidden" alt="Pause / Menu">
-					<img src="img/pause_rev_64.png" class="iconk-large">
-				</a>
+			</div>
+			
+			<div class="ui-pane-column-middle ignore-pointer">
 				
 			</div>
 			
-			<div id="uiPlayerColumnMiddle" class="ignore-pointer">
-			
-			</div>
-			
-			<div id="uiPlayerColumnRight" class="ignore-pointer">
+			<div class="ui-pane-column-right ignore-pointer">
 				
-				<div id="playerTarget" class="invisible">
+				<div class="ui-pane-body ignore-pointer">
 					
-					<div id="playerTargetPortrait">
-						<div class="target-image"></div>
-						<p class="target-name"></p>
+					<div id="playerTarget" class="invisible">
+						
+						<ul class="unstyled nav-game nav-skewed-upleft nav-opacity-lite tab-toggles">
+							<li class="clearfix">
+								<a href="#" id="playerTargetInteract" class="btn btn-inverse btn-tab-left" alt="Interact">
+									<img src="img/talk_64.png" class="iconk-large">
+								</a>
+							</li>
+						</ul>
+						
+						<div id="playerTargetPortrait">
+							<div class="target-image"></div>
+							<p class="target-name"></p>
+						</div>
+						<!--
+						<a href="#" id="playerTargetInteract" class="btn btn-inverse btn-circle btn-semicircle-left" alt="Interact">
+							<img src="img/talk_rev_64.png" class="iconk-large">
+						</a>
+						-->
 					</div>
-					
-					<a href="#" id="playerTargetInteract" class="btn btn-inverse btn-circle btn-semicircle-left" alt="Interact">
-						<img src="img/talk_rev_64.png" class="iconk-large">
-					</a>
-					
+				
 				</div>
 				
 			</div>
@@ -155,6 +175,7 @@
 						</div>
 						
 					</header>
+					<!-- /headerMain -->
 					
 					<section id="noscript" class="container-center menu-section">
 						<div class="well error">
@@ -185,7 +206,7 @@
 						
 						<div class="row">
 							<div class="span4 offset4">
-								<ul class="nav nav-skewed tab-toggles">
+								<ul class="nav nav-game nav-skewed-upright tab-toggles">
 									<li>
 										<a href="#" class="game-start">Play</a>
 									</li>
@@ -199,6 +220,9 @@
 										<a href="#speakers">Speakers</a>
 									</li>
 									<li>
+										<a href="https://docs.google.com/spreadsheet/viewform?formkey=dEMwZHQtcXp6Mjh0MGhoRnRKTzF3SUE6MQ" target="_blank">Become a Speaker <small>(external)</small></a>
+									</li>
+									<li>
 										<a href="https://docs.google.com/spreadsheet/viewform?formkey=dG94UXdDS2ZBVjRrWnlMUUZMWU96M1E6MQ" target="_blank">Preregister <small>(external)</small></a>
 									</li>
 								</ul>
@@ -206,6 +230,7 @@
 						</div>
 						
 					</section>
+					<!-- /navMain -->
 					
 				</div>
 				
@@ -348,39 +373,57 @@
 							<h1 class="inline-type">About</h1>
 							<h2 class="sidekick-type">onGameStart: the Web + Games Conference</h2>
 							
-							<ul id="social" class="nav nav-pills nav-inline nav-opacity nav-transparent">
-								<li>
-									<a href="mailto: info@ongamestart.com" target="_blank">
-										<img src="img/email_64.png" class="iconk-small">
-										<h6 class="inline-type">info@ongamestart.com</h6>
-									</a>
-								</li>
-								<li>
-									<a href="http://twitter.com/onGameStart" target="_blank">
-										<img src="img/twitter_64.png" class="iconk-small">
-										<h6 class="inline-type">Twitter</h6>
-									</a>
-								</li>
-								<li>
-									<a href="https://www.facebook.com/onGameStart" target="_blank">
-										<img src="img/facebook_alt_64.png" class="iconk-small">
-										<h6 class="inline-type">Facebook</h6>
-									</a>
-								</li>
-								<li>
-									<a href="http://lanyrd.com/2013/ogsus/" target="_blank">
-										<img src="img/talk_64.png" class="iconk-small">
-										<h6 class="inline-type">Lanyrd</h6>
-									</a>
-								</li>
-								<li>
-									<a href="https://github.com/collinhover/ongamestartus2013" target="_blank">
-										<img src="img/github_64.png" class="iconk-small">
-										<h6 class="inline-type">Code</h6>
-									</a>
-								</li>
-							</ul>
-							<!-- /social -->
+							<section id="sponsors">
+								
+								<h6 class="sponsor-title">Jupiter Diamond Sponsors</h6>
+								<div class="sponsors-diamond grid-gutterless">
+									<ul class="thumbnails thumbnails4 shadowless borderless">
+										<li class="thumbnail">
+											<a href="#" class="sponsor"></a>
+										</li>
+									</ul>
+								</div>
+								<!-- /sponsorsDiamond -->
+								
+								<h6 class="sponsor-title">Saturn Platinum Sponsors</h6>
+								<div class="sponsors-platinum grid-gutterless">
+									<ul class="thumbnails thumbnails4 shadowless borderless">
+										<li class="thumbnail">
+											<a href="#" class="sponsor"></a>
+										</li>
+									</ul>
+								</div>
+								<!-- /sponsorsPlatinum -->
+								
+								<h6 class="sponsor-title">Neptune Gold Sponsors</h6>
+								<div class="sponsors-gold grid-gutterless">
+									<ul class="thumbnails thumbnails4 shadowless borderless">
+										<li class="thumbnail">
+											<a href="#" class="sponsor"></a>
+										</li>
+									</ul>
+								</div>
+								<!-- /sponsorsGold -->
+								
+								<h6 class="sponsor-title">Earth Silver Sponsors</h6>
+								<div class="sponsors-silver grid-gutterless">
+									<ul class="thumbnails thumbnails4 shadowless borderless">
+										<li class="thumbnail">
+											<a href="#" class="sponsor"></a>
+										</li>
+									</ul>
+								</div>
+								<!-- /sponsorsSilver -->
+								
+								<ul class="sponsor-button nav nav-game nav-skewed-upright">
+									<li>
+										<a href="img/sponsors.pdf" target="_blank">Sponsor the Event!</a>
+									</li>
+								</ul>
+								
+							</section>
+							<!-- /sponsors -->
+							
 						</div>
 						<!--<div id="navAbout" class="subnavbar is-sticky">
 							<div class="navbar-inner">
@@ -399,6 +442,10 @@
 					
 					<section id="description" class="menu-section">
 						
+						<div class="page-header">
+							<h1>Topics</h1>
+						</div>
+						
 						<div class="row">
 							
 							<div class="span3">
@@ -416,7 +463,7 @@
 							<div class="span3">
 								<img src="img/js.png" alt="JS" class="iconk-spacebottom">
 								<h6>Make it</h6>
-								<h2>Fly</h2>
+								<h2>Engaging</h2>
 								<p>Run, jump, punch, slash, shoot, carry, break, push, throw, swing, group, raid, quest, drive, or fly. We don't care as long as it's fun!</p>
 							</div>
 							<div class="span3">
@@ -454,9 +501,10 @@
 												<div class="hero-anchor">
 													<!--<img src="img/location_venue.jpg" alt="NYIT Auditorium on Broadway" class="iconk-spacebottom">-->
 													<h6><i class="dim icon-home icon-white"></i> Venue</h6>
-													<p class="lead">NYIT Auditorium on Broadway</p>
+													<p class="lead">Coming soon!</p>
+													<!--<p class="lead">NYIT Auditorium on Broadway</p>
 													<p>Hosted in the New York Institute of Technology on Broadway, 3 minutes from Central Park.</p>
-													<a href="http://www.nyit.edu/aob/" target="_blank" class="btn">More Info</a>
+													<a href="http://www.nyit.edu/aob/" target="_blank" class="btn">More Info</a>-->
 												</div>
 											</div>
 											
@@ -469,13 +517,16 @@
 												<div class="hero-anchor">
 													<!--<img src="img/location_map.jpg" alt="NYIT Auditorium on Broadway" class="iconk-spacebottom">-->
 													<h6><i class="dim icon-road icon-white"></i> Address</h6>
+													<p>Coming soon!</p>
+													<!--
 													<p>
 														1871 Broadway<br/>
 														New York, NY 10023
-													</p>
+													</p>-->
 													<h6><i class="dim icon-comment icon-white"></i> Phone</h6>
-													<p>646.273.6100</p>
-													<a href="https://maps.google.com/maps?ie=UTF8&q=NYIT+Auditorium+on+Broadway&t=h&z=16&vpsrc=0&iwloc=A" target="_blank" class="btn">Google Maps</a>
+													<p>Coming soon!</p>
+													<!--<p>646.273.6100</p>
+													<a href="https://maps.google.com/maps?ie=UTF8&q=NYIT+Auditorium+on+Broadway&t=h&z=16&vpsrc=0&iwloc=A" target="_blank" class="btn">Google Maps</a>-->
 												</div>
 												
 											</div>
@@ -551,7 +602,7 @@
 									<h6>Presenting</h6>
 									<p class="sidekick-type">TBA</p>
 									<h6>About</h6>
-									<p>My gaming experience started in mid '90 on my XT with Hercules graphic card and amber screen. I was too young (and I lived on the other side of the iron curtain) to remember Apple II or Commodore computers before. One of the first games I remember from my early childhood was 'Prince of Persia' made by Jordan Mechner. I played it for almost 12 years before I was able to finish it without cheating (I can still remember 'prince megahit' password that enables cheat mode).</p>
+									<p>Hi there, I'm Michal Budzynski, organizer of this event. I'm also addicted to Tabasco & TV Series of all kind, and love to code ridiculous things to make web the better place - like my <a href="https://developer.mozilla.org/en-US/demos/detail/css-nyan-cat" target="_blank">CSS NYAN CAT</a></p>
 									<h6>Website</h6>
 									<a href="http://michalbe.blogspot.com/" target="_blank">michalbe.blogspot.com</a>
 									
@@ -570,9 +621,9 @@
 									
 									<h2>Collin Hover</h2>
 									<h6>Presenting</h6>
-									<p class="sidekick-type">Raycast-orama: how to really cast the hell out of those rays!</p>
+									<p class="sidekick-type">Raycast-orama!</p>
 									<h6>About</h6>
-									<p>I grew up in a nomadic family of (hyper)polyglots, travelling and living in the middle East, Holland, Taiwan, Japan, and the triangle of Polynesia.</p>
+									<p>Hi, I'm Collin Hover, and I designed and developed this site for Michal, with great help by Blackmoon Design on the 3D models. I hope you're enjoying it! I grew up in a nomadic family of (hyper)polyglots, travelling and living in the middle East, Holland, Taiwan, Japan, and the triangle of Polynesia, so I'm always looking for new things.</p>
 									<h6>Website</h6>
 									<a href="http://collinhover.com/" target="_blank">collinhover.com</a>
 									
@@ -591,9 +642,9 @@
 									
 									<h2>Pascal Rettig</h2>
 									<h6>Presenting</h6>
-									<p class="sidekick-type">TBA</p>
+									<p class="sidekick-type">Performance optimization for Mobile HTML5 Games</p>
 									<h6>About</h6>
-									<p>Author for Wiley. Rails, HTML5, Gaming, the Cloud and the Semantic Web. Yup, I think that about covers it.</p>
+									<p>Hi, I'm Pascal (MIT '02) and I've been building websites since the late 80's when they were called BBSs. I founded Cykod, a Boston web consultancy focused on developing interactive HTML5 websites using Rails and Node.js. I run the Boston Front-End Developer Meetup, the Boston HTML5 Game Development Meetup and I'm the author of Wiley's Professional Mobile HTML5 Game Development. I also teach Web Design at Massachusetts College of Art and I'm a member of the editorial board of User Experience Magazine.</p>
 									<h6>Website</h6>
 									<a href="http://cykod.com/" target="_blank">cykod.com</a>
 									
@@ -614,7 +665,7 @@
 									<h6>Presenting</h6>
 									<p class="sidekick-type">TBA</p>
 									<h6>About</h6>
-									<p>I am a Technology Evangelist at Microsoft focusing on Windows 8 and HTML5 Gaming. My job is to help developers build amazing apps and games for Windows 8. I have been a Web developer for over 13 years as well as a mobile app developer for the better part of the last 4 years.</p>
+									<p>Hello, my name is Jesse Freeman and I am a Technology Evangelist at Microsoft focusing on Windows 8 and HTML5 Gaming. My job is to help developers build amazing apps and games for Windows 8. I have been a Web developer for over 13 years as well as a mobile app developer for the better part of the last 4 years. I moved back to NY in 2002 and have worked with some of the city's top companies such as MLB, the New York Jets, HBO, Tommy Hilfiger, Bloomberg and even internationally for clients such as VW. Through my career I have seen all sides of development from independent contractor, government, consultant, agency and product. It has been a crazy ride and an amazing one that helped make me the developer I am today. In addition to my client work I have also been a speaker, author and blogger for the past 6 years. Through all of my work I have always had a passion for making games and over the past year I have been focusing on HTML5 game development. I recently wrote a book for O'Reilly called <a href="http://www.amazon.com/Introducing-HTML5-Development-Jesse-Freeman/dp/1449315178" target="_blank">Introducing HTML5 Game Development</a> using the ImpactJS framework. I have always used my passion for making games to help me learn new programing languages and this passion is one thing I hope to help share with others. You can follow me on twitter at <a href="https://twitter.com/jessefreeman" target="_blank">@jessefreeman</a>.</p>
 									<h6>Website</h6>
 									<a href="jessefreeman.com" target="_blank">jessefreeman.com</a>
 									
@@ -636,127 +687,179 @@
 		
 		<div id="uiOverlay" class="ignore-pointer">
 			
-			<header id="uiHeader">
+			<div class="ui-pane-column-left ignore-pointer">
 				
-				<h1 class="visuallyhidden">onGameStart US: HTML5 Game Conference</h1>
+				<div class="ui-pane-body ignore-pointer">
 				
-			</header>
-			<!-- /uiHeader -->
+					<div  id="navMainAlt" class="ignore-pointer hidden">
+						<ul class="unstyled nav-game nav-skewed-upright nav-opacity-lite tab-toggles">
+							<li>
+								<a href="#" class="game-resume btn btn-inverse btn-tab-right">
+									<img src="img/play_64.png" class="iconk-large">
+								</a>
+							</li>
+							<li>
+								<a href="#howto" class="btn btn-inverse btn-tab-right">
+									<img src="img/accessibility_64.png" class="iconk-large">
+								</a>
+							</li>
+							<li>
+								<a href="#about" class="btn btn-inverse btn-tab-right">
+									<img src="img/info_64.png" class="iconk-large">
+								</a>
+							</li>
+							<li>
+								<a href="#speakers" class="btn btn-inverse btn-tab-right">
+									<img src="img/talk_64.png" class="iconk-large">
+								</a>
+							</li>
+						</ul>
+					</div>
+					
+				</div>
+				
+			</div>
 			
-			<a href="#" id="gameResumeMain" class="game-resume btn btn-inverse btn-circle btn-semicircle-right hidden" alt="Resume / Play">
-				<img src="img/play_rev_64.png" class="iconk-large">
-			</a>
-			
-			<div id="uiStatus" class="ignore-pointer">
+			<div class="ui-pane-column-middle ignore-pointer">
 				
-				<!-- status inactive -->
-				<div id="statusInactive" class="hidden">
+				<header class="ui-pane-header ignore-pointer">
 					
-					<section id="errorGeneral" class="status-item hidden">
-						<div class="menu-section error">
-							<h2 class="error-header logo-type">Well, this is embarrassing!</h2>
-							<p class="error-body">We tried to catch every bug, but it looks like one got through. Please let us know by <a href='https://github.com/collinhover/ongamestartus2013/issues' target='_blank'>submitting an issue</a> report.</p>
-							<p><code><span id='errorMessage'>Error Message</span></code><small> in file: </small><code><span id='errorFile'>Filename</span> > line <span id='errorLine'>0</span></code></p>
-							<p><small>(you can also try to <a href='index.html'>refresh</a> to fix the problem)</small></p>
-						</div>
+					<h1 class="visuallyhidden">onGameStart US: HTML5 Game Conference</h1>
+					
+					<section id="social" class="container-center">
+						
+						<ul class="nav nav-pills nav-inline nav-opacity nav-transparent">
+							<li>
+								<a href="mailto: info@ongamestart.com" target="_blank">
+									<img src="img/email_64.png" class="iconk-small">
+									<h6 class="inline-type">info@ongamestart.com</h6>
+								</a>
+							</li>
+							<li>
+								<a href="http://twitter.com/onGameStart" target="_blank">
+									<img src="img/twitter_64.png" class="iconk-small">
+									<h6 class="inline-type">Twitter</h6>
+								</a>
+							</li>
+							<li>
+								<a href="https://www.facebook.com/onGameStart" target="_blank">
+									<img src="img/facebook_alt_64.png" class="iconk-small">
+									<h6 class="inline-type">Facebook</h6>
+								</a>
+							</li>
+							<li>
+								<a href="http://lanyrd.com/2013/ogsus/" target="_blank">
+									<img src="img/talk_64.png" class="iconk-small">
+									<h6 class="inline-type">Lanyrd</h6>
+								</a>
+							</li>
+							<li>
+								<a href="https://github.com/collinhover/ongamestartus2013" target="_blank">
+									<img src="img/github_64.png" class="iconk-small">
+									<h6 class="inline-type">Code</h6>
+								</a>
+							</li>
+						</ul>
 					</section>
+					<!-- /social -->
 					
-					<section id="errorWebGLBrowser" class="status-item hidden">
-						<div class="menu-section error">
-							<h2 class="error-header logo-type">Oops, we can't find WebGL!</h2>
-							<p class="error-body">Sorry, but it appears that your <span class="underline">browser</span> does not support WebGL. For more information visit <a href='http://get.webgl.org' target='_blank'>Get WebGL</a> or try upgrading to one of these friendly browsers:</p>
-							<ul class="nav nav-inline nav-transparent browsers">
-								<li>
-									<a href="http://www.google.com/chrome/" target="_blank" class="chrome">Chrome</a>
-								</li>
-								<li>
-									<a href="http://www.mozilla.org/firefox/" target="_blank" class="firefox">Firefox</a>
-								</li>
-								<!-- safari doesn't enable webgl by default -->
-								<!--<li>
-									<a href="http://www.apple.com/safari/" target="_blank" class="safari">Safari</a>
-								</li>-->
-							</ul>
-							<p><small>(We'll try not to remind you again! <a>Click anywhere</a> to continue...)</small></p>
-						</div>
-					</section>
+				</header>
+				
+				<div class="ui-pane-body ignore-pointer">
 					
-					<section id="errorWebGLComputer" class="status-item hidden">
-						<div class="menu-section error">
-							<h2 class="error-header logo-type">Oops, we can't find WebGL!</h2>
-							<p class="error-body">Sorry, but it appears that your <span class="underline">device</span> does not support WebGL. For more information visit the <a href='http://get.webgl.org/troubleshooting/' target='_blank'>WebGL troubleshooting</a> page.</p>
-							<p><small>(We'll try not to remind you again! <a>Click anywhere</a> to continue...)</small></p>
-						</div>
-					</section>
+					<!-- status inactive -->
+					<div id="statusInactive" class="hidden">
+						
+						<section id="errorGeneral" class="status-item hidden">
+							<div class="menu-section error">
+								<h2 class="error-header logo-type">Well, this is embarrassing!</h2>
+								<p class="error-body">We tried to catch every bug, but it looks like one got through. Please let us know by <a href='https://github.com/collinhover/ongamestartus2013/issues' target='_blank'>submitting an issue</a> report.</p>
+								<p><code><span id='errorMessage'>Error Message</span></code><small> in file: </small><code><span id='errorFile'>Filename</span> > line <span id='errorLine'>0</span></code></p>
+								<p><small>(you can also try to <a href='index.html'>refresh</a> to fix the problem)</small></p>
+							</div>
+						</section>
+						
+						<section id="errorWebGLBrowser" class="status-item hidden">
+							<div class="menu-section error">
+								<h2 class="error-header logo-type">Oops, we can't find WebGL!</h2>
+								<p class="error-body">Sorry, but it appears that your <span class="underline">browser</span> does not support WebGL. For more information visit <a href='http://get.webgl.org' target='_blank'>Get WebGL</a> or try upgrading to one of these friendly browsers:</p>
+								<ul class="nav nav-inline nav-transparent browsers">
+									<li>
+										<a href="http://www.google.com/chrome/" target="_blank" class="chrome">Chrome</a>
+									</li>
+									<li>
+										<a href="http://www.mozilla.org/firefox/" target="_blank" class="firefox">Firefox</a>
+									</li>
+									<!-- safari doesn't enable webgl by default -->
+									<!--<li>
+										<a href="http://www.apple.com/safari/" target="_blank" class="safari">Safari</a>
+									</li>-->
+								</ul>
+								<p><small>(We'll try not to remind you again! <a>Click anywhere</a> to continue...)</small></p>
+							</div>
+						</section>
+						
+						<section id="errorWebGLComputer" class="status-item hidden">
+							<div class="menu-section error">
+								<h2 class="error-header logo-type">Oops, we can't find WebGL!</h2>
+								<p class="error-body">Sorry, but it appears that your <span class="underline">device</span> does not support WebGL. For more information visit the <a href='http://get.webgl.org/troubleshooting/' target='_blank'>WebGL troubleshooting</a> page.</p>
+								<p><small>(We'll try not to remind you again! <a>Click anywhere</a> to continue...)</small></p>
+							</div>
+						</section>
+						
+					</div>
+					<!-- /inactive -->
 					
-					<section id='worker' class="status-item hidden">
-						<div class="menu-section">
-							<p id="workerStatusText" class="progress-text"><small>Doing some prep work...</small></p>
-							<div class="work container-left">
-								<div id="workerProgressBarStarted" class="progress-bar">
-									<img src='img/waiting_rev_64.png' class="iconk-medium">
-								</div>
-								<div id="workerProgressBarCompleted" class="progress-bar">
-									<img src='img/confirm_rev_64.png' class="iconk-medium">
-								</div>
+					<!-- status active -->
+					<div id="statusActive" class="container-center ignore-pointer">
+					
+					</div>
+					<!-- /active -->
+					
+					<section id='worker' class="container-center ignore-pointer">
+						
+						<div class="worker-bar-left">
+							<div class="worker-bar container-right">
+								<div id="workerProgressBarStarted" class="progress-bar"></div>
+								<img src='img/waiting_rev_64.png' class="iconk-small-tight">
 							</div>
 						</div>
+						
+						<div id="workerStatusText" class="worker-bar">
+							<h6 id="uiState" class="inline-type">UI:
+								<span class="state-loading active">Building</span>
+								<span class="state-usable">Usable</span>
+								<span class="state-ready">Ready!</span>
+							</h6>
+							<h6 id="gameState" class="inline-type">Game:
+								<span class="state-loading active">Building</span>
+								<span class="state-usable">Playable</span>
+								<span class="state-ready">Ready!</span>
+							</h6>
+						</div>
+						
+						<div class="worker-bar-right">
+							<div class="worker-bar container-left">
+								<img src='img/confirm_rev_64.png' class="iconk-small-tight">
+								<div id="workerProgressBarCompleted" class="progress-bar"></div>
+							</div>
+						</div>
+					
 					</section>
 					
 				</div>
-				<!-- /inactive -->
 				
-				<!-- status active -->
-				<div id="statusActive" class="container container-center ignore-pointer">
+				<footer class="ui-pane-footer ignore-pointer">
 					
-				</div>
-				<!-- /active -->
-				
-			</div>
-			<!-- /uiStatus -->
-			
-			<!-- uiFooter -->
-			<div id="uiFooter" class="ignore-pointer">
+					<section id="sponsorsLite" class="container-center nav-opacity-lite">
 						
-				<!-- sponsors -->
-				<!--<div class="pull-left visible-desktop">
-					<ul class="nav nav-pills nav-inline nav-opacity nav-transparent">
-						<li>
-							<a href="mailto: info@ongamestart.com" target="_blank">
-								<img src="img/email_64.png" class="iconk-small">
-								<h6 class="inline-type">info@ongamestart.com</h6>
-							</a>
-						</li>
-						<li>
-							<a href="http://twitter.com/onGameStart" target="_blank">
-								<img src="img/twitter_64.png" class="iconk-small">
-								<h6 class="inline-type">Twitter</h6>
-							</a>
-						</li>
-						<li>
-							<a href="https://www.facebook.com/onGameStart" target="_blank">
-								<img src="img/facebook_alt_64.png" class="iconk-small">
-								<h6 class="inline-type">Facebook</h6>
-							</a>
-						</li>
-						<li>
-							<a href="http://lanyrd.com/2013/ogsus/" target="_blank">
-								<img src="img/talk_64.png" class="iconk-small">
-								<h6 class="inline-type">Lanyrd</h6>
-							</a>
-						</li>
-						<li>
-							<a href="https://github.com/collinhover/ongamestartus2013" target="_blank">
-								<img src="img/github_64.png" class="iconk-small">
-								<h6 class="inline-type">Code</h6>
-							</a>
-						</li>
-					</ul>
-				</div>-->
-				<!-- /sponsors -->
+						
+					</section>
+					<!-- /social -->
+				
+				</footer>
 				
 			</div>
-			<!-- /uiFooter -->
 			
 		</div>
 		<!-- /uiOverlay -->

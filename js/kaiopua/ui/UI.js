@@ -13,8 +13,10 @@
 		_UI = {},
 		_UIQueue,
 		paused = false,
+		ready = false,
 		workerCollapseDelay = 1000,
 		workerCollapseTimeoutHandle,
+		$menuActive,
 		$error;
     
     /*===================================================
@@ -53,6 +55,10 @@
 		_UI.resize = resize;
 		_UI.error = error;
 		
+		Object.defineProperty( _UI, 'ready', { 
+			get : function () { return ready; }
+		});
+		
 		// dom elements
 		
 		shared.domElements = shared.domElements || {};
@@ -66,10 +72,6 @@
 		shared.domElements.$uiOverGame = $( '#uiOverGame' );
 		shared.domElements.$uiOutGame = $( '#uiOutGame' );
 		shared.domElements.$uiOverlay = $( '#uiOverlay' );
-		shared.domElements.$uiHeader = $( '#uiHeader' );
-		shared.domElements.$uiFooter = $( '#uiFooter' );
-		shared.domElements.$uiSidebarLeft = $( '#uiSidebarLeft' );
-		shared.domElements.$uiSidebarRight = $( '#uiSidebarRight' );
 		
 		shared.domElements.$autoCenter = $( '.auto-center' );
 		shared.domElements.$autoCenterVertical = $( '.auto-center-vertical' );
@@ -84,6 +86,8 @@
 		shared.domElements.$worker =  $("#worker");
 		shared.domElements.$workerProgressBarStarted = $( "#workerProgressBarStarted" );
 		shared.domElements.$workerProgressBarCompleted = $( "#workerProgressBarCompleted" );
+		shared.domElements.$uiState =  $("#uiState");
+		shared.domElements.$gameState =  $("#gameState");
 		
 		shared.domElements.$dropdowns = $( '.dropdown' );
 		
@@ -106,6 +110,11 @@
 		shared.domElements.$navbars = $( '.navbar, .subnavbar' );
 		shared.domElements.$navMenus = $('#navMenus');
 		shared.domElements.$navMain = $( '#navMain' );
+		shared.domElements.$navMainAlt = $( '#navMainAlt' );
+		
+		shared.domElements.$social = $( '#social' );
+		shared.domElements.$sponsors = $( '#sponsors' );
+		shared.domElements.$sponsorsLite = $( '#sponsorsLite' );
 		
 		// major buttons
 		
@@ -113,9 +122,6 @@
 		shared.domElements.$buttonsGameStop = $('.game-stop');
 		shared.domElements.$buttonsGamePause = $('.game-pause');
 		shared.domElements.$buttonsGameResume = $('.game-resume');
-		
-		shared.domElements.$buttonsGamePauseMain = $('#gamePauseMain');
-		shared.domElements.$buttonsGameResumeMain = $('#gameResumeMain');
 		
 		// set all images to not draggable
 		
@@ -284,14 +290,6 @@
 				$relative = $( $stickied.data( "relative" ) ),
 				$target = $( $stickied.data( "target" ) );
 			
-			// if relative empty, assume uiHeader
-			
-			if ( $relative.length === 0 ) {
-				
-				$relative = shared.domElements.$uiHeader;
-				
-			}
-			
 			// if target empty, assume uiOutGame
 			
 			if ( $target.length === 0 ) {
@@ -339,7 +337,6 @@
 			
 			activate = function () {
 				
-				//main.pause( false, $menu );
 				pause_consider_started( false, $menu );
 				
 				if ( $toggle.length > 0 ) {
@@ -391,10 +388,6 @@
 			};
 			
 			last = function () {
-				
-				main.dom_fade( {
-					element: shared.domElements.$uiOutGame
-				} );
 					
 				resume_consider_started();
 				
@@ -463,39 +456,15 @@
 			
 		} );
 		
-		// for each tab toggle
+		// for all sponsors
 		
-		shared.domElements.$tabToggles.each( function () {
+		if ( shared.domElements.$sponsors.length > 0 && shared.domElements.$sponsorsLite.length > 0 ) {
 			
-			var $toggle = $( this ),
-				$tab = $( $toggle.attr( 'href' ) );
-				
-				$toggle.data( '$tab', $tab );
-				
-				// make toggle-able
-				
-				$toggle.on( 'tap', function ( e ) {
-					
-					if ( $tab.is( '.active' ) === true ) {
-						
-						$toggle.trigger( 'showing' );
-						
-					}
-					else {
-						
-						$toggle.tab('show');
-						
-					}
-					
-				} )
-				.on( 'shown', function () {
-					
-					$toggle.trigger( 'showing' );
-					
-				} );
+			shared.domElements.$sponsorsLite.html( shared.domElements.$sponsors.clone().html() );
 			
-		} );
+		}
 		
+		shared.domElements.$buttonsGameStop.on( 'tap', main.stop );
 		shared.domElements.$buttonsGamePause.on( 'tap', pause_consider_started );
 		shared.domElements.$buttonsGameResume.on( 'tap', resume_consider_started );
 		
@@ -508,13 +477,27 @@
 		shared.signals.onWorkerTaskCompleted.add( worker_task_complete );
 		shared.signals.onWorkerTasksCompleted.add( worker_tasks_complete );
 		
-		shared.signals.onGameReady.add( ready );
+		shared.signals.onGamePlayable.add( handle_game_state );
+		shared.signals.onGameReadyChange.add( handle_game_state );
 		shared.signals.onGameStarted.add( start );
 		shared.signals.onGameStartedCompleted.add( start_complete );
 		shared.signals.onGameStopped.add( stop );
 		shared.signals.onGameStoppedCompleted.add( stop_complete );
 		shared.signals.onGamePaused.add( pause );
 		shared.signals.onGameResumed.add( resume );
+		
+		// ready
+		
+		ready = true;
+		shared.domElements.$uiState
+			.find( '.state-loading' )
+				.removeClass( 'active' )
+				.end()
+			.find( '.state-usable' )
+				.removeClass( 'active' )
+				.end()
+			.find( '.state-ready' )
+				.addClass( 'active' );
 		
 		// resize once
 		
@@ -523,6 +506,28 @@
 		// open default menu
 		
 		shared.domElements.$menuDefault.trigger( 'open' );
+		
+		// hide preloader
+		
+		main.dom_fade( {
+			element: shared.domElements.$preloader,
+			duration: 0
+		} );
+		
+		// hide dimmer
+		
+		main.dom_fade( {
+			element: shared.domElements.$uiGameDimmer
+		} );
+		
+		// show main menu
+		
+		main.dom_fade( {
+			element: shared.domElements.$navMain,
+			opacity: 1
+		} );
+		
+		disable_game_ui();
 		
 	}
 	
@@ -549,10 +554,6 @@
 			
 		}
 		
-		// block ui
-		
-		pause_consider_started( true );
-		
 		// show if hidden
 		
 		main.dom_collapse( {
@@ -562,7 +563,7 @@
 		
 		// add into worker started progress bar
 		
-		shared.domElements.$workerProgressBarStarted.append( $( '<img src="img/bar_vertical_color_64.png" id="' + id + '" class="iconk-tiny iconk-widthFollow iconk-tight work-task">' ) );
+		shared.domElements.$workerProgressBarStarted.append( $( '<img src="img/bar_vertical_rev_64.png" id="' + id + '" class="iconk-tiny-widthFollow-tight work-task">' ) );
 		
 	}
 	
@@ -574,7 +575,7 @@
 		
 		shared.domElements.$workerProgressBarStarted.find( '#' + idEscaped ).remove();
 		
-		shared.domElements.$workerProgressBarCompleted.append( $( '<img src="img/bar_vertical_rev_64.png" id="' + id + '" class="iconk-tiny iconk-widthFollow iconk-tight work-task">' ) );
+		shared.domElements.$workerProgressBarCompleted.append( $( '<img src="img/bar_vertical_rev_64.png" id="' + id + '" class="iconk-tiny-widthFollow-tight work-task">' ) );
 		
 	}
 	
@@ -596,12 +597,7 @@
 			// collapse
 			
 			main.dom_collapse( {
-				element: shared.domElements.$worker,
-				callback: function () {
-					
-					resume_consider_started();
-					
-				}
+				element: shared.domElements.$worker
 			} );
 			
 		}, workerCollapseDelay );
@@ -614,60 +610,108 @@
     
     =====================================================*/
 	
-	function ready () {
+	function handle_game_state () {
+		
+		if ( main.playable === true && shared.supports.webGL === true ) {
+			
+			shared.domElements.$gameState
+					.find( '.state-loading' )
+						.removeClass( 'active' );
+			
+			if ( main.ready === true ) {
+				
+				shared.domElements.$gameState
+					.find( '.state-usable' )
+						.removeClass( 'active' )
+						.end()
+					.find( '.state-ready' )
+						.addClass( 'active' );
+				
+			}
+			else {
+				
+				shared.domElements.$gameState
+					.find( '.state-ready' )
+						.removeClass( 'active' )
+						.end()
+					.find( '.state-usable' )
+						.addClass( 'active' );
+				
+			}
+			
+			enable_game_ui();
+			
+		}
+		else {
+			
+			shared.domElements.$gameState
+				.find( '.state-loading' )
+					.addClass( 'active' )
+					.end()
+				.find( '.state-usable' )
+					.removeClass( 'active' )
+					.end()
+				.find( '.state-ready' )
+					.removeClass( 'active' );
+			
+			disable_game_ui();
+			
+		}
+		
+	}
+	
+	function enable_game_ui () {
+	
+		var $disableButtons,
+			$disableTarget,
+			$tip;
+		
+		$disableButtons = $()
+			.add(shared.domElements.$buttonsGameStart )
+			.add( shared.domElements.$buttonsGameStop );
+		
+		$disableTarget = $disableButtons.closest( 'li' );
+		
+		if ( $disableTarget.length === 0 ) {
+			
+			$disableTarget = $disableButtons;
+			
+		}
+		
+		$disableTarget.removeClass( 'disabled dim' );
+		
+		shared.domElements.$buttonsGameStart
+			.tooltip( 'destroy' )
+			.on( 'tap', main.start );
+		
+	}
+	
+	function disable_game_ui () {
 		
 		var $disableButtons,
 			$disableTarget,
 			$tip;
 		
-		// hide preloader
+		$disableButtons = $()
+			.add(shared.domElements.$buttonsGameStart )
+			.add( shared.domElements.$buttonsGameStop );
 		
-		main.dom_fade( {
-			element: shared.domElements.$preloader,
-			duration: 0
-		} );
+		$disableTarget = $disableButtons.closest( 'li' );
 		
-		// show main menu
-		
-		main.dom_fade( {
-			element: shared.domElements.$navMain,
-			opacity: 1
-		} );
-		
-		// hide dimmer
-		
-		main.dom_fade( {
-			element: shared.domElements.$uiGameDimmer
-		} );
-		
-		// enable game start if supports webGL
-		
-		if ( shared.supports.webGL === true ) {
+		if ( $disableTarget.length === 0 ) {
 			
-			shared.domElements.$buttonsGameStart.on( 'tap', main.start );
-			shared.domElements.$buttonsGameStop.on( 'tap', main.stop );
+			$disableTarget = $disableButtons;
 			
 		}
-		// disable game
-		else {
-			
-			$disableButtons = $()
-				.add(shared.domElements.$buttonsGameStart )
-				.add( shared.domElements.$buttonsGameStop );
-			
-			$disableTarget = $disableButtons.closest( 'li' );
-			
-			if ( $disableTarget.length === 0 ) {
-				
-				$disableTarget = $disableButtons;
-				
-			}
-			
-			$disableTarget.addClass( 'disabled dim' );
-			
-			// add tooltip to start button
+		
+		$disableTarget.addClass( 'disabled dim' );
+		
+		// add tooltip to start button
+		
+		if ( shared.supports.webGL !== true ) {
 			
 			shared.domElements.$buttonsGameStart
+				.tooltip( 'destroy' )
 				.tooltip( {
 					title: 'We need WebGL!',
 					trigger: 'manual',
@@ -735,10 +779,14 @@
 		
 		// uiGameDimmer
 		
-		shared.domElements.$uiGameDimmer.off( '.resume' );
-		main.dom_fade( {
-			element: shared.domElements.$uiGameDimmer
-		} );
+		if ( main.started !== true ) {
+			
+			shared.domElements.$uiGameDimmer.off( '.resume' );
+			main.dom_fade( {
+				element: shared.domElements.$uiGameDimmer
+			} );
+			
+		}
 		
 		if ( shared.domElements.$menuToggleDefault.length > 0 ) {
 			
@@ -796,7 +844,16 @@
 		
 		if ( main.started === true ) {
 			
-			main.pause( preventDefault, $menu );
+			if ( main.paused !== true ) {
+				
+				main.pause( preventDefault, $menu );
+				
+			}
+			else {
+				
+				pause( preventDefault, $menu );
+				
+			}
 			
 		}
 		else {
@@ -809,7 +866,8 @@
 	
 	function pause ( preventDefault, $menu ) {
 		
-		var nonDefaultMenu = $menu instanceof jQuery && !shared.domElements.$menuDefault.is( $menu );
+		var forMenu = $menu instanceof jQuery,
+			nonDefaultMenu = forMenu && !shared.domElements.$menuDefault.is( $menu );
 		
 		paused = true;
 		
@@ -817,12 +875,14 @@
 		
 		main.dom_fade( {
 			element: shared.domElements.$buttonsGamePause,
-			duration: 0
+			duration: 0,
+			invisible: true
 		} );
 		
 		main.dom_fade( {
 			element: shared.domElements.$buttonsGameResume,
-			duration: 0
+			duration: 0,
+			invisible: true
 		} );
 		
 		// block ui
@@ -837,9 +897,24 @@
 		}
 		else {
 			
-			// swap to default menu
+			if ( nonDefaultMenu === true ) {
+				
+				$menuActive = $menu;
+				
+				// show alt nav
+				
+				shared.domElements.$social.addClass( 'blocking' );
+				shared.domElements.$sponsorsLite.addClass( 'hidden' );
+				
+				main.dom_fade( {
+					element: shared.domElements.$navMainAlt,
+					opacity: 1
+				} );
 			
-			if ( nonDefaultMenu !== true ) {
+			}
+			else {
+				
+				$menuActive = undefined;
 				
 				open_default_menu();
 				
@@ -876,7 +951,7 @@
 	
 	function resume_consider_started () {
 		
-		if ( main.started === true ) {
+		if ( main.started === true && typeof $menuActive === 'undefined' ) {
 			
 			main.resume();
 			
@@ -893,6 +968,14 @@
 		
 		paused = false;
 		
+		// hide resume button
+		
+		main.dom_fade( {
+			element: shared.domElements.$buttonsGameResume,
+			duration: 0,
+			invisible: true
+		} );
+		
 		// unblock ui
 		
 		main.dom_fade( {
@@ -901,57 +984,56 @@
 		
 		if ( refocused !== true ) {
 			
-			// uiGameDimmer
-			
-			shared.domElements.$uiGameDimmer.off( '.resume' );
-			main.dom_fade( {
-				element: shared.domElements.$uiGameDimmer
-			} );
-			
-			if ( main.started === true ) {
+			if ( typeof $menuActive !== 'undefined' ) {
 				
-				// clear menus
+				shared.domElements.$social.removeClass( 'blocking' );
+				shared.domElements.$sponsorsLite.removeClass( 'hidden' );
 				
-				_UIQueue.clear( shared.domElements.$uiOutGame );
-			
-			}
-			else {
+				main.dom_fade( {
+					element: shared.domElements.$navMainAlt,
+					duration: 0
+				} );
 				
 				open_default_menu();
 				
 			}
-			
-		}
-		
-		// hide resume button
-		
-		main.dom_fade( {
-			element: shared.domElements.$buttonsGameResume,
-			duration: 0
-		} );
-		
-		if ( main.started !== true ) {
-			
-			// hide pause button
-			
-			main.dom_fade( {
-				element: shared.domElements.$buttonsGamePause,
-				duration: 0
-			} );
-			
-			if ( !shared.domElements.$menuDefault.is( '.active' ) ) {
+			else {
 				
-				// show resume button
+				// uiGameDimmer
 				
+				shared.domElements.$uiGameDimmer.off( '.resume' );
 				main.dom_fade( {
-					element: shared.domElements.$buttonsGameResume,
-					opacity: 1
+					element: shared.domElements.$uiGameDimmer
 				} );
+				
+				if ( main.started === true ) {
+					
+					// clear menus
+					
+					_UIQueue.clear( shared.domElements.$uiOutGame );
+					
+					main.dom_fade( {
+						element: shared.domElements.$uiOutGame
+					} );
+					
+					// show pause button
+					
+					main.dom_fade( {
+						element: shared.domElements.$buttonsGamePause,
+						opacity: 1
+					} );
+				
+				}
+				else {
+					
+					open_default_menu();
+					
+				}
 				
 			}
 			
 		}
-		else {
+		else if ( main.started === true && main.paused !== true ) {
 			
 			// show pause button
 			
@@ -1082,20 +1164,6 @@
     =====================================================*/
 	
 	function resize () {
-		
-		// since main resume is in another ui layer to make sure it can always be available to user
-		// we need to mirror main pause position in resume
-		
-		var pauseHidden = shared.domElements.$buttonsGamePauseMain.hasClass( 'hidden' );
-		
-		if ( pauseHidden ) shared.domElements.$buttonsGamePauseMain.removeClass( 'hidden' );
-		
-		shared.domElements.$buttonsGameResumeMain.css( {
-			'top' : shared.domElements.$buttonsGamePauseMain.position().top,
-			'left' : shared.domElements.$buttonsGamePauseMain.position().left
-		} );
-		
-		if ( pauseHidden ) shared.domElements.$buttonsGamePauseMain.addClass( 'hidden' );
 		
 		// because ui out game is scrollable, its grids are not aligned to main header grids
 		// so we need to pad left side of the individual containers to correct for this
