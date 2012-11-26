@@ -10386,6 +10386,9 @@ a:hover,
   margin-bottom: 11px;
   background: rgba(34, 34, 34, 0.95);
   color: #eeeeee;
+  -webkit-box-shadow: 0 0px 1px 5px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 0 0px 1px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0px 1px 5px rgba(0, 0, 0, 0.1);
 }
 .status-item:last-child {
   margin-bottom: 0;
@@ -10443,11 +10446,6 @@ a:hover,
   -webkit-box-sizing: border-box;
   -moz-box-sizing: border-box;
   box-sizing: border-box;
-}
-#worker .worker-bar .progress-bar {
-  display: inline-block;
-  *display: inline;
-  zoom: 1;
 }
 #worker .worker-bar-left {
   position: absolute;
