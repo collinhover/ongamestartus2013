@@ -53,7 +53,7 @@
 		_UI.pause = pause;
 		_UI.resume = resume;
 		_UI.resize = resize;
-		_UI.error = error;
+		_UI.show_error = show_error;
 		
 		Object.defineProperty( _UI, 'ready', { 
 			get : function () { return ready; }
@@ -469,6 +469,8 @@
 		shared.domElements.$buttonsGameResume.on( 'tap', resume_consider_started );
 		
 		// signals
+		
+		shared.signals.onError.add( show_error );
 		
 		shared.signals.onGameInput.add( handle_input );
 		
@@ -1065,11 +1067,14 @@
     
     =====================================================*/
 	
-    function error ( errorType, origin, lineNumber ) {
+    function show_error ( error, origin, lineNumber ) {
+		
+		var errorType = error,
+			indexOnlyOnce;
 		
 		// clear existing
 		
-		error_clear();
+		clear_error();
         
         // if error type not in list
 		
@@ -1081,7 +1086,9 @@
 		
 		// if should only show error type once to a user
 		
-		if( main.index_of_value( shared.errorTypesOnlyOnce, errorType ) !== -1 ) {
+		indexOnlyOnce = main.index_of_value( shared.errorTypesOnlyOnce, errorType );
+		
+		if( indexOnlyOnce !== -1 ) {
 			
 			if ( window.localStorage ) {
 				
@@ -1100,6 +1107,16 @@
 				}
 				
 			}
+			
+			// allow click to clear error
+			
+			$( window ).one( 'click.errorclear', function () {
+				
+				clear_error();
+				
+				resume_consider_started();
+				
+			} );
 			
 		}
 		
@@ -1142,23 +1159,9 @@
 			show: true
 		} );
 		
-		// if not yet started, allow click to clear error
-		
-		if ( main.started !== true ) {
-			
-			$( window ).one( 'click.errorclear', function () {
-				
-				error_clear();
-				
-				resume_consider_started();
-				
-			} );
-			
-		}
-        
     }
 	
-	function error_clear () {
+	function clear_error () {
 		
 		if ( typeof $error !== 'undefined') {
 			

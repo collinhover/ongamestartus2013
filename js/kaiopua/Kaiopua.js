@@ -54,8 +54,11 @@ var KAIOPUA = (function (main) {
 	
 	shared.errorString = 'error';
 	shared.errorTypeGeneral = 'General';
+	shared.errorTypeWebGLBrowser = 'WebGLBrowser';
+	shared.errorTypeWebGLComputer = 'WebGLComputer';
     shared.errorTypes = [ shared.errorTypeGeneral, 'WebGLBrowser', 'WebGLComputer' ];
     shared.errorTypesOnlyOnce = [ 'WebGLBrowser', 'WebGLComputer' ];
+	shared.webGLNames = ["webgl", "experimental-webgl", "webkit-3d", "moz-webgl"];
 	
 	shared.fadeBetweenSections = false;
 	
@@ -75,7 +78,6 @@ var KAIOPUA = (function (main) {
 	
 	var loader = {},
 		worker = {},
-		_ErrorHandler,
 		_Scene,
 		_CameraControls,
 		_KeyHelper,
@@ -96,7 +98,7 @@ var KAIOPUA = (function (main) {
             "js/lib/RequestInterval.js",
             "js/lib/RequestTimeout.js",
             "js/lib/signals.min.js",
-			"js/lib/jquery-1.8.2.min.js"
+			"js/lib/jquery-1.8.3.min.js"
         ],
 		libsSecondaryList = [
 			"js/lib/hammer.custom.js",
@@ -106,7 +108,6 @@ var KAIOPUA = (function (main) {
 			"js/lib/jquery.placeholdme.js"
 		],
         assetsGameCompatibility = [
-			"js/kaiopua/utils/ErrorHandler.js",
 			"js/kaiopua/ui/UI.js",
 			"js/kaiopua/utils/KeyHelper.js"
         ],
@@ -149,6 +150,8 @@ var KAIOPUA = (function (main) {
 		shared.supports.pointerEvents = css_property_supported( 'pointer-events' );
        
         shared.signals = {
+			
+			onError : new signals.Signal(),
 			
 			onFocusLost: new signals.Signal(),
 			onFocusGained: new signals.Signal(),
@@ -374,11 +377,15 @@ var KAIOPUA = (function (main) {
 		
 		// begin
 		
-		$( window ).trigger( 'resize' );
-		
-		update();
+		$( window ).ready ( function () {
 			
-		asset_require( assetsGameCompatibility, compatibility_check, true );
+			$( window ).trigger( 'resize' );
+			
+			update();
+				
+			asset_require( assetsGameCompatibility, compatibility_check, true );
+			
+		} );
 		
     }
 	
@@ -388,21 +395,68 @@ var KAIOPUA = (function (main) {
     
     =====================================================*/
 	
-	function compatibility_check ( err, ui, kh ) {
+	function compatibility_check ( ui, kh ) {
 		console.log('GAME: compatiblity check');
-		_ErrorHandler = err;
+		
+		var i, l,
+			canvas, 
+			context, 
+			errorType;
+		
 		_UI = ui;
 		_KeyHelper = kh;
 		
-		// check for errors
-        
-        if ( _ErrorHandler.errorState ) {
+		try {
+			
+			// webgl browser check
+			if ( !window.WebGLRenderingContext ) {
+				
+				errorType = shared.errorTypeWebGLBrowser;
+				
+			}
+			else {
+				
+				canvas = document.createElement( 'canvas' );
+				
+				// try each browser's webgl type
+				
+				for (i = 0, l = shared.webGLNames.length; i < l; i += 1) {
+					
+					context = canvas.getContext( shared.webGLNames[i] );
+					
+					if ( context ) {
+						
+						break;
+						
+					}
+					
+				}
+				
+				// if none found, there is another problem
+				if ( !context ) {
+					
+					errorType = shared.errorTypeWebGLComputer;
+					
+				}
+				
+			}
+		
+		}
+		catch ( err ) {
+			
+			errorType = shared.errorTypeWebGLBrowser;
+			
+		}
+		
+		shared.errorCurrent = errorType;
+		
+        if ( typeof shared.errorCurrent !== 'undefined' ) {
 			
 			shared.supports.webGL = false;
 			
 			shared.signals.onGameStateChange.dispatch();
 			
-            _ErrorHandler.process();
+			on_error( shared.errorCurrent );
 			
         }
         else {
@@ -790,7 +844,7 @@ var KAIOPUA = (function (main) {
     
     function resume ( refocused ) {
 		
-        if ( paused === true && ( _ErrorHandler.errorState !== true || started !== true ) ) {
+        if ( paused === true && ( typeof shared.errorCurrent === 'undefined' || started !== true ) ) {
 			console.log('GAME: RESUME');
 			paused = false;
 			
@@ -1600,23 +1654,9 @@ var KAIOPUA = (function (main) {
         
     }
 	
-	function on_error ( error, url, lineNumber ) {
+	function on_error ( error, origin, lineNumber ) {
 		
-		// pause game
-		
-        pause( true );
-		
-		// check error handler state
-		
-		if ( _ErrorHandler.errorState !== true ) {
-			
-			_ErrorHandler.generate( error, url, lineNumber );
-			
-		}
-		
-		// debug
-        
-        throw error + " at " + lineNumber + " in " + url;
+		shared.signals.onError.dispatch( error, origin || 'Unknown Origin', lineNumber || 'N/A' );
 		
 	}
 	
