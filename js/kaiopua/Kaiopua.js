@@ -147,7 +147,7 @@ var KAIOPUA = (function (main) {
 		
 		shared.domElements.$game = $('#game');
 		
-		shared.supports.pointerEvents = css_property_supported( 'pointer-events' );
+		shared.supports.pointerEvents = Modernizr.testProp('pointerEvents');
        
         shared.signals = {
 			
@@ -296,9 +296,6 @@ var KAIOPUA = (function (main) {
 		main.indices_of_property = indices_of_property;
 		main.index_of_properties = index_of_properties;
 		
-		main.css_property_supported = css_property_supported;
-		main.str_to_camel = str_to_camel;
-		main.str_to_title = str_to_title;
 		main.dom_extract = dom_extract;
 		main.dom_generate_image = dom_generate_image;
 		main.dom_ignore_pointer = dom_ignore_pointer;
@@ -576,7 +573,7 @@ var KAIOPUA = (function (main) {
         renderPasses = {
 			bg: new THREE.RenderPass( shared.sceneBG, shared.cameraBG ),
             env: new THREE.RenderPass( shared.scene, shared.camera ),
-            screen: new THREE.ShaderPass( THREE.ShaderExtras[ "screen" ] )
+            screen: new THREE.ShaderPass( THREE.ShaderExtras.screen )
         };
 		
 		renderPasses.env.clear = false;
@@ -1376,13 +1373,13 @@ var KAIOPUA = (function (main) {
 				position = {
 					x: pointer.x,
 					y: pointer.y
-				 };
-				 
-				 if (  typeof e.pageX !== 'undefined' ) position.x = e.pageX;
-				 else if ( typeof e.clientX !== 'undefined' ) position.x = e.clientX + ( d && d.scrollLeft || b && b.scrollLeft || 0 ) - ( d && d.clientLeft || b && b.clientLeft || 0 );
-				 
-				  if (  typeof e.pageY !== 'undefined' ) position.y = e.pageY;
-				 else if ( typeof e.clientY !== 'undefined' ) position.y = e.clientY + ( d && d.scrollTop || b && b.scrollTop || 0 ) - ( d && d.clientTop || b && b.clientTop || 0 );
+				};
+				
+				if (  typeof e.pageX !== 'undefined' ) position.x = e.pageX;
+				else if ( typeof e.clientX !== 'undefined' ) position.x = e.clientX + ( d && d.scrollLeft || b && b.scrollLeft || 0 ) - ( d && d.clientLeft || b && b.clientLeft || 0 );
+				
+				if (  typeof e.pageY !== 'undefined' ) position.y = e.pageY;
+				else if ( typeof e.clientY !== 'undefined' ) position.y = e.clientY + ( d && d.scrollTop || b && b.scrollTop || 0 ) - ( d && d.clientTop || b && b.clientTop || 0 );
 				
 			}
 			
@@ -1657,66 +1654,6 @@ var KAIOPUA = (function (main) {
 	function on_error ( error, origin, lineNumber ) {
 		
 		shared.signals.onError.dispatch( error, origin || 'Unknown Origin', lineNumber || 'N/A' );
-		
-	}
-	
-	/*===================================================
-    
-    css
-    
-    =====================================================*/
-	
-	function css_property_supported ( property ) {
-		
-		var i, l,
-			propertyCamel,
-			propertySupported;
-		
-		// format property to camel case
-		
-		propertyCamel = str_to_camel( property );
-		
-		// use modernizr to check for correct css
-		
-		propertySupported = Modernizr.prefixed( propertyCamel );
-		
-		// cast to opposite boolean twice and return if supported
-		
-		return !!propertySupported;
-		
-	}
-	
-	function str_to_camel ( str ) {
-		
-		// code based on camelize from prototype library
-		
-		var parts = str.split('-'), 
-			len = parts.length, 
-			camelized;
-		
-		if (len == 1) {
-			
-			return parts[0];
-			
-		}
-
-		camelized = str.charAt(0) == '-' ? parts[0].charAt(0).toUpperCase() + parts[0].substring(1) : parts[0];
-		
-		for (var i = 1; i < len; i++) {
-			
-			camelized += parts[i].charAt(0).toUpperCase() + parts[i].substring(1);
-			
-		}
-		
-		return camelized;
-		
-	}
-	
-	function str_to_title ( str ) {
-		
-		return str.toLowerCase().replace( /\b[a-z]/g, function( letter ) {
-			return letter.toUpperCase();
-		} );
 		
 	}
 	
@@ -2308,8 +2245,14 @@ var KAIOPUA = (function (main) {
 			ext, 
 			loadType, 
 			data,
-			defaultCallback = function ( ) {
+			defaultCallback = function ( loadedData ) {
+				
+				if ( typeof loadedData !== 'undefined' ) {
+					data = loadedData;
+				}
+				
 				load_single_completed( location, data );
+				
 			},
 			modelCallback = function ( geometry ) {
 				load_single_completed( location, geometry );
@@ -2320,7 +2263,9 @@ var KAIOPUA = (function (main) {
 			// load based on type of location and file extension
 			
 			// LAB handles scripts (js)
-			// THREE handles models (ascii/bin js) and images (jpg/png/gif/bmp)
+			// THREE handles models (ascii/bin js)
+			// images are native dom (jpg/png/gif/bmp)
+			// jQuery handles JSON
 			
 			// get type
 			
@@ -2344,24 +2289,20 @@ var KAIOPUA = (function (main) {
 			
 			// type and/or extension check
 			
+			// image loading
 			if ( loadType === 'image' || is_image_ext( ext ) ) {
 				
 				// load
 				
-				data = dom_generate_image( path, function ( image ) {
-					
-					data = image;
-					
-					defaultCallback();
-					
-				} );
+				data = dom_generate_image( path, defaultCallback );
 				
 				// store empty image data in assets immediately
 				
 				asset_register( path, { data: data } );
 				
 			}
-			else if ( loadType === 'model' || loadType === 'model_ascii' ) {
+			// model loading via THREE
+			else if ( loadType === 'model' ) {
 				
 				// init loader if needed
 				
@@ -2370,6 +2311,12 @@ var KAIOPUA = (function (main) {
 				}
 				
 				loader.threeJSON.load( path, modelCallback );
+				
+			}
+			// JSON loading
+			else if ( loadType === 'json' ) {
+				
+				$.getJSON( path, defaultCallback );
 				
 			}
 			// default to script loading
@@ -2731,7 +2678,7 @@ var KAIOPUA = (function (main) {
 			
 			// remove all non-alphanumeric
 			
-			part = part.replace(/[^\w\.-]+/g, "");
+			part = part.replace(/[^\w\.\-]+/g, "");
 			
 			// cannot be empty
 			
@@ -3159,7 +3106,7 @@ var KAIOPUA = (function (main) {
 		
 	}
 	
-	GameAsset.prototype = new Object();
+	GameAsset.prototype = {};
 	
 	GameAsset.prototype = {
 		constructor: GameAsset,

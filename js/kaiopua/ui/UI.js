@@ -14,6 +14,10 @@
 		_UIQueue,
 		paused = false,
 		ready = false,
+		playerMessages = [],
+		playerMessagesNumMax = 3,
+		playerMessagesDuration = 2000,
+		speakersShown = [],
 		workerCollapseDelay = 1000,
 		workerCollapseTimeoutHandle,
 		$menuActive,
@@ -29,6 +33,7 @@
 		data: _UI,
 		requirements: [
 			"js/kaiopua/ui/UIQueue.js",
+			{ path: shared.pathToAssets + "speakers.js", type: 'json' },
 			"js/lib/jquery.scrollbarwidth.min.js",
 			"js/lib/jquery.multi-sticky.js"
 		], 
@@ -42,7 +47,7 @@
     
     =====================================================*/
 	
-	function init_internal ( uiq ) {
+	function init_internal ( uiq, speakersList ) {
 		
 		// modules
 		
@@ -54,6 +59,9 @@
 		_UI.resume = resume;
 		_UI.resize = resize;
 		_UI.show_error = show_error;
+		_UI.show_speaker = show_speaker;
+		_UI.show_message = show_message;
+		_UI.hide_message = hide_message;
 		
 		Object.defineProperty( _UI, 'ready', { 
 			get : function () { return ready; }
@@ -64,6 +72,8 @@
 		shared.domElements = shared.domElements || {};
 		
 		shared.domElements.cloneables = shared.domElements.cloneables || {};
+		shared.domElements.cloneables.$speaker = $( '<div class="speaker well"><div class="row"><div class="span3"><div class="thumbnail borderless"></div></div><div class="span9"><h2 class="speaker-name"></h2><h6>Presenting</h6><p class="speaker-presentation sidekick-type"></p><h6>About</h6><p class="speaker-about"></p><h6>Links</h6><p class="speaker-links"></p></div></div></div>' );
+		shared.domElements.cloneables.$speakerUnlocked = $( '<div class="player-message"><h2 class="skewed-type scifi-type shadowed-type">SPEAKER PROFILE UNLOCKED!</h2><p class="lead sidekick-type dim">(open your speakers list to view)</p></div>' );
 		
 		shared.domElements.$uiGameDimmer = $('#uiGameDimmer');
 		shared.domElements.$uiBlocker = $('#uiBlocker');
@@ -115,6 +125,11 @@
 		shared.domElements.$social = $( '#social' );
 		shared.domElements.$sponsors = $( '#sponsors' );
 		shared.domElements.$sponsorsLite = $( '#sponsorsLite' );
+		
+		shared.domElements.$speakersList = $( '#speakersList' );
+		shared.domElements.$buttonsSpeakersShow = $( '.speakers-show' );
+		
+		shared.domElements.$playerMessages = $( '#playerMessages' );
 		
 		// major buttons
 		
@@ -529,6 +544,175 @@
 		} );
 		
 		disable_game_ui();
+		
+		// speakers
+		
+		for ( i = 0, il = speakersList.length; i < il; i++ ) {
+			
+			init_speaker( speakersList[ i ] );
+			
+		}
+		
+		shared.domElements.$buttonsSpeakersShow.one( 'tap.speakers', function () {
+			
+			shared.domElements.$buttonsSpeakersShow
+				.off( '.speakers' )
+				.removeClass( 'dim' )
+				.addClass( 'disabled' );
+			
+			for ( i = 0, il = speakersList.length; i < il; i++ ) {
+				
+				show_speaker( speakersList[ i ], true );
+				
+			}
+			
+		} );
+		
+	}
+	
+	/*===================================================
+    
+    speakers
+    
+    =====================================================*/
+	
+	function init_speaker ( data ) {
+		
+		var assetsPath = data.options.paths.assets;
+		var $speaker = shared.domElements.cloneables.$speaker.clone();
+		var $imageContainer = $speaker.find( '.thumbnail' );
+		var $name = $speaker.find( '.speaker-name' );
+		var $presentation = $speaker.find( '.speaker-presentation' );
+		var $about = $speaker.find( '.speaker-about' );
+		var $links = $speaker.find( '.speaker-links' );
+		
+		var $image = main.dom_generate_image( shared.pathToAssets + ( data.options.paths.image || assetsPath + '.png' ) );
+		$imageContainer.append( $image );
+		
+		$name.html( data.name );
+		$presentation.html( data.presentation || "TBA" );
+		$about.html( data.about || "TBA" );
+		$links.html( data.links || "TBA" );
+		
+		$speaker
+			.attr( 'id', assetsPath )
+			.addClass( 'hidden' )
+			.appendTo( shared.domElements.$speakersList );
+		
+		// if already found speaker
+		
+		if ( window.localStorage ) {
+			
+			if ( typeof window.localStorage[ assetsPath ] !== 'undefined' ) {
+				
+				show_speaker( data, true );
+				
+			}
+			
+		}
+		
+	}
+	
+	function show_speaker ( data, silent ) {
+		
+		if ( main.index_of_value( speakersShown, data ) === -1 ) {
+			
+			speakersShown.push( data );
+			
+			var assetsPath = data.options.paths.assets;
+			var $speaker = shared.domElements.$speakersList.find( '#' + assetsPath );
+			
+			main.dom_fade( {
+				element: $speaker,
+				opacity: 1
+			} );
+			
+			// try to remember finding speaker
+			
+			if ( window.localStorage ) {
+				
+				window.localStorage[ assetsPath ] = 'unlocked';
+				
+			}
+			
+			if ( silent !== true ) {
+				
+				show_message( shared.domElements.cloneables.$speakerUnlocked.clone() );
+				
+			}
+			
+		}
+		
+	}
+	
+	/*===================================================
+    
+    messages
+    
+    =====================================================*/
+	
+	function show_message ( element ) {
+		
+		var $element = $( element );
+		
+		if ( $element.length > 0 ) {
+			
+			while ( playerMessages.length > playerMessagesNumMax ) {
+				
+				hide_message( playerMessages.shift(), true );
+				
+			}
+			
+			playerMessages.push( $element );
+			
+			$element
+				.addClass( 'hidden' )
+				.appendTo( shared.domElements.$playerMessages );
+			
+			main.dom_fade( {
+				element: $element,
+				opacity: 1,
+				callback: function () {
+					
+					$element.data( 'playerMessageTimeout', window.requestTimeout( function () {
+						
+						hide_message( $element );
+						
+					}, playerMessagesDuration ) );
+					
+				}
+			} );
+			
+		}
+		
+	}
+	
+	function hide_message ( element, instant ) {
+		
+		var $element = $( element );
+		
+		if ( $element.length > 0 ) {
+			
+			if ( typeof $element.data( 'playerMessageTimeout' ) !== 'undefined' ) {
+				
+				window.clearRequestTimeout( $element.data( 'playerMessageTimeout' ) );
+				
+			}
+			
+			var fadeParameters = {
+				element: $element,
+				callback: function () { $element.remove(); }
+			};
+			
+			if ( instant === true ) {
+				
+				fadeParameters.duration = 0;
+				
+			}
+			
+			main.dom_fade( fadeParameters );
+			
+		}
 		
 	}
 	

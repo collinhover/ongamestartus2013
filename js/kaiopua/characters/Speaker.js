@@ -74,14 +74,9 @@
 							next: 'unsaid'
 						},
 						{
-							message: "Sup son?",
-							next: 'unsaid'
-						},
-						{
-							message: "Yo!",
+							message: "Hey friend!",
 							next: 'random'
-						},
-						"Hey friend!"
+						}
 					],
 					randomable: false
 				},
@@ -92,7 +87,7 @@
 					},
 					randomable: false
 				},
-				presenting: "I'll be presenting about web gaming and development at oGS 2013.",
+				presenting: "I'm presenting at oGS 2013.",
 				about: "I <3 web and gaming!",
 				fun: "oGS 2013 or bust!",
 				goodbye: {
@@ -107,27 +102,11 @@
 			}
 		};
 		
-		// functions
-		
-		_Speaker.load = load;
-		
 		// instance
 		
 		_Speaker.Instance = Speaker;
 		_Speaker.Instance.prototype = new _Character.Instance();
 		_Speaker.Instance.prototype.constructor = _Speaker.Instance;
-		
-	}
-	
-	/*===================================================
-    
-    load
-    
-    =====================================================*/
-	
-	function load ( url ) {
-		
-		
 		
 	}
 	

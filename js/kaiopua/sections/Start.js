@@ -14,8 +14,8 @@
 		_Model,
 		_Player,
 		_ObjectHelper,
-		_Speaker,
-		speakers = [];
+		_UI,
+		_Speaker;
     
     /*===================================================
     
@@ -30,6 +30,7 @@
 			"js/kaiopua/characters/Player.js",
 			"js/kaiopua/utils/ObjectHelper.js",
             { path: shared.pathToAssets + "spawn_main.js", type: 'model' },
+			{ path: shared.pathToAssets + "spawn_random.js", type: 'model' },
             { path: shared.pathToAssets + "hero.js", type: 'model' }
 		],
 		callbacksOnReqs: init_internal,
@@ -42,7 +43,7 @@
     
     =====================================================*/
 	
-	function init_internal ( m, pl, oh, gSpawnMain, gHero ) {
+	function init_internal ( m, pl, oh, gSpawnMain, gSpawnsRandom, gHero ) {
 		
 		// assets
 		
@@ -57,13 +58,28 @@
 		_Start.remove = remove;
 		_Start.update = update;
 		
-		// player
+		// spawns
 		
 		var spawnMain =  new _Model.Instance( {
 			geometry: gSpawnMain,
 			center: true
 		} );
 		shared.spawns.main = spawnMain.position.clone();
+		
+		var i, il,
+			vertices;
+		
+		shared.spawns.random = shared.spawns.random || [];
+		
+		vertices = gSpawnsRandom.vertices;
+		
+		for ( i = 0, il = vertices.length; i < il; i++ ) {
+			
+			shared.spawns.random.push( vertices[ i ].clone() );
+			
+		}
+		
+		// player
 		
 		shared.player = new _Player.Instance( {
 			geometry: gHero,
@@ -109,53 +125,29 @@
 		main.ready = false;
 		
 		main.asset_require( [
+			"js/kaiopua/ui/UI.js",
 			"js/kaiopua/characters/Speaker.js",
-			{ path: shared.pathToAssets + "spawn_random.js", type: 'model' }
-		], function ( spk, g ) {
+			{ path: shared.pathToAssets + "speakers.js", type: 'json' }
+		], function ( ui, spk, speakersList ) {
 			
+			_UI = ui;
 			_Speaker = spk;
 			
-			var i, il,
-				vertices,
-				vertex,
-				spawns,
-				spawnsUnused,
-				speakersData = [
-					{ name: "Michal Budzynski", options: { assetsPath: "speaker_budzynski_michal" } },
-					{ name: "Collin Hover", options: { assetsPath: "speaker_hover_collin" } },
-					{ name: "Jesse Freeman", options: { assetsPath: "speaker_freeman_jesse" } },
-					{ name: "Pascal Rettig", options: { assetsPath: "speaker_rettig_pascal" } }
-				],
-				data;
+			shared.speakersLoading = [];
 			
-			// process random spawns
-			
-			spawns = shared.spawns.random = shared.spawns.random || [];
-			
-			vertices = g.vertices;
-			
-			for ( i = 0, il = vertices.length; i < il; i++ ) {
-				
-				vertex = vertices[ i ];
-				
-				spawns.push( vertex.clone() );
-				
-			}
-			
-			// copy random spawns
-			
-			spawnsUnused = spawns.slice( 0 );
+			var speakerData,
+				spawnsUnused;
 			
 			// create all speakers
 			
-			for ( i = 0, il = speakersData.length; i < il; i++ ) {
+			spawnsUnused = shared.spawns.random.slice( 0 );
+			
+			for ( i = 0, il = speakersList.length; i < il; i++ ) {
 				
-				data = speakersData[ i ];
-				data.spawn = main.array_random_value_remove( spawnsUnused );
+				speakerData = speakersList[ i ];
+				speakerData.spawn = main.array_random_value_remove( spawnsUnused );
 				
-				speakers.push( data.name );
-				
-				load_speaker( data );
+				init_speaker( speakerData );
 				
 			}
 			
@@ -163,27 +155,38 @@
         
     }
 	
-	function load_speaker ( data ) {
+	function init_speaker ( data ) {
+		
+		main.array_cautious_add( shared.speakersLoading, data );
 		
 		main.asset_require( [
-			{ path: shared.pathToAssets + data.options.assetsPath + ".js", type: 'model' }
+			{ path: shared.pathToAssets + ( data.geometry || data.options.paths.assets ) + ".js", type: 'model' }
 		], function ( g ) {
 			
-			var speaker = new _Speaker.Instance( {
-				name: data.name,
-				options: data.options,
-				geometry: g
-			} );
-			shared.world.add( speaker );
+			// parameters
+			
+			data.geometry = g;
+			var options = data.options = data.options || {};
+			var dialogues = options.dialogues = options.dialogues || {};
+			var name = dialogues.name = dialogues.name || {};
+			name.callback = function () { _UI.show_speaker( data ) };
+			
+			// init
+			
+			var speaker = new _Speaker.Instance( data );
+			
+			// misc properties and respawn
 			
 			speaker.face_local_direction( new THREE.Vector3( Math.random() * 2 - 1, 0, Math.random() * 2 - 1 ).normalize() );
-			
 			speaker.respawn( shared.scene, data.spawn );
 			
-			main.array_cautious_remove( speakers, data.name );
+			// handle speakers loading
 			
-			if ( speakers.length === 0 ) {
+			main.array_cautious_remove( shared.speakersLoading, data );
+			
+			if ( shared.speakersLoading.length === 0 ) {
 				
+				delete shared.speakersLoading;
 				main.ready = true;
 				
 			}

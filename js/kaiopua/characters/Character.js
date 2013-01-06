@@ -138,7 +138,8 @@
 				boundRadiusPctZ: 0,
 				distanceMovedMax: 100,
 				distanceOutsideScreenMax: 50
-			}
+			},
+			paths: {}
 		};
 		
 		// character instance
@@ -915,6 +916,14 @@
 				
 			}
 			
+			// callback on dialogue
+			
+			if ( typeof dialogue.callback === 'function' ) {
+				
+				dialogue.callback();
+				
+			}
+			
 		}
 		
 		// handle start
@@ -1074,6 +1083,7 @@
 			target = this.targetCommunication,
 			active = conversations.active,
 			next = conversations.next,
+			dialogue = this.options.dialogues[ active ],
 			sayNext = true;
 		
 		if ( this.communicating === true ) {
@@ -1091,6 +1101,14 @@
 					target.actions.execute( 'communicate', active, { target: this } );
 					
 				}
+				
+			}
+			
+			// callback on dialogue complete
+			
+			if ( typeof dialogue.callbackComplete === 'function' ) {
+				
+				dialogue.callbackComplete();
 				
 			}
 			

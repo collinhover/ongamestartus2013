@@ -601,7 +601,7 @@
 					opacity: 1
 				} );
 				
-				shared.domElements.$playerTargetImage.css( "background-image", "url( '" + shared.pathToAssets + this.target.options.assetsPath + ".png' )" );
+				shared.domElements.$playerTargetImage.css( "background-image", "url( '" + shared.pathToAssets + ( this.target.options.paths.image || this.target.options.paths.assets + ".png'" ) + ")" );
 				shared.domElements.$playerTargetName.html( this.target.name );
 				
 				shared.domElements.$playerTargetInteract

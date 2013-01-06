@@ -70,7 +70,7 @@
 		
 		// seems as if lights must be in world before world is added for the first time to scene
 		
-		shared.world.parts.ambientLight = new THREE.AmbientLight( 0x555555 );
+		shared.world.parts.ambientLight = new THREE.AmbientLight( 0x777777 );
 		shared.world.add( shared.world.parts.ambientLight );
 		
 		// asteroid
