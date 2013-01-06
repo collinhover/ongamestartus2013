@@ -1,4 +1,296 @@
-(function(k){function y(b,a,c,o,l,d,h){var i=n.cardinalAxes,f=p,e=q,g=r,j=s;if(c instanceof THREE.Object3D)c=c.position;if(c instanceof THREE.Vector3!==!0)c=n.universeGravitySource;d=k.is_number(d)?d:1;f.sub(a,c).normalize();j=m.q_to_axis(o,f,l);if(j instanceof THREE.Quaternion)if(b instanceof THREE.Quaternion?(e.multiply(j,b),m.lerp_normalized(b,e,d)):(e.setFromRotationMatrix(b),g.multiply(j,e),m.lerp_normalized(e,g,d),b.setRotationFromQuaternion(e)),h===!0)j.multiplyVector3(o),l instanceof THREE.Vector3&&
-j.multiplyVector3(l);else if(typeof h!=="undefined")a=h.axes,b.multiplyVector3(a.up.copy(i.up)),b.multiplyVector3(a.forward.copy(i.forward)),b.multiplyVector3(a.right.copy(i.right));return j}function z(b,a,c,g){var l,d=t,h=u,i=v,f,e=[],b=b.position;if(a instanceof THREE.Object3D)a=a.position;if(a instanceof THREE.Vector3!==!0)a=n.universeGravitySource;d.sub(a,b);h.copy(d).normalize();if(k.is_array(c))for(a=0,l=c.length;a<l;a++)f=c[a],f instanceof w.Collider?e.push(f):typeof f.collider!=="undefined"?
-e.push(f.collider):typeof f.rigidBody!=="undefined"&&e.push(f.rigidBody.collider);c=x.raycast({origin:b,direction:h,colliders:e});d=typeof c!=="undefined"?c.distance:d.length();k.is_number(g)&&(d-=g);i.copy(h).multiplyScalar(d);b.addSelf(i);return i}var n=k.shared=k.shared||{},g={},w,m,x,t,u,v,p,q,r,s;k.asset_register("js/kaiopua/utils/PhysicsHelper.js",{data:g,requirements:["js/kaiopua/physics/RigidBody.js","js/kaiopua/utils/VectorHelper.js","js/kaiopua/utils/RayHelper.js"],callbacksOnReqs:function(b,
-a,c){w=b;m=a;x=c;t=new THREE.Vector3;u=new THREE.Vector3;v=new THREE.Vector3;p=new THREE.Vector3;new THREE.Vector3;q=new THREE.Quaternion;r=new THREE.Quaternion;s=new THREE.Quaternion;g.rotate_relative_to_source=y;g.pull_to_source=z},wait:!0})})(KAIOPUA);
+/*
+ *
+ * PhysicsHelper.js
+ * Contains utility functionality for physics.
+ *
+ * @author Collin Hover / http://collinhover.com/
+ *
+ */
+(function (main) {
+    
+    var shared = main.shared = main.shared || {},
+		assetPath = "js/kaiopua/utils/PhysicsHelper.js",
+		_PhysicsHelper = {},
+		_RigidBody,
+		_VectorHelper,
+		_RayHelper,
+		utilVec31Pull,
+		utilVec32Pull,
+		utilVec33Pull,
+		utilVec31RotateToSrc,
+		utilVec32RotateToSrc,
+		utilQ1RotateToSrc,
+		utilQ2RotateToSrc,
+		utilQ3RotateToSrc;
+    
+    /*===================================================
+    
+    public properties
+    
+    =====================================================*/
+	
+	main.asset_register( assetPath, { 
+		data: _PhysicsHelper,
+		requirements: [
+			"js/kaiopua/physics/RigidBody.js",
+			"js/kaiopua/utils/VectorHelper.js",
+			"js/kaiopua/utils/RayHelper.js"
+		],
+		callbacksOnReqs: init_internal,
+		wait: true
+	});
+	
+	/*===================================================
+    
+    internal init
+    
+    =====================================================*/
+	
+	function init_internal ( rb, vh, rh ) {
+		
+		_RigidBody = rb;
+		_VectorHelper = vh;
+		_RayHelper = rh;
+		
+		// utility
+		
+		utilVec31Pull = new THREE.Vector3();
+		utilVec32Pull = new THREE.Vector3();
+		utilVec33Pull = new THREE.Vector3();
+		utilVec31RotateToSrc = new THREE.Vector3();
+		utilVec32RotateToSrc = new THREE.Vector3();
+		utilQ1RotateToSrc = new THREE.Quaternion();
+		utilQ2RotateToSrc = new THREE.Quaternion();
+		utilQ3RotateToSrc = new THREE.Quaternion();
+		
+		// functions
+		
+		_PhysicsHelper.rotate_relative_to_source = rotate_relative_to_source;
+		_PhysicsHelper.pull_to_source = pull_to_source;
+		
+	}
+	
+	/*===================================================
+    
+    rotate
+    
+    =====================================================*/
+	
+	/*===================================================
+    
+    rotate
+    
+    =====================================================*/
+	
+	function rotate_relative_to_source ( rotation, position, source, axisAway, axisForward, lerpDelta, updateRigidBody ) {
+		
+		var ca = shared.cardinalAxes,
+			axisAwayNew = utilVec31RotateToSrc,
+			axisAwayToAwayNewDist,
+			angleToNew,
+			axisToNew = utilVec32RotateToSrc,
+			rotationTarget = utilQ1RotateToSrc,
+			rotationTargetForMatrix = utilQ2RotateToSrc,
+			qToNew = utilQ3RotateToSrc,
+			axes;
+		
+		// if source is 3D object, cascade
+		if ( source instanceof THREE.Object3D ) {
+			
+			source = source.position;
+		
+		}
+		
+		// default to universe gravity source
+		
+		if ( source instanceof THREE.Vector3 !== true ) {
+			
+			source = shared.universeGravitySource;
+			
+		}
+		
+		lerpDelta = main.is_number( lerpDelta ) ? lerpDelta : 1;
+		
+		axisAwayNew.sub( position, source ).normalize();
+		
+		// quaternion between axes
+		
+		qToNew = _VectorHelper.q_to_axis( axisAway, axisAwayNew, axisForward );
+		
+		if ( qToNew instanceof THREE.Quaternion ) {
+			
+			// apply as quaternion or matrix
+			
+			if ( rotation instanceof THREE.Quaternion ) {
+				
+				// quaternion rotations
+				
+				rotationTarget.multiply( qToNew, rotation );
+				
+				// normalized lerp to new rotation
+				
+				_VectorHelper.lerp_normalized( rotation, rotationTarget, lerpDelta );
+				
+			}
+			else {
+				
+				// matrix rotations
+				
+				rotationTarget.setFromRotationMatrix( rotation );
+				
+				rotationTargetForMatrix.multiply( qToNew, rotationTarget );
+				
+				// normalized lerp to new rotation
+				
+				_VectorHelper.lerp_normalized( rotationTarget, rotationTargetForMatrix, lerpDelta );
+				
+				rotation.setRotationFromQuaternion( rotationTarget );
+				
+			}
+			
+			// update rigid body
+			
+			if ( updateRigidBody === true ) {
+				
+				qToNew.multiplyVector3( axisAway );
+				
+				if ( axisForward instanceof THREE.Vector3 ) {
+					
+					qToNew.multiplyVector3( axisForward );
+					
+				}
+				
+			}
+			else if ( typeof updateRigidBody !== 'undefined' ) {
+				
+				// find new axes based on new rotation
+				
+				axes = updateRigidBody.axes;
+				
+				rotation.multiplyVector3( axes.up.copy( ca.up ) );
+				rotation.multiplyVector3( axes.forward.copy( ca.forward ) );
+				rotation.multiplyVector3( axes.right.copy( ca.right ) );
+				
+			}
+			
+		}
+		
+		return qToNew;
+		
+	}
+	
+	/*===================================================
+    
+    pull
+    
+    =====================================================*/
+	
+	function pull_to_source ( mesh, source, objectsToIntersect, distanceFrom/*, velocity, rigidBody */ ) {
+		
+		var i, l,
+			position,
+			difference = utilVec31Pull,
+			direction = utilVec32Pull,
+			shift = utilVec33Pull,
+			object,
+			colliders = [],
+			intersection,
+			intersectionDistance;
+		
+		// handle parameters
+		
+		position = mesh.position;
+		
+		// if source is 3D object, cascade
+		if ( source instanceof THREE.Object3D ) {
+			
+			source = source.position;
+		
+		}
+		
+		// default to universe gravity source
+		
+		if ( source instanceof THREE.Vector3 !== true ) {
+			
+			source = shared.universeGravitySource;
+			
+		}
+		
+		// get normalized vector from position to source
+		
+		difference.sub( source, position );
+		
+		direction.copy( difference ).normalize();
+		
+		// if objects to intersect was passed, extract colliders from objects
+		
+		if ( main.is_array( objectsToIntersect ) ) {
+			
+			for ( i = 0, l = objectsToIntersect.length; i < l; i++ ) {
+				
+				object = objectsToIntersect[ i ];
+				
+				if( object instanceof _RigidBody.Collider ) {
+					
+					colliders.push( object );
+					
+				}
+				else if ( typeof object.collider !== 'undefined' ) {
+					
+					colliders.push( object.collider );
+					
+				}
+				else if ( typeof object.rigidBody !== 'undefined' ) {
+					
+					colliders.push( object.rigidBody.collider );
+					
+				}
+				
+			}
+			
+		}
+		
+		// cast ray from mesh to source
+		
+		intersection = _RayHelper.raycast( {
+			origin: position,
+			direction: direction,
+			colliders: colliders
+		} );
+		
+		// if intersection found
+		
+		if ( typeof intersection !== 'undefined' ) {
+			
+			// get distance
+			
+			intersectionDistance = intersection.distance;
+			
+		}
+		else {
+			
+			intersectionDistance = difference.length();
+			
+		}
+		
+		// if distance from needed
+		
+		if ( main.is_number( distanceFrom ) ) {
+			
+			intersectionDistance -= distanceFrom;
+			
+		}
+		
+		// multiply direction by distance
+			
+		shift.copy( direction ).multiplyScalar( intersectionDistance );
+		
+		// add shift to position
+		
+		position.addSelf( shift );
+		
+		return shift;
+		
+	}
+	
+} (KAIOPUA) );

@@ -1,0 +1,52 @@
+/* anchors
+-------------------------------------------------------------------------------*/
+
+[class*="game"] {
+	
+	a, a&, .btn, &.btn {
+		
+		color: @backgroundScifi;
+		p, h6 {
+			color: @backgroundScifiHighlight;
+		}
+		
+		&:not( .disabled ):hover {
+			color: @backgroundScifiHighlight;
+			p, h6 {
+				color: @backgroundScifiHighlight;
+			}
+		}
+		
+	}
+	
+}
+
+/* buttons
+-------------------------------------------------------------------------------*/
+
+.btn-tab-left, .btn-tab-right {
+	background: @backgroundScifi;
+	opacity: 0.5;
+	.transition(e('opacity .3s linear, padding .3s ease-out'));
+	
+	&:not( .disabled ):hover {
+		background: @backgroundScifiHighlight;
+		opacity: 1;
+		.transition(e('opacity .3s linear, padding .3s ease-out'));
+	}
+	
+}
+
+.btn-tab-left {
+	padding: @uiPanePaddingRight * 0.5 @uiPanePaddingRight @uiPanePaddingRight * 0.5 @uiPanePaddingRight;
+	float: right;
+	&:not( .disabled ):hover {
+		padding-right: @uiPanePaddingRight * 2;
+	}
+}
+.btn-tab-right {
+	padding: @uiPanePaddingRight * 0.5 @uiPanePaddingRight @uiPanePaddingRight * 0.5 @uiPanePaddingRight;
+	&:not( .disabled ):hover {
+		padding-left: @uiPanePaddingLeft * 2;
+	}
+}

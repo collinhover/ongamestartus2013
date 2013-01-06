@@ -1,11 +1,11 @@
 <!doctype html>
 
-<!--[if lt IE 7 ]><html class="ie ie6 no-js" lang="en"><![endif]-->
-<!--[if IE 7 ]><html class="ie ie7 no-js" lang="en"><![endif]-->
-<!--[if IE 8 ]><html class="ie ie8 no-js" lang="en"><![endif]-->
-<!--[if IE 9 ]><html class="ie ie9 no-js" lang="en"><![endif]-->
+<!--[if lt IE 7 ]> <html class="ie ie6 no-js" lang="en"> <![endif]-->
+<!--[if IE 7 ]>    <html class="ie ie7 no-js" lang="en"> <![endif]-->
+<!--[if IE 8 ]>    <html class="ie ie8 no-js" lang="en"> <![endif]-->
+<!--[if IE 9 ]>    <html class="ie ie9 no-js" lang="en"> <![endif]-->
 <!--[if gt IE 9]><!--><html class="no-js" lang="en"><!--<![endif]-->
-
+<!-- the "no-js" class is for Modernizr. -->
 
 <head id="onGameStartUS2013" data-template-set="html5-reset">
 
@@ -20,29 +20,52 @@
 	<meta name="author" content="Conference: Michal Budzynski, Website: Collin Hover">
 	<meta name="copyright" content="Copyright onGameStartUS. All Rights Reserved.">
 
-	
+	<!-- Dublin Core Metadata : http://dublincore.org/ -->
 	<meta name="DC.title" content="onGameStart US 2013">
 	<meta name="DC.subject" content="onGameStart US: HTML5 Game Conference">
 	<meta name="DC.creator" content="Conference: Michal Budzynski, Website: Collin Hover">
     
-    
-    <meta property="og:title" content="onGameStart US 2013"/>
-    <meta property="og:description" content="onGameStart US: HTML5 Game Conference"/>
-    <meta property="og:image" content="img/apple-touch-icon-precomposed.png"/>
+    <!-- Facebook metadata: http://developers.facebook.com/docs/share/ -->
+    <meta property="og:title" content="onGameStart US 2013" />
+    <meta property="og:description" content="onGameStart US: HTML5 Game Conference" />
+    <meta property="og:image" content="img/apple-touch-icon-precomposed.png" />
 	
-	
+	<!--  Mobile Viewport Fix
+	j.mp/mobileviewport & davidbcalhoun.com/2010/viewport-metatag 
+	device-width : Occupy full width of the screen in its current orientation
+	initial-scale = 1.0 retains dimensions instead of zooming out if page height > device height
+	maximum-scale = 1.0 retains dimensions instead of zooming in if page width < device width
+	-->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 	<link rel="shortcut icon" href="favicon.ico">
-	
+	<!-- This is the traditional favicon.
+		 - size: 16x16 or 32x32
+		 - transparency is OK
+		 - see wikipedia for info on browser support: http://mky.be/favicon/ -->
+		 
 	<link rel="apple-touch-icon" href="img/apple-touch-icon-precomposed.png">
+	<!-- The is the icon for iOS's Web Clip.
+		 - size: 57x57 for older iPhones, 72x72 for iPads, 114x114 for iPhone4's retina display (IMHO, just go ahead and use the biggest one)
+		 - To prevent iOS from applying its styles to the icon name it thusly: apple-touch-icon-precomposed.png
+		 - Transparency is not recommended (iOS will put a black BG behind the icon) -->
+    
+	<!-- LESS for development only -->
+	<link rel="stylesheet/less" type="text/css" href="less/main.less">
+	<script src="js/lib/less-1.3.1.min.js" type="text/javascript"></script>
 	
-	<link rel="stylesheet" type="text/css" href="css/main.css">
+	<!-- CSS -->
+	<!--<link rel="stylesheet" type="text/css" href="css/main.css">-->
 	
+	<!-- setup javascript only -->
 	<script src="js/lib/modernizr-2.6.2.min.js"></script>
-	
-	  <!--[if lt IE 7 ]><script defer src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
-		<script defer>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script><![endif]-->
+
+	<!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.
+		   chromium.org/developers/how-tos/chrome-frame-getting-started -->
+	  <!--[if lt IE 7 ]>
+		<script defer src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
+		<script defer>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
+	  <![endif]-->
 
 </head>
 
@@ -53,24 +76,24 @@
 		<div id="uiInGame" class="unselectable ignore-pointer">
 			
 		</div>
-		
+		<!-- /uiInGame -->
 		
 	</div>
+	<!-- /game -->
 	
-	
-	
+	<!-- ui -->
 	<div id="ui" class="ignore-pointer">
 		
 		<div id="uiOverGame" class="ignore-pointer">
 			
 		</div>
-		
+		<!-- /uiOverGame -->
 		
 		<div id="uiPlayer" class="ignore-pointer">
 			
-			<div class="ui-pane-column-left ignore-pointer">
+			<div class="ui-pane-column-left">
 				
-				<div class="ui-pane-body ignore-pointer">
+				<div class="ui-pane-section-body">
 					
 					<ul class="unstyled nav-game nav-skewed-upright nav-opacity-lite tab-toggles">
 						<li>
@@ -93,20 +116,25 @@
 				
 			</div>
 			
-			<div class="ui-pane-column-middle ignore-pointer">
+			<div class="ui-pane-column-middle">
+				<div  class="ui-pane-section-body">
+					
+					<div id="playerMessages" class="ui-pane-section-quarter-top-middle container-center"></div>
+					
+				</div>
 				
 			</div>
 			
-			<div class="ui-pane-column-right ignore-pointer">
+			<div class="ui-pane-column-right">
 				
-				<div class="ui-pane-body ignore-pointer">
+				<div class="ui-pane-section-body">
 					
 					<div id="playerTarget" class="invisible">
 						
 						<ul class="unstyled nav-game nav-skewed-upleft nav-opacity-lite tab-toggles">
 							<li class="clearfix">
 								<a href="#" id="playerTargetInteract" class="btn btn-inverse btn-tab-left" alt="Interact">
-									<img src="img/talk_64.png" class="iconk-large">
+									<img src="img/chat_64.png" class="iconk-large">
 								</a>
 							</li>
 						</ul>
@@ -115,7 +143,11 @@
 							<div class="target-image"></div>
 							<p class="target-name"></p>
 						</div>
-						
+						<!--
+						<a href="#" id="playerTargetInteract" class="btn btn-inverse btn-circle btn-semicircle-left" alt="Interact">
+							<img src="img/talk_rev_64.png" class="iconk-large">
+						</a>
+						-->
 					</div>
 				
 				</div>
@@ -123,11 +155,11 @@
 			</div>
 			
 		</div>
-		
+		<!-- /uiPlayer -->
 		
 		<div id="uiGameDimmer" class="unselectable"></div>
 		
-		
+		<!-- uiOutGame -->
 		<div id="uiOutGame" class="ignore-pointer">
 			
 			<section id="menuMain" class="menu theme-dark theme-transparent active">
@@ -140,15 +172,16 @@
 							
 							<div class="logo-group">
 								<div class="logo">
-									<img src="img/logo.png" alt="onGameStart US 2013" class="iconk">
 									<h1 class="logo-type visuallyhidden">onGameStart US 2013</h1>
+									<img src="img/logo.png" alt="onGameStart US 2013" class="iconk">
+									<h3 class="sidekick-type scifi-type shadowed-type">March 15, 2013</h3>
 								</div>
 							</div>
 							
 						</div>
 						
 					</header>
-					
+					<!-- /headerMain -->
 					
 					<section id="noscript" class="container-center menu-section">
 						<div class="well error">
@@ -181,6 +214,9 @@
 							<div class="span4 offset4">
 								<ul class="nav nav-game nav-skewed-upright tab-toggles">
 									<li>
+										<a href="http://www.amiando.com/onGameStartUS.html" target="_blank" class="">Buy Tickets!</a>
+									</li>
+									<li>
 										<a href="#" class="game-start">Play</a>
 									</li>
 									<li>
@@ -193,27 +229,24 @@
 										<a href="#speakers">Speakers</a>
 									</li>
 									<li>
-										<a href="https://docs.google.com/spreadsheet/viewform?formkey=dEMwZHQtcXp6Mjh0MGhoRnRKTzF3SUE6MQ" target="_blank">Become a Speaker <small>(external)</small></a>
-									</li>
-									<li>
-										<a href="https://docs.google.com/spreadsheet/viewform?formkey=dG94UXdDS2ZBVjRrWnlMUUZMWU96M1E6MQ" target="_blank">Preregister <small>(external)</small></a>
+										<a href="https://docs.google.com/spreadsheet/viewform?formkey=dEMwZHQtcXp6Mjh0MGhoRnRKTzF3SUE6MQ" target="_blank">Become a Speaker</a>
 									</li>
 								</ul>
 							</div>
 						</div>
 						
 					</section>
-					
+					<!-- /navMain -->
 					
 				</div>
 				
 			</section>
-			
+			<!-- /menuMain -->
 			
 			<section id="menuInactive" class="menu hidden">
 				
 			</section>
-			
+			<!-- /menuInactive -->
 			
 			<section id="menuActive" class="menu theme-dark theme-transparent hidden">
 				
@@ -222,7 +255,7 @@
 				</div>
 				
 			</section>
-			
+			<!-- /menuActive -->
 			
 			<section id="howto" class="menu theme-dark theme-transparent hidden">
 				
@@ -230,11 +263,24 @@
 					
 					<header class="subhead menu-section">
 						<div class="container-center">
-							<img src="img/accessibility_rev_64.png" alt="" class="iconk-giant">
+							<img src="img/cog_rev_64.png" alt="" class="iconk-giant">
 							<h1 class="inline-type">How to Play</h1>
 							<h2 class="sidekick-type">Mouse & Keyboard <span class="dim"><span class="strike">& Touch</span> <small>(soon!)</small></span></h2>
 						</div>
-						
+						<!--
+						<div id="navHowto" class="subnavbar is-sticky">
+							<div class="navbar-inner">
+								<div class="container">
+									<ul class="nav nav-pills pull-left">
+										<li><a href="#controls">Controls</a></li>
+									</ul>
+									<ul class="nav nav-pills pull-right visible-desktop">
+										<li><a href="#howto"><h6>top</h6></a></li>
+									</ul>
+								</div>
+							</div>
+						</div>
+						-->
 					</header>
 					
 					<section id="gameplay" class="menu-section">
@@ -244,7 +290,7 @@
 							<div class="span4">
 								<img src="img/speakers.png" alt="Speakers">
 								<h2>Speakers</h2>
-								<p>We've got a great line up this year, and you can talk to all of onGameStart 2013's speakers in game!</p>
+								<p>We've got a great line up for onGameStart 2013. Talk to each of our speakers in game to unlock their full profiles!</p>
 							</div>
 							<div class="span4">
 								<img src="img/platforming.png" alt="Platforming">
@@ -260,7 +306,7 @@
 						</div>
 						
 					</section>
-					
+					<!-- /gameplay -->
 					
 					<section id="controls" class="menu-section">
 						
@@ -316,12 +362,12 @@
 						</div>
 						
 					</section>
-					
+					<!-- /controls -->
 					
 				</div>
 				
 			</section>
-			
+			<!-- /howto -->
 			
 			<section id="about" class="menu theme-dark theme-transparent hidden">
 				
@@ -331,7 +377,7 @@
 						<div class="container-center">
 							<img src="img/info_rev_64.png"  class="iconk-giant">
 							<h1 class="inline-type">About</h1>
-							<h2 class="sidekick-type">onGameStart: the Web + Games Conference</h2>
+							<h2 class="sidekick-type">onGameStart: the Web + Games Conference<br>March 15, 2013</h2>
 							
 							<section id="sponsors">
 								
@@ -343,7 +389,7 @@
 										</li>
 									</ul>
 								</div>
-								
+								<!-- /sponsorsDiamond -->
 								
 								<h6 class="sponsor-title">Saturn Platinum Sponsors</h6>
 								<div class="sponsors-platinum grid-gutterless">
@@ -353,7 +399,7 @@
 										</li>
 									</ul>
 								</div>
-								
+								<!-- /sponsorsPlatinum -->
 								
 								<h6 class="sponsor-title">Neptune Gold Sponsors</h6>
 								<div class="sponsors-gold grid-gutterless">
@@ -363,7 +409,7 @@
 										</li>
 									</ul>
 								</div>
-								
+								<!-- /sponsorsGold -->
 								
 								<h6 class="sponsor-title">Earth Silver Sponsors</h6>
 								<div class="sponsors-silver grid-gutterless">
@@ -373,19 +419,34 @@
 										</li>
 									</ul>
 								</div>
-								
+								<!-- /sponsorsSilver -->
 								
 								<ul class="sponsor-button nav nav-game nav-skewed-upright">
 									<li>
 										<a href="img/sponsors.pdf" target="_blank">Sponsor the Event!</a>
 									</li>
+									<li>
+										<a href="http://www.amiando.com/onGameStartUS.html" target="_blank" class="">Buy Tickets!</a>
+									</li>
 								</ul>
 								
 							</section>
-							
+							<!-- /sponsors -->
 							
 						</div>
-						
+						<!--<div id="navAbout" class="subnavbar is-sticky">
+							<div class="navbar-inner">
+								<div class="container">
+									<ul class="nav nav-pills pull-left">
+										<li><a href="#description">Description</a></li>
+										<li><a href="#location">Location</a></li>
+									</ul>
+									<ul class="nav nav-pills pull-right visible-desktop">
+										<li><a href="#about"><h6>top</h6></a></li>
+									</ul>
+								</div>
+							</div>
+						</div>-->
 					</header>
 					
 					<section id="description" class="menu-section">
@@ -424,7 +485,7 @@
 						</div>
 						
 					</section>
-					
+					<!-- /description -->
 					
 					<section id="location" class="menu-section">
 						
@@ -442,44 +503,51 @@
 							<div class="eqheight3-container3">
 								<div class="eqheight3-container2">
 									<div class="eqheight3-container1">
-										
+										<!-- venue -->
 										<div class="eqheight3-column">
 											
 											<div class="eqheight3-content">
 												<div class="hero-anchor">
-													
+													<!--<img src="img/location_venue.jpg" alt="NYIT Auditorium on Broadway" class="iconk-spacebottom">-->
 													<h6><i class="dim icon-home icon-white"></i> Venue</h6>
 													<p class="lead">Coming soon!</p>
-													
+													<!--<p class="lead">NYIT Auditorium on Broadway</p>
+													<p>Hosted in the New York Institute of Technology on Broadway, 3 minutes from Central Park.</p>
+													<a href="http://www.nyit.edu/aob/" target="_blank" class="btn">More Info</a>-->
 												</div>
 											</div>
 											
 										</div>
-										
+										<!-- info -->
 										<div class="eqheight3-column">
 											
 											<div class="eqheight3-content">
 												
 												<div class="hero-anchor">
-													
+													<!--<img src="img/location_map.jpg" alt="NYIT Auditorium on Broadway" class="iconk-spacebottom">-->
 													<h6><i class="dim icon-road icon-white"></i> Address</h6>
 													<p>Coming soon!</p>
-													
+													<!--
+													<p>
+														1871 Broadway<br/>
+														New York, NY 10023
+													</p>-->
 													<h6><i class="dim icon-comment icon-white"></i> Phone</h6>
 													<p>Coming soon!</p>
-													
+													<!--<p>646.273.6100</p>
+													<a href="https://maps.google.com/maps?ie=UTF8&q=NYIT+Auditorium+on+Broadway&t=h&z=16&vpsrc=0&iwloc=A" target="_blank" class="btn">Google Maps</a>-->
 												</div>
 												
 											</div>
 											
 										</div>
-										
+										<!-- party -->
 										<div class="eqheight3-column">
 											
 											<div class="eqheight3-content">
 												
 												<div class="hero-anchor">
-													
+													<!--<img src="img/location_party.jpg" alt="Party" class="iconk-spacebottom">-->
 													<h6><i class="dim icon-fire icon-white"></i> Party</h6>
 													<p class="lead">Coming Soon!</p>
 												</div>
@@ -494,9 +562,9 @@
 						</div>
 						
 					</section>
+					<!-- /location -->
 					
-					
-					
+					<!-- footer -->
 					<footer id="footer" class="container menu-section">
 						<div class="row">
 							<div class="span12">
@@ -509,12 +577,12 @@
 							</div>
 						</div>
 					</footer>
-					
+					<!-- /footer -->
 					
 				</div>
 				
 			</section>
-			
+			<!-- /about -->
 			
 			<section id="speakers" class="menu theme-dark theme-transparent hidden">
 				
@@ -522,96 +590,20 @@
 					
 					<header class="subhead menu-section">
 						<div class="container-center">
-							<img src="img/talk_rev_64.png"  class="iconk-giant">
+							<img src="img/chat_rev_64.png"  class="iconk-giant">
 							<h1 class="inline-type">Speakers</h1>
-							<h2 class="sidekick-type">Look at all these people!</h2>
+							<h2 class="sidekick-type">2013 Lineup!</h2>
 						</div>
 					</header>
 					
 					<section id="speakersList" class="menu-section">
 						
-						<div id="speaker_budzynski_michal" class="speaker well">
-							<div class="row">
-								<div class="span3">
-									<div class="thumbnail borderless">
-										<img src="asset/speaker_budzynski_michal.png">
-									</div>
-								</div>
-								<div class="span9">
-									
-									<h2>Michal Budzynski</h2>
-									<h6>Presenting</h6>
-									<p class="sidekick-type">TBA</p>
-									<h6>About</h6>
-									<p>Hi there, I'm Michal Budzynski, organizer of this event. I'm also addicted to Tabasco & TV Series of all kind, and love to code ridiculous things to make web the better place - like my <a href="https://developer.mozilla.org/en-US/demos/detail/css-nyan-cat" target="_blank">CSS NYAN CAT</a></p>
-									<h6>Website</h6>
-									<a href="http://michalbe.blogspot.com/" target="_blank">michalbe.blogspot.com</a>
-									
-								</div>
-							</div>
-						</div>
-						
-						<div id="speaker_hover_collin" class="speaker well">
-							<div class="row">
-								<div class="span3">
-									<div class="thumbnail borderless">
-										<img src="asset/speaker_hover_collin.png">
-									</div>
-								</div>
-								<div class="span9">
-									
-									<h2>Collin Hover</h2>
-									<h6>Presenting</h6>
-									<p class="sidekick-type">Raycast-orama!</p>
-									<h6>About</h6>
-									<p>Hi, I'm Collin Hover, and I designed and developed this site for Michal, with great help by Blackmoon Design on the 3D models. I hope you're enjoying it! I grew up in a nomadic family of (hyper)polyglots, travelling and living in the middle East, Holland, Taiwan, Japan, and the triangle of Polynesia, so I'm always looking for new things.</p>
-									<h6>Website</h6>
-									<a href="http://collinhover.com/" target="_blank">collinhover.com</a>
-									
-								</div>
-							</div>
-						</div>
-						
-						<div id="speaker_rettig_pascal" class="speaker well">
-							<div class="row">
-								<div class="span3">
-									<div class="thumbnail borderless">
-										<img src="asset/speaker_rettig_pascal.png">
-									</div>
-								</div>
-								<div class="span9">
-									
-									<h2>Pascal Rettig</h2>
-									<h6>Presenting</h6>
-									<p class="sidekick-type">Performance optimization for Mobile HTML5 Games</p>
-									<h6>About</h6>
-									<p>Hi, I'm Pascal (MIT '02) and I've been building websites since the late 80's when they were called BBSs. I founded Cykod, a Boston web consultancy focused on developing interactive HTML5 websites using Rails and Node.js. I run the Boston Front-End Developer Meetup, the Boston HTML5 Game Development Meetup and I'm the author of Wiley's Professional Mobile HTML5 Game Development. I also teach Web Design at Massachusetts College of Art and I'm a member of the editorial board of User Experience Magazine.</p>
-									<h6>Website</h6>
-									<a href="http://cykod.com/" target="_blank">cykod.com</a>
-									
-								</div>
-							</div>
-						</div>
-						
-						<div id="speaker_freeman_jesse" class="speaker well">
-							<div class="row">
-								<div class="span3">
-									<div class="thumbnail borderless">
-										<img src="asset/speaker_freeman_jesse.png">
-									</div>
-								</div>
-								<div class="span9">
-									
-									<h2>Jesse Freeman</h2>
-									<h6>Presenting</h6>
-									<p class="sidekick-type">TBA</p>
-									<h6>About</h6>
-									<p>Hello, my name is Jesse Freeman and I am a Technology Evangelist at Microsoft focusing on Windows 8 and HTML5 Gaming. My job is to help developers build amazing apps and games for Windows 8. I have been a Web developer for over 13 years as well as a mobile app developer for the better part of the last 4 years. I moved back to NY in 2002 and have worked with some of the city's top companies such as MLB, the New York Jets, HBO, Tommy Hilfiger, Bloomberg and even internationally for clients such as VW. Through my career I have seen all sides of development from independent contractor, government, consultant, agency and product. It has been a crazy ride and an amazing one that helped make me the developer I am today. In addition to my client work I have also been a speaker, author and blogger for the past 6 years. Through all of my work I have always had a passion for making games and over the past year I have been focusing on HTML5 game development. I recently wrote a book for O'Reilly called <a href="http://www.amazon.com/Introducing-HTML5-Development-Jesse-Freeman/dp/1449315178" target="_blank">Introducing HTML5 Game Development</a> using the ImpactJS framework. I have always used my passion for making games to help me learn new programing languages and this passion is one thing I hope to help share with others. You can follow me on twitter at <a href="https://twitter.com/jessefreeman" target="_blank">@jessefreeman</a>.</p>
-									<h6>Website</h6>
-									<a href="jessefreeman.com" target="_blank">jessefreeman.com</a>
-									
-								</div>
-							</div>
+						<div id="speakersIntro" class="speaker well container-center">
+							<a href="#" class="speakers-show dim"><img src="img/speaker_rev_64.png" class="iconk-giant"></a>
+							<p>
+								Talk to the speakers in game to unlock their full profiles here!<br>
+								<span class="sidekick-type dim">(cheat: click the speaker icon above to reveal them all)</span>
+							</p>
 						</div>
 						
 					</section>
@@ -619,21 +611,26 @@
 				</div>
 				
 			</section>
-			
+			<!-- /speakers -->
 			
 		</div>
-		
+		<!-- /uiOutGame -->
 		
 		<div id="uiBlocker" class="unselectable hidden"></div>
 		
 		<div id="uiOverlay" class="ignore-pointer">
 			
-			<div class="ui-pane-column-left ignore-pointer">
+			<div class="ui-pane-column-left ">
 				
-				<div class="ui-pane-body ignore-pointer">
+				<div class="ui-pane-section-body ">
 				
-					<div  id="navMainAlt" class="ignore-pointer hidden">
+					<div id="navMainAlt" class="ignore-pointer hidden">
 						<ul class="unstyled nav-game nav-skewed-upright nav-opacity-lite tab-toggles">
+							<li>
+								<a href="http://www.amiando.com/onGameStartUS.html" target="_blank" class="btn btn-inverse btn-tab-right">
+									<img src="img/ticket_64.png" class="iconk-large">
+								</a>
+							</li>
 							<li>
 								<a href="#" class="game-resume btn btn-inverse btn-tab-right">
 									<img src="img/play_64.png" class="iconk-large">
@@ -641,7 +638,7 @@
 							</li>
 							<li>
 								<a href="#howto" class="btn btn-inverse btn-tab-right">
-									<img src="img/accessibility_64.png" class="iconk-large">
+									<img src="img/cog_64.png" class="iconk-large">
 								</a>
 							</li>
 							<li>
@@ -651,7 +648,12 @@
 							</li>
 							<li>
 								<a href="#speakers" class="btn btn-inverse btn-tab-right">
-									<img src="img/talk_64.png" class="iconk-large">
+									<img src="img/chat_64.png" class="iconk-large">
+								</a>
+							</li>
+							<li>
+								<a href="https://docs.google.com/spreadsheet/viewform?formkey=dEMwZHQtcXp6Mjh0MGhoRnRKTzF3SUE6MQ" target="_blank" class="btn btn-inverse btn-tab-right">
+									<img src="img/application_64.png" class="iconk-large">
 								</a>
 							</li>
 						</ul>
@@ -661,9 +663,9 @@
 				
 			</div>
 			
-			<div class="ui-pane-column-middle ignore-pointer">
+			<div class="ui-pane-column-middle ">
 				
-				<header class="ui-pane-header ignore-pointer">
+				<header class="ui-pane-section-header ">
 					
 					<h1 class="visuallyhidden">onGameStart US: HTML5 Game Conference</h1>
 					
@@ -702,13 +704,13 @@
 							</li>
 						</ul>
 					</section>
-					
+					<!-- /social -->
 					
 				</header>
 				
-				<div class="ui-pane-body ignore-pointer">
+				<div class="ui-pane-section-body ">
 					
-					
+					<!-- status inactive -->
 					<div id="statusInactive" class="hidden">
 						
 						<section id="errorGeneral" class="status-item hidden">
@@ -731,8 +733,10 @@
 									<li>
 										<a href="http://www.mozilla.org/firefox/" target="_blank" class="firefox">Firefox</a>
 									</li>
-									
-									
+									<!-- safari doesn't enable webgl by default -->
+									<!--<li>
+										<a href="http://www.apple.com/safari/" target="_blank" class="safari">Safari</a>
+									</li>-->
 								</ul>
 								<p><small>(We'll try not to remind you again! <a>Click anywhere</a> to continue...)</small></p>
 							</div>
@@ -747,13 +751,13 @@
 						</section>
 						
 					</div>
+					<!-- /inactive -->
 					
-					
-					
+					<!-- status active -->
 					<div id="statusActive" class="container-center ignore-pointer">
 					
 					</div>
-					
+					<!-- /active -->
 					
 					<section id='worker' class="container-center ignore-pointer hidden">
 						
@@ -790,25 +794,25 @@
 					
 				</div>
 				
-				<footer class="ui-pane-footer ignore-pointer">
+				<footer class="ui-pane-section-footer ">
 					
 					<section id="sponsorsLite" class="container-center nav-opacity-lite">
 						
 						
 					</section>
-					
+					<!-- /social -->
 				
 				</footer>
 				
 			</div>
 			
 		</div>
-		
+		<!-- /uiOverlay -->
 		
 	</div>
+	<!-- /ui -->
 	
-	
-	
+	<!-- javascript -->
 	
 	<script>
 		// simple hook to remove noscript if javascript present

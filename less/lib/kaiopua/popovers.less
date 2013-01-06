@@ -1,0 +1,277 @@
+/* player
+-------------------------------------------------------------------------------*/
+
+.tooltip {
+	font-size: @baseFontSize;
+	font-family: @sansFontFamily;
+	
+	&, * {
+		.ignore-pointer;
+	}
+	
+	&.topleft {
+		margin-top: -3px;
+		
+		.tooltip-arrow {
+			bottom: 0;
+			right: 0;
+			margin-right: @tooltipArrowWidth + @tooltipBorderRadius;
+			border-width: @tooltipArrowWidth @tooltipArrowWidth 0;
+			border-top-color: @tooltipArrowColor;
+		}
+	}
+	&.topright {
+		margin-top: -3px;
+		
+		.tooltip-arrow {
+			bottom: 0;
+			left: 0;
+			margin-left: @tooltipArrowWidth + @tooltipBorderRadius;
+			border-width: @tooltipArrowWidth @tooltipArrowWidth 0;
+			border-top-color: @tooltipArrowColor;
+		}
+	}
+	&.bottomleft {
+		margin-top: 3px;
+		
+		.tooltip-arrow {
+			top: 0;
+			right: 0;
+			margin-right: @tooltipArrowWidth + @tooltipBorderRadius;
+			border-width: 0 @tooltipArrowWidth @tooltipArrowWidth;
+			border-bottom-color: @tooltipArrowColor;
+		}
+	}
+	&.bottomright {
+		margin-top: 3px;
+		
+		.tooltip-arrow {
+			top: 0;
+			left: 0;
+			margin-left: @tooltipArrowWidth + @tooltipBorderRadius;
+			border-width: 0 @tooltipArrowWidth @tooltipArrowWidth;
+			border-bottom-color: @tooltipArrowColor;
+		}
+	}
+}
+
+.textbubble {
+	position: absolute;
+	font-family: @sansFontFamily;
+	background-color: @textbubbleColor;
+	.round( @textbubbleSize );
+	border: solid 1px transparent; // margin collapse fix
+	text-align: center;
+	.box-shadow( 0 0 0px 8px rgba(0, 0, 0, 0.1) );
+	
+	.textbubble-inner {
+		width: 100% - @textbubblePadding * 2;
+		height: 100% - @textbubblePadding * 2;
+		margin: @textbubblePadding auto;
+		overflow: auto;
+		
+		.textbubble-content {
+			display: table;
+			width: 100%;
+			height: 100%;
+			
+			.textbubble-content-inner {
+				display: table-cell;
+				vertical-align: middle;
+				width: 100%;
+				margin: 0;
+				font-size: @textbubbleContentFontSize;
+				line-height: @textbubbleContentLineHeight;
+			}
+			
+		}
+		
+	}
+	
+	.textbubble-close, .textbubble-status {
+		cursor: pointer;
+		position: absolute;
+		display: table;
+		background-color: inherit;
+		font-size: 26px;
+		line-height: 100%;
+		font-weight: bold;
+		color: rgba(0, 0, 0, 0.5);
+		
+		.textbubble-close-inner, .textbubble-status-inner {
+			display: table-cell;
+			vertical-align: middle;
+			width: 100%;
+		}
+		
+	}
+	
+	.textbubble-close {
+		.round( 15% );
+		top: 8%;
+		left: 8%;
+	}
+	
+	.textbubble-status {
+		.round( 20% );
+		top: 40%;
+		right: -7%;
+		.box-shadow( 0 0 0px 4px rgba(0, 0, 0, 0.05) );
+	}
+	
+	.textbubble-arrow {
+		position: absolute;
+		display: none;
+		width: 0;
+		height: 0;
+		border-color: inherit;
+		border-style: solid;
+	}
+	
+	&.top {
+		margin-bottom: @textbubbleArrowHeight - 1;
+		
+		.textbubble-ring-inner {
+			border-style: dotted dotted solid;
+		}
+		
+		.textbubble-arrow {
+			display: block;
+			bottom: -@textbubbleArrowHeight + @textbubbleRingPadding;
+			left: 50%;
+			margin-left: -@textbubbleArrowWidth;
+			border-width: @textbubbleArrowHeight @textbubbleArrowWidth 0;
+			border-bottom-color: transparent;
+			border-left-color: transparent;
+			border-right-color: transparent;
+		}
+	}
+	&.bottom {
+		margin-top: @textbubbleArrowHeight - 1;
+		
+		.textbubble-ring-inner {
+			border-style: solid dotted dotted;
+		}
+		
+		.textbubble-arrow {
+			display: block;
+			top: -@textbubbleArrowHeight + @textbubbleRingPadding;
+			left: 50%;
+			margin-left: -@textbubbleArrowWidth;
+			border-width: 0 @textbubbleArrowWidth @textbubbleArrowHeight;
+			border-top-color: transparent;
+			border-left-color: transparent;
+			border-right-color: transparent;
+		}
+	}
+	&.left {
+		margin-right: @textbubbleArrowHeight - 1;
+		
+		.textbubble-ring-inner {
+			border-style: solid dotted solid solid;
+		}
+	
+		.textbubble-status {
+			bottom: 7%;
+			right: 7%;
+			top: auto;
+		}
+		
+		.textbubble-arrow {
+			display: block;
+			top: 50%;
+			right: -@textbubbleArrowHeight + @textbubbleRingPadding;
+			margin-top: -@textbubbleArrowWidth;
+			border-width: @textbubbleArrowWidth 0 @textbubbleArrowWidth @textbubbleArrowHeight;
+			border-top-color: transparent;
+			border-bottom-color: transparent;
+			border-right-color: transparent;
+		}
+	}
+	&.right {
+		margin-left: @textbubbleArrowHeight - 1;
+		
+		.textbubble-ring-inner {
+			border-style: solid solid solid dotted;
+		}
+		
+		.textbubble-arrow {
+			display: block;
+			top: 50%;
+			left: -@textbubbleArrowHeight + @textbubbleRingPadding;
+			margin-top: -@textbubbleArrowWidth;
+			border-width: @textbubbleArrowWidth @textbubbleArrowHeight @textbubbleArrowWidth 0;
+			border-top-color: transparent;
+			border-bottom-color: transparent;
+			border-left-color: transparent;
+		}
+	}
+	
+	&.topleft {
+		
+		.textbubble-ring-inner {
+			border-style: solid dotted dotted solid;
+		}
+		
+		.textbubble-arrow {
+			display: block;
+			bottom: @textbubbleArrowDiagonalSize;
+			right: @textbubbleArrowDiagonalSize;
+			border-width: @textbubbleArrowWidth @textbubbleArrowDiagonalSize @textbubbleArrowDiagonalSize @textbubbleArrowWidth;
+			border-left-color: transparent;
+			border-top-color: transparent;
+		}
+	}
+	&.topright {
+		
+		.textbubble-ring-inner {
+			border-style: solid solid dotted dotted;
+		}
+		
+		.textbubble-arrow {
+			display: block;
+			bottom: @textbubbleArrowDiagonalSize;
+			left: @textbubbleArrowDiagonalSize;
+			border-width: @textbubbleArrowWidth @textbubbleArrowDiagonalSize @textbubbleArrowDiagonalSize @textbubbleArrowWidth;
+			border-right-color: transparent;
+			border-top-color: transparent;
+		}
+	}
+	&.bottomleft {
+		
+		.textbubble-ring-inner {
+			border-style: dotted dotted solid solid;
+		}
+		
+		.textbubble-arrow {
+			display: block;
+			top: @textbubbleArrowDiagonalSize;
+			right: @textbubbleArrowDiagonalSize;
+			border-width: @textbubbleArrowWidth @textbubbleArrowDiagonalSize @textbubbleArrowDiagonalSize @textbubbleArrowWidth;
+			border-left-color: transparent;
+			border-bottom-color: transparent;
+		}
+	}
+	&.bottomright {
+		
+		.textbubble-ring-inner {
+			border-style: dotted solid solid dotted;
+		}
+		
+		.textbubble-close {
+			top: 8%;
+			right: 8%;
+			left: auto;
+		}
+		
+		.textbubble-arrow {
+			display: block;
+			top: @textbubbleArrowDiagonalSize;
+			left: @textbubbleArrowDiagonalSize;
+			border-width: @textbubbleArrowWidth @textbubbleArrowDiagonalSize @textbubbleArrowDiagonalSize @textbubbleArrowWidth;
+			border-right-color: transparent;
+			border-bottom-color: transparent;
+		}
+	}
+	
+}

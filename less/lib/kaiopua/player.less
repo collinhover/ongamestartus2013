@@ -1,0 +1,52 @@
+/* player state
+-------------------------*/
+
+#playerState {
+	
+	.iconk {
+		position: absolute;
+		width: auto;
+		height: 75%;
+		left: 5px;
+		top: 12.5%;
+	}
+	
+}
+
+.player-health {
+	max-width: 200px;
+	height: 30px;
+	background: @grayDarker;
+	margin: 0;
+	
+	.bar {
+	}
+	
+}
+
+/* player target
+-------------------------*/
+
+#playerTarget {
+	
+	#playerTargetPortrait {
+		
+		.target-image {
+			width: @playerTargetSize;
+			height: @playerTargetSize;
+			left: 50%;
+			margin-left: -@playerTargetSize * 0.5;
+			background-size: @playerTargetSize;
+			background-position: center top;
+		}
+		
+		.target-name {
+			text-align: center;
+			padding: 6px 12px;
+			.border-radius( 4px );
+			.box-shadow( 0 0 0px 4px rgba(0, 0, 0, 0.05) );
+		}
+		
+	}
+	
+}

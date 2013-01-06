@@ -1,4 +1,216 @@
-(function(c){function n(){a.sceneBG.add(a.skybox);a.scene.add(a.world);a.player.respawn(a.scene,a.spawns.main);i.revert_change(a.cameraControls.options,!0);a.cameraControls.target=a.player;a.cameraControls.enabled=!0;a.cameraControls.controllable=!1;c.ready=!1;c.asset_require(["js/kaiopua/characters/Speaker.js",{path:a.pathToAssets+"spawn_random.js",type:"model"}],function(d,o){k=d;var e,g,f,h,b,i=[{name:"Michal Budzynski",options:{assetsPath:"speaker_budzynski_michal"}},{name:"Collin Hover",options:{assetsPath:"speaker_hover_collin"}},
-{name:"Jesse Freeman",options:{assetsPath:"speaker_freeman_jesse"}},{name:"Pascal Rettig",options:{assetsPath:"speaker_rettig_pascal"}}];b=a.spawns.random=a.spawns.random||[];f=o.vertices;for(e=0,g=f.length;e<g;e++)h=f[e],b.push(h.clone());f=b.slice(0);for(e=0,g=i.length;e<g;e++)h=i[e],h.spawn=c.array_random_value_remove(f),j.push(h.name),p(h)})}function p(d){c.asset_require([{path:a.pathToAssets+d.options.assetsPath+".js",type:"model"}],function(b){b=new k.Instance({name:d.name,options:d.options,
-geometry:b});a.world.add(b);b.face_local_direction((new THREE.Vector3(Math.random()*2-1,0,Math.random()*2-1)).normalize());b.respawn(a.scene,d.spawn);c.array_cautious_remove(j,d.name);if(j.length===0)c.ready=!0})}function q(){}function r(){a.scene.remove(a.player);a.scene.remove(a.world);a.sceneBG.remove(a.skybox)}function s(){}var a=c.shared=c.shared||{},b={},l,m,i,k,j=[];c.asset_register("js/kaiopua/sections/Start.js",{data:b,requirements:["js/kaiopua/core/Model.js","js/kaiopua/characters/Player.js",
-"js/kaiopua/utils/ObjectHelper.js",{path:a.pathToAssets+"spawn_main.js",type:"model"},{path:a.pathToAssets+"hero.js",type:"model"}],callbacksOnReqs:function(d,c,e,g,f){l=d;m=c;i=e;b.show=n;b.hide=q;b.remove=r;b.update=s;d=new l.Instance({geometry:g,center:!0});a.spawns.main=d.position.clone();a.player=new m.Instance({geometry:f,options:{animation:{names:{idleAlt:"idle_alt"},durations:{idle:600,idleAlt:1500,jump:600,jumpStart:175,jumpEnd:300}}}})},wait:!0})})(KAIOPUA);
+/*
+ *
+ * Start.js
+ * Start section.
+ *
+ * @author Collin Hover / http://collinhover.com/
+ *
+ */
+(function (main) {
+    
+    var shared = main.shared = main.shared || {},
+		assetPath = "js/kaiopua/sections/Start.js",
+		_Start = {},
+		_Model,
+		_Player,
+		_ObjectHelper,
+		_UI,
+		_Speaker;
+    
+    /*===================================================
+    
+    public properties
+    
+    =====================================================*/
+    
+	main.asset_register( assetPath, { 
+		data: _Start,
+		requirements: [
+			"js/kaiopua/core/Model.js",
+			"js/kaiopua/characters/Player.js",
+			"js/kaiopua/utils/ObjectHelper.js",
+            { path: shared.pathToAssets + "spawn_main.js", type: 'model' },
+			{ path: shared.pathToAssets + "spawn_random.js", type: 'model' },
+            { path: shared.pathToAssets + "hero.js", type: 'model' }
+		],
+		callbacksOnReqs: init_internal,
+		wait: true
+	} );
+	
+	/*===================================================
+    
+    internal init
+    
+    =====================================================*/
+	
+	function init_internal ( m, pl, oh, gSpawnMain, gSpawnsRandom, gHero ) {
+		
+		// assets
+		
+		_Model = m;
+		_Player = pl;
+		_ObjectHelper = oh;
+		
+		// property
+		
+		_Start.show = show;
+		_Start.hide = hide;
+		_Start.remove = remove;
+		_Start.update = update;
+		
+		// spawns
+		
+		var spawnMain =  new _Model.Instance( {
+			geometry: gSpawnMain,
+			center: true
+		} );
+		shared.spawns.main = spawnMain.position.clone();
+		
+		var i, il,
+			vertices;
+		
+		shared.spawns.random = shared.spawns.random || [];
+		
+		vertices = gSpawnsRandom.vertices;
+		
+		for ( i = 0, il = vertices.length; i < il; i++ ) {
+			
+			shared.spawns.random.push( vertices[ i ].clone() );
+			
+		}
+		
+		// player
+		
+		shared.player = new _Player.Instance( {
+			geometry: gHero,
+			options: {
+				animation: {
+					names: {
+						idleAlt: 'idle_alt'
+					},
+					durations: {
+						idle: 600,
+						idleAlt: 1500,
+						jump: 600,
+						jumpStart: 175,
+						jumpEnd: 300
+					}
+				}
+			}
+		} );
+		
+	}
+    
+    /*===================================================
+    
+    section functions
+    
+    =====================================================*/
+    
+    function show () {
+		
+		shared.sceneBG.add( shared.skybox );
+		
+		shared.scene.add( shared.world );
+		
+		shared.player.respawn( shared.scene, shared.spawns.main );
+		
+		_ObjectHelper.revert_change( shared.cameraControls.options, true );
+		shared.cameraControls.target = shared.player;
+		shared.cameraControls.enabled = true;
+		shared.cameraControls.controllable = false;
+		
+		// speakers
+		
+		main.ready = false;
+		
+		main.asset_require( [
+			"js/kaiopua/ui/UI.js",
+			"js/kaiopua/characters/Speaker.js",
+			{ path: shared.pathToAssets + "speakers.js", type: 'json' }
+		], function ( ui, spk, speakersList ) {
+			
+			_UI = ui;
+			_Speaker = spk;
+			
+			shared.speakersLoading = [];
+			
+			var speakerData,
+				spawnsUnused;
+			
+			// create all speakers
+			
+			spawnsUnused = shared.spawns.random.slice( 0 );
+			
+			for ( i = 0, il = speakersList.length; i < il; i++ ) {
+				
+				speakerData = speakersList[ i ];
+				speakerData.spawn = main.array_random_value_remove( spawnsUnused );
+				
+				init_speaker( speakerData );
+				
+			}
+			
+		} );
+        
+    }
+	
+	function init_speaker ( data ) {
+		
+		main.array_cautious_add( shared.speakersLoading, data );
+		
+		main.asset_require( [
+			{ path: shared.pathToAssets + ( data.geometry || data.options.paths.assets ) + ".js", type: 'model' }
+		], function ( g ) {
+			
+			// parameters
+			
+			data.geometry = g;
+			var options = data.options = data.options || {};
+			var dialogues = options.dialogues = options.dialogues || {};
+			var name = dialogues.name = dialogues.name || {};
+			name.callback = function () { _UI.show_speaker( data ) };
+			
+			// init
+			
+			var speaker = new _Speaker.Instance( data );
+			
+			// misc properties and respawn
+			
+			speaker.face_local_direction( new THREE.Vector3( Math.random() * 2 - 1, 0, Math.random() * 2 - 1 ).normalize() );
+			speaker.respawn( shared.scene, data.spawn );
+			
+			// handle speakers loading
+			
+			main.array_cautious_remove( shared.speakersLoading, data );
+			
+			if ( shared.speakersLoading.length === 0 ) {
+				
+				delete shared.speakersLoading;
+				main.ready = true;
+				
+			}
+			
+		} );
+		
+	}
+	
+	function hide () {
+		
+    }
+    
+    function remove () {
+		
+		shared.scene.remove( shared.player );
+		
+		shared.scene.remove( shared.world );
+		
+		shared.sceneBG.remove( shared.skybox );
+        
+    }
+    
+    function update () {
+		
+    }
+    
+} ( KAIOPUA ) );
