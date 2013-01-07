@@ -406,11 +406,13 @@ var HAMMER = ( function ( main ) {
 		}
 		// multitouch, return array with positions
 		else {
+			
 			var pos = [], src, touches = event.touches.length > 0 ? event.touches : event.changedTouches;
 			for(var t=0, len=touches.length; t<len; t++) {
 				src = touches[t];
-				pos.push({ x: src.pageX, y: src.pageY });
+				pos.push( { x: src.pageX, y: src.pageY } );
 			}
+			
 			return pos;
 		}
 	}
@@ -591,8 +593,8 @@ var HAMMER = ( function ( main ) {
 				
 				// update event object
 				
-				eventObject.touches = getXYfromEvent( eventObject.originalEvent );
-				eventObject.position = eventObject.position || eventObject.touches;
+				eventObject.touches = getXYfromEvent( eventObject.originalEvent || eventObject );
+				eventObject.position = eventObject.touches || eventObject.position;
 				eventObject.type = eventName;
 				
 				// if event does not yet have a target
@@ -640,7 +642,7 @@ var HAMMER = ( function ( main ) {
 			_event_start = event;
 			_fingers = countFingers( event );
 			_touch_start_time = new Date().getTime();
-			_pos.start = getXYfromEvent(event);
+			_pos.start = getXYfromEvent( event.originalEvent || event );
 			_first = true;
 			_mousedown = true;
 			_distance = 0;
@@ -689,7 +691,7 @@ var HAMMER = ( function ( main ) {
 				
 				// event properties
 				
-				_pos.move = getXYfromEvent( event );
+				_pos.move = getXYfromEvent( event.originalEvent || event );
 				
 				// gestures
 
