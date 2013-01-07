@@ -592,7 +592,7 @@ var HAMMER = ( function ( main ) {
 				
 				// update event object
 				
-				eventObject.touches = getXYfromEvent( eventObject.originalEvent );
+				eventObject.touches = getXYfromEvent( eventObject.originalEvent || eventObject );
 				eventObject.position = eventObject.position || eventObject.touches;
 				eventObject.type = eventName;
 				
@@ -641,7 +641,7 @@ var HAMMER = ( function ( main ) {
 			_event_start = event;
 			_fingers = countFingers( event );
 			_touch_start_time = new Date().getTime();
-			_pos.start = getXYfromEvent(event);
+			_pos.start = getXYfromEvent( event.originalEvent || event );
 			_first = true;
 			_mousedown = true;
 			_distance = 0;
@@ -690,7 +690,7 @@ var HAMMER = ( function ( main ) {
 				
 				// event properties
 				
-				_pos.move = getXYfromEvent( event );
+				_pos.move = getXYfromEvent( event.originalEvent || event );
 				
 				// gestures
 
