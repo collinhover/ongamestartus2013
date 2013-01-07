@@ -627,11 +627,7 @@ var HAMMER = ( function ( main ) {
 	function on_start ( hammerInstance, event ) {
 		
 		var element,
-			box,
-			clientTop,
-			clientLeft,
-			scrollTop,
-			scrollLeft;
+			$element;
 		
 		// must stop before starting again
 		
@@ -651,20 +647,10 @@ var HAMMER = ( function ( main ) {
 			_angle = 0;
 			
 			// get offset
-			// borrowed from jquery offset https://github.com/jquery/jquery/blob/master/src/offset.js
 			
 			element = hammerInstance.element;
-			
-			box = element.getBoundingClientRect();
-			clientTop  = element.clientTop  || document.body.clientTop  || 0;
-			clientLeft = element.clientLeft || document.body.clientLeft || 0;
-			scrollTop  = window.pageYOffset || element.scrollTop  || document.body.scrollTop;
-			scrollLeft = window.pageXOffset || element.scrollLeft || document.body.scrollLeft;
-			
-			_offset = {
-				top: box.top + scrollTop - clientTop,
-				left: box.left + scrollLeft - clientLeft
-			};
+			$element = $( element );
+			_offset = $element.offset();
 			
 			// disable text selection
 			
