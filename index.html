@@ -91,7 +91,7 @@
 		
 		<div id="uiPlayer" class="ignore-pointer">
 			
-			<div class="ui-pane-column-left">
+			<div class="ui-pane-column ui-pane-left">
 				
 				<div class="ui-pane-section-body">
 					
@@ -116,7 +116,7 @@
 				
 			</div>
 			
-			<div class="ui-pane-column-middle">
+			<div class="ui-pane-column ui-pane-middle">
 				<div  class="ui-pane-section-body">
 					
 					<div id="playerMessages" class="ui-pane-section-quarter-top-middle container-center"></div>
@@ -125,7 +125,7 @@
 				
 			</div>
 			
-			<div class="ui-pane-column-right">
+			<div class="ui-pane-column ui-pane-right">
 				
 				<div class="ui-pane-section-body">
 					
@@ -602,7 +602,7 @@
 							<a href="#" class="speakers-show dim"><img src="img/speaker_rev_64.png" class="iconk-giant"></a>
 							<p>
 								Talk to the speakers in game to unlock their full profiles here!<br>
-								<span class="sidekick-type dim">(cheat: click the speaker icon above to reveal them all)</span>
+								<span class="sidekick-type dim">(cheat: tap the speaker icon above to reveal them all)</span>
 							</p>
 						</div>
 						
@@ -618,196 +618,161 @@
 		
 		<div id="uiBlocker" class="unselectable hidden"></div>
 		
-		<div id="uiOverlay" class="ignore-pointer">
+		<header id="social" class="ui-pane-overlay ui-pane-middle container-center">
 			
-			<div class="ui-pane-column-left ">
-				
-				<div class="ui-pane-section-body ">
-				
-					<div id="navMainAlt" class="ignore-pointer hidden">
-						<ul class="unstyled nav-game nav-skewed-upright nav-opacity-lite tab-toggles">
-							<li>
-								<a href="http://www.amiando.com/onGameStartUS.html" target="_blank" class="btn btn-inverse btn-tab-right">
-									<img src="img/ticket_64.png" class="iconk-large">
-								</a>
-							</li>
-							<li>
-								<a href="#" class="game-resume btn btn-inverse btn-tab-right">
-									<img src="img/play_64.png" class="iconk-large">
-								</a>
-							</li>
-							<li>
-								<a href="#howto" class="btn btn-inverse btn-tab-right">
-									<img src="img/cog_64.png" class="iconk-large">
-								</a>
-							</li>
-							<li>
-								<a href="#about" class="btn btn-inverse btn-tab-right">
-									<img src="img/info_64.png" class="iconk-large">
-								</a>
-							</li>
-							<li>
-								<a href="#speakers" class="btn btn-inverse btn-tab-right">
-									<img src="img/chat_64.png" class="iconk-large">
-								</a>
-							</li>
-							<li>
-								<a href="https://docs.google.com/spreadsheet/viewform?formkey=dEMwZHQtcXp6Mjh0MGhoRnRKTzF3SUE6MQ" target="_blank" class="btn btn-inverse btn-tab-right">
-									<img src="img/application_64.png" class="iconk-large">
-								</a>
-							</li>
-						</ul>
-					</div>
-					
-				</div>
-				
-			</div>
+			<h1 class="visuallyhidden">onGameStart US: HTML5 Game Conference</h1>
 			
-			<div class="ui-pane-column-middle ">
-				
-				<header class="ui-pane-section-header ">
-					
-					<h1 class="visuallyhidden">onGameStart US: HTML5 Game Conference</h1>
-					
-					<section id="social" class="container-center">
-						
-						<ul class="nav nav-pills nav-inline nav-opacity nav-transparent">
-							<li>
-								<a href="mailto: info@ongamestart.com" target="_blank">
-									<img src="img/email_64.png" class="iconk-small">
-									<h6 class="inline-type">info@ongamestart.com</h6>
-								</a>
-							</li>
-							<li>
-								<a href="http://twitter.com/onGameStart" target="_blank">
-									<img src="img/twitter_64.png" class="iconk-small">
-									<h6 class="inline-type">Twitter</h6>
-								</a>
-							</li>
-							<li>
-								<a href="https://www.facebook.com/onGameStart" target="_blank">
-									<img src="img/facebook_alt_64.png" class="iconk-small">
-									<h6 class="inline-type">Facebook</h6>
-								</a>
-							</li>
-							<li>
-								<a href="http://lanyrd.com/2013/ogsus/" target="_blank">
-									<img src="img/talk_64.png" class="iconk-small">
-									<h6 class="inline-type">Lanyrd</h6>
-								</a>
-							</li>
-							<li>
-								<a href="https://github.com/collinhover/ongamestartus2013" target="_blank">
-									<img src="img/github_64.png" class="iconk-small">
-									<h6 class="inline-type">Code</h6>
-								</a>
-							</li>
-						</ul>
-					</section>
-					<!-- /social -->
-					
-				</header>
-				
-				<div class="ui-pane-section-body ">
-					
-					<!-- status inactive -->
-					<div id="statusInactive" class="hidden">
-						
-						<section id="errorGeneral" class="status-item hidden">
-							<div class="menu-section error">
-								<h2 class="error-header logo-type">Well, this is embarrassing!</h2>
-								<p class="error-body">We tried to catch every bug, but it looks like one got through. Please let us know by <a href='https://github.com/collinhover/ongamestartus2013/issues' target='_blank'>submitting an issue</a> report.</p>
-								<p><code><span id='errorMessage'>Error Message</span></code><small> in file: </small><code><span id='errorFile'>Filename</span> > line <span id='errorLine'>0</span></code></p>
-								<p><small>(you can also try to <a href='index.html'>refresh</a> to fix the problem)</small></p>
-							</div>
-						</section>
-						
-						<section id="errorWebGLBrowser" class="status-item hidden">
-							<div class="menu-section error">
-								<h2 class="error-header logo-type">Oops, we can't find WebGL!</h2>
-								<p class="error-body">Sorry, but it appears that your <span class="underline">browser</span> does not support WebGL. For more information visit <a href='http://get.webgl.org' target='_blank'>Get WebGL</a> or try upgrading to one of these friendly browsers:</p>
-								<ul class="nav nav-inline nav-transparent browsers">
-									<li>
-										<a href="http://www.google.com/chrome/" target="_blank" class="chrome">Chrome</a>
-									</li>
-									<li>
-										<a href="http://www.mozilla.org/firefox/" target="_blank" class="firefox">Firefox</a>
-									</li>
-									<!-- safari doesn't enable webgl by default -->
-									<!--<li>
-										<a href="http://www.apple.com/safari/" target="_blank" class="safari">Safari</a>
-									</li>-->
-								</ul>
-								<p><small>(We'll try not to remind you again! <a>Click anywhere</a> to continue...)</small></p>
-							</div>
-						</section>
-						
-						<section id="errorWebGLComputer" class="status-item hidden">
-							<div class="menu-section error">
-								<h2 class="error-header logo-type">Oops, we can't find WebGL!</h2>
-								<p class="error-body">Sorry, but it appears that your <span class="underline">device</span> does not support WebGL. For more information visit the <a href='http://get.webgl.org/troubleshooting/' target='_blank'>WebGL troubleshooting</a> page.</p>
-								<p><small>(We'll try not to remind you again! <a>Click anywhere</a> to continue...)</small></p>
-							</div>
-						</section>
-						
-					</div>
-					<!-- /inactive -->
-					
-					<!-- status active -->
-					<div id="statusActive" class="container-center ignore-pointer">
-					
-					</div>
-					<!-- /active -->
-					
-					<section id='worker' class="container-center ignore-pointer hidden">
-						
-						<div class="worker-bar-left">
-							<div class="worker-bar container-right">
-								<div id="workerProgressBarStarted" class="progress-bar">
-									<img src='img/waiting_rev_64.png' class="iconk-small-tight">
-								</div>
-							</div>
-						</div>
-						
-						<div id="workerStatusText" class="worker-bar">
-							<h6 id="uiState" class="inline-type">UI:
-								<span class="state-loading active">Building</span>
-								<span class="state-usable">Usable</span>
-								<span class="state-ready">Ready!</span>
-							</h6>
-							<h6 id="gameState" class="inline-type">Game:
-								<span class="state-loading active">Building</span>
-								<span class="state-usable">Playable</span>
-								<span class="state-ready">Ready!</span>
-							</h6>
-						</div>
-						
-						<div class="worker-bar-right">
-							<div class="worker-bar container-left">
-								<div id="workerProgressBarCompleted" class="progress-bar">
-									<img src='img/confirm_rev_64.png' class="iconk-small-tight">
-								</div>
-							</div>
-						</div>
-					
-					</section>
-					
+			<ul class="nav nav-pills nav-inline nav-opacity nav-transparent">
+				<li>
+					<a href="mailto: info@ongamestart.com" target="_blank">
+						<img src="img/email_64.png" class="iconk-small">
+						<h6 class="inline-type">info@ongamestart.com</h6>
+					</a>
+				</li>
+				<li>
+					<a href="http://twitter.com/onGameStart" target="_blank">
+						<img src="img/twitter_64.png" class="iconk-small">
+						<h6 class="inline-type">Twitter</h6>
+					</a>
+				</li>
+				<li>
+					<a href="https://www.facebook.com/onGameStart" target="_blank">
+						<img src="img/facebook_alt_64.png" class="iconk-small">
+						<h6 class="inline-type">Facebook</h6>
+					</a>
+				</li>
+				<li>
+					<a href="http://lanyrd.com/2013/ogsus/" target="_blank">
+						<img src="img/talk_64.png" class="iconk-small">
+						<h6 class="inline-type">Lanyrd</h6>
+					</a>
+				</li>
+				<li>
+					<a href="https://github.com/collinhover/ongamestartus2013" target="_blank">
+						<img src="img/github_64.png" class="iconk-small">
+						<h6 class="inline-type">Code</h6>
+					</a>
+				</li>
+			</ul>
+			
+		</header>
+		<!-- /social -->
+		
+		<ul id="navMainAlt" class="ui-pane-overlay ui-pane-left unstyled nav-game nav-skewed-upright nav-opacity-lite tab-toggles hidden">
+			<li>
+				<a href="http://www.amiando.com/onGameStartUS.html" target="_blank" class="btn btn-inverse btn-tab-right">
+					<img src="img/ticket_64.png" class="iconk-large">
+				</a>
+			</li>
+			<li>
+				<a href="#" class="game-resume btn btn-inverse btn-tab-right">
+					<img src="img/play_64.png" class="iconk-large">
+				</a>
+			</li>
+			<li>
+				<a href="#howto" class="btn btn-inverse btn-tab-right">
+					<img src="img/cog_64.png" class="iconk-large">
+				</a>
+			</li>
+			<li>
+				<a href="#about" class="btn btn-inverse btn-tab-right">
+					<img src="img/info_64.png" class="iconk-large">
+				</a>
+			</li>
+			<li>
+				<a href="#speakers" class="btn btn-inverse btn-tab-right">
+					<img src="img/chat_64.png" class="iconk-large">
+				</a>
+			</li>
+			<li>
+				<a href="https://docs.google.com/spreadsheet/viewform?formkey=dEMwZHQtcXp6Mjh0MGhoRnRKTzF3SUE6MQ" target="_blank" class="btn btn-inverse btn-tab-right">
+					<img src="img/application_64.png" class="iconk-large">
+				</a>
+			</li>
+		</ul>
+		<!-- /navMainAlt -->
+			
+		<div id="statusInactive" class="hidden">
+			
+			<section id="errorGeneral" class="status-item hidden">
+				<div class="menu-section error">
+					<h2 class="error-header logo-type">Well, this is embarrassing!</h2>
+					<p class="error-body">We tried to catch every bug, but it looks like one got through. Please let us know by <a href='https://github.com/collinhover/ongamestartus2013/issues' target='_blank'>submitting an issue</a> report.</p>
+					<p><code><span id='errorMessage'>Error Message</span></code><small> in file: </small><code><span id='errorFile'>Filename</span> > line <span id='errorLine'>0</span></code></p>
+					<p><small>(you can also try to <a href='index.html'>refresh</a> to fix the problem)</small></p>
 				</div>
-				
-				<footer class="ui-pane-section-footer ">
-					
-					<section id="sponsorsLite" class="container-center nav-opacity-lite">
-						
-						
-					</section>
-					<!-- /social -->
-				
-				</footer>
-				
-			</div>
+			</section>
+			
+			<section id="errorWebGLBrowser" class="status-item hidden">
+				<div class="menu-section error">
+					<h2 class="error-header logo-type">Oops, we can't find WebGL!</h2>
+					<p class="error-body">Sorry, but it appears that your <span class="underline">browser</span> does not support WebGL. For more information visit <a href='http://get.webgl.org' target='_blank'>Get WebGL</a> or try upgrading to one of these friendly browsers:</p>
+					<ul class="nav nav-inline nav-transparent browsers">
+						<li>
+							<a href="http://www.google.com/chrome/" target="_blank" class="chrome">Chrome</a>
+						</li>
+						<li>
+							<a href="http://www.mozilla.org/firefox/" target="_blank" class="firefox">Firefox</a>
+						</li>
+						<!-- safari doesn't enable webgl by default -->
+						<!--<li>
+							<a href="http://www.apple.com/safari/" target="_blank" class="safari">Safari</a>
+						</li>-->
+					</ul>
+					<p><small>(We'll try not to remind you again! <a>Tap anywhere</a> to continue...)</small></p>
+				</div>
+			</section>
+			
+			<section id="errorWebGLComputer" class="status-item hidden">
+				<div class="menu-section error">
+					<h2 class="error-header logo-type">Oops, we can't find WebGL!</h2>
+					<p class="error-body">Sorry, but it appears that your <span class="underline">device</span> does not support WebGL. For more information visit the <a href='http://get.webgl.org/troubleshooting/' target='_blank'>WebGL troubleshooting</a> page.</p>
+					<p><small>(We'll try not to remind you again! <a>Tap anywhere</a> to continue...)</small></p>
+				</div>
+			</section>
 			
 		</div>
-		<!-- /uiOverlay -->
+		<!-- /inactive -->
+		
+		<div id="statusActive" class="ui-pane-overlay ui-pane-middle ui-pane-body-bottom container-center ignore-pointer"></div>
+		<!-- /active -->
+		
+		<section id='worker' class="ui-pane-overlay ui-pane-middle ui-pane-body-bottom container-center ignore-pointer hidden">
+			
+			<div class="worker-bar-left">
+				<div class="worker-bar container-right">
+					<div id="workerProgressBarStarted" class="progress-bar">
+						<img src='img/waiting_rev_64.png' class="iconk-small-tight">
+					</div>
+				</div>
+			</div>
+			
+			<div id="workerStatusText" class="worker-bar">
+				<h6 id="uiState" class="inline-type">UI:
+					<span class="state-loading active">Building</span>
+					<span class="state-usable">Usable</span>
+					<span class="state-ready">Ready!</span>
+				</h6>
+				<h6 id="gameState" class="inline-type">Game:
+					<span class="state-loading active">Building</span>
+					<span class="state-usable">Playable</span>
+					<span class="state-ready">Ready!</span>
+				</h6>
+			</div>
+			
+			<div class="worker-bar-right">
+				<div class="worker-bar container-left">
+					<div id="workerProgressBarCompleted" class="progress-bar">
+						<img src='img/confirm_rev_64.png' class="iconk-small-tight">
+					</div>
+				</div>
+			</div>
+		
+		</section>
+		<!-- /worker -->
+		
+		<footer id="sponsorsLite" class="ui-pane-overlay ui-pane-middle ui-pane-bottom container-center nav-opacity-lite"></footer>
+		<!-- /sponsorsLite -->
 		
 	</div>
 	<!-- /ui -->
