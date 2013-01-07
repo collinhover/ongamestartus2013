@@ -7694,6 +7694,12 @@ small {
 .strike {
   text-decoration: line-through;
 }
+.caps {
+  text-transform: uppercase;
+}
+.lowercase {
+  text-transform: lowercase;
+}
 .separate {
   margin-bottom: 26px;
 }
@@ -7818,6 +7824,10 @@ small {
   position: absolute;
   min-width: 60px;
   min-height: 60px;
+  pointer-events: none;
+}
+.ui-pane-overlay {
+  z-index: 9999;
 }
 .ui-pane-column,
 [class^="ui-pane-column"],
@@ -7825,109 +7835,120 @@ small {
   height: 100%;
   top: 0;
 }
-.ui-pane-column .ui-pane-header,
-[class^="ui-pane-column"] .ui-pane-header,
-[class*=" ui-pane-column"] .ui-pane-header,
-.ui-pane-column .ui-pane-footer,
-[class^="ui-pane-column"] .ui-pane-footer,
-[class*=" ui-pane-column"] .ui-pane-footer,
-.ui-pane-column .ui-pane-body,
-[class^="ui-pane-column"] .ui-pane-body,
-[class*=" ui-pane-column"] .ui-pane-body,
-.ui-pane-column .ui-pane-body-top,
-[class^="ui-pane-column"] .ui-pane-body-top,
-[class*=" ui-pane-column"] .ui-pane-body-top,
-.ui-pane-column .ui-pane-body-bottom,
-[class^="ui-pane-column"] .ui-pane-body-bottom,
-[class*=" ui-pane-column"] .ui-pane-body-bottom {
-  width: 100%;
-}
-.ui-pane-column .ui-pane-header,
-[class^="ui-pane-column"] .ui-pane-header,
-[class*=" ui-pane-column"] .ui-pane-header,
-.ui-pane-column .ui-pane-footer,
-[class^="ui-pane-column"] .ui-pane-footer,
-[class*=" ui-pane-column"] .ui-pane-footer {
-  min-height: 60px;
-}
-.ui-pane-column .ui-pane-header,
-[class^="ui-pane-column"] .ui-pane-header,
-[class*=" ui-pane-column"] .ui-pane-header {
-  top: 0;
-}
-.ui-pane-column .ui-pane-footer,
-[class^="ui-pane-column"] .ui-pane-footer,
-[class*=" ui-pane-column"] .ui-pane-footer {
-  bottom: 0;
-}
-.ui-pane-column .ui-pane-body,
-[class^="ui-pane-column"] .ui-pane-body,
-[class*=" ui-pane-column"] .ui-pane-body {
-  top: 60px;
-  bottom: 60px;
-}
-.ui-pane-column .ui-pane-body .ui-pane-body-top,
-[class^="ui-pane-column"] .ui-pane-body .ui-pane-body-top,
-[class*=" ui-pane-column"] .ui-pane-body .ui-pane-body-top,
-.ui-pane-column .ui-pane-body .ui-pane-body-bottom,
-[class^="ui-pane-column"] .ui-pane-body .ui-pane-body-bottom,
-[class*=" ui-pane-column"] .ui-pane-body .ui-pane-body-bottom {
-  height: 50%;
-}
-.ui-pane-column-left,
-.ui-pane-column-right {
-  min-width: 10%;
-}
-.ui-pane-column-middle {
+.ui-pane-middle {
   width: 80%;
   left: 10%;
   right: 10%;
 }
-.ui-pane-column-right {
+.ui-pane-left,
+.ui-pane-right {
+  min-width: 10%;
+}
+.ui-pane-right {
   right: 0;
 }
-.ui-pane-column-right > * {
+.ui-pane-right > * {
   *zoom: 1;
 }
-.ui-pane-column-right > *:before,
-.ui-pane-column-right > *:after {
+.ui-pane-right > *:before,
+.ui-pane-right > *:after {
   display: table;
   content: "";
   line-height: 0;
 }
-.ui-pane-column-right > *:after {
+.ui-pane-right > *:after {
   clear: both;
 }
-.ui-pane-column-right > *:before,
-.ui-pane-column-right > *:after {
+.ui-pane-right > *:before,
+.ui-pane-right > *:after {
   display: table;
   content: "";
   line-height: 0;
 }
-.ui-pane-column-right > *:after {
+.ui-pane-right > *:after {
   clear: both;
 }
-.ui-pane-column-right > * > * {
+.ui-pane-right > * > * {
   float: right;
   *zoom: 1;
 }
-.ui-pane-column-right > * > *:before,
-.ui-pane-column-right > * > *:after {
+.ui-pane-right > * > *:before,
+.ui-pane-right > * > *:after {
   display: table;
   content: "";
   line-height: 0;
 }
-.ui-pane-column-right > * > *:after {
+.ui-pane-right > * > *:after {
   clear: both;
 }
-.ui-pane-column-right > * > *:before,
-.ui-pane-column-right > * > *:after {
+.ui-pane-right > * > *:before,
+.ui-pane-right > * > *:after {
   display: table;
   content: "";
   line-height: 0;
 }
-.ui-pane-column-right > * > *:after {
+.ui-pane-right > * > *:after {
   clear: both;
+}
+.ui-pane-top {
+  top: 0;
+}
+.ui-pane-bottom {
+  bottom: 0;
+}
+.ui-pane-body-top {
+  top: 60px;
+}
+.ui-pane-body-bottom {
+  bottom: 60px;
+}
+.ui-pane-section,
+[class^="ui-pane-section"],
+[class*=" ui-pane-section"] {
+  width: 100%;
+}
+.ui-pane-section.expandable,
+[class^="ui-pane-section"].expandable,
+[class*=" ui-pane-section"].expandable {
+  height: auto;
+}
+.ui-pane-section-header,
+.ui-pane-section-footer {
+  min-height: 60px;
+}
+.ui-pane-section-header {
+  top: 0;
+}
+.ui-pane-section-footer {
+  bottom: 0;
+}
+.ui-pane-section-body {
+  top: 60px;
+  bottom: 60px;
+}
+.ui-pane-section-half-top,
+.ui-pane-section-half-bottom {
+  height: 50%;
+}
+.ui-pane-section-third-top,
+.ui-pane-section-third-middle,
+.ui-pane-section-third-bottom {
+  height: 33%;
+}
+.ui-pane-section-quarter-top,
+.ui-pane-section-quarter-top-middle,
+.ui-pane-section-quarter-bottom-middle,
+.ui-pane-section-quarter-bottom {
+  height: 25%;
+}
+.ui-pane-section-third-middle {
+  top: 33%;
+}
+.ui-pane-section-quarter-top-middle {
+  top: 25%;
+}
+.ui-pane-section-quarter-bottom-middle {
+  bottom: 25%;
 }
 /* equal height containers / http://matthewjamestaylor.com/blog/equal-height-columns-cross-browser-css-no-hacks
 -------------------------*/[class*="eqheight3-container"] {
@@ -7992,7 +8013,7 @@ small {
   background: #ffffff;
 }
 .menu-section {
-  padding-top: 50px;
+  padding-top: 60px;
   padding-bottom: 30px;
   -webkit-background-clip: padding-box;
   -moz-background-clip: padding-box;
@@ -10208,8 +10229,24 @@ a:hover,
 /* app
 -------------------------------------------------------------------------------*/
 /* variables
--------------------------*//* type
--------------------------------------------------------------------------------*//* containers
+-------------------------*//* global
+-------------------------------------------------------------------------------*/
+body {
+  color: #eeeeee;
+}
+/* type
+-------------------------------------------------------------------------------*/.skewed-type {
+  font-family: "LeagueGothic", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.scifi-type {
+  color: #e9ffcc;
+}
+.shadowed-type {
+  text-shadow: 1px 2px 0 rgba(0, 0, 0, 0.25), 2px 3px 0 rgba(0, 0, 0, 0.25);
+}
+/* containers
 -------------------------*/#game {
   background-color: #222222;
 }
@@ -10375,12 +10412,6 @@ a:hover,
 }
 /* status 
 -------------------------*/
-#statusActive {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-}
 .status-item {
   padding: 11px;
   margin-bottom: 11px;
@@ -10424,11 +10455,6 @@ a:hover,
 }
 /* worker 
 -------------------------*/
-#worker {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-}
 #worker .worker-bar {
   display: inline-block;
   *display: inline;
@@ -10450,14 +10476,14 @@ a:hover,
 #worker .worker-bar-left {
   position: absolute;
   right: 50%;
+  top: 0;
   margin-right: 111px;
-  bottom: 0;
 }
 #worker .worker-bar-right {
   position: absolute;
   left: 50%;
+  top: 0;
   margin-left: 111px;
-  bottom: 0;
 }
 #worker #workerStatusText {
   width: 220px;
@@ -10537,12 +10563,12 @@ a[class*="game"]:not( .disabled ):hover h6,
   -webkit-font-smoothing: antialiased;
   -moz-font-smoothing: antialiased;
   font-smoothing: antialiased;
-  background: transparent;
   font-family: "LeagueGothic", "Helvetica Neue", Helvetica, Arial, sans-serif;
   letter-spacing: 1px;
+  text-transform: uppercase;
+  background: transparent;
   line-height: 100%;
   text-align: left;
-  text-transform: uppercase;
   opacity: 0.75;
 }
 [class*="nav-skewed"] li a:not( .disabled ):hover {
@@ -10582,14 +10608,20 @@ a[class*="game"]:not( .disabled ):hover h6,
 #navMain [class*="nav-skewed"] li:not( .disabled ):hover {
   background: #f2ffe0;
 }
+#navMainAlt {
+  position: absolute;
+  left: 0;
+  top: 60px;
+}
 #navMainAlt li {
   margin-top: 10px;
   margin-bottom: 10px;
 }
-/* player
+/* popovers
 -------------------------------------------------------------------------------*/
 .textbubble {
   background: #e9ffcc;
+  color: #333333;
 }
 .textbubble .textbubble-arrow {
   border-color: #e9ffcc;
@@ -10647,12 +10679,6 @@ a[class*="game"]:not( .disabled ):hover h6,
   width: 48px;
   height: 48px;
   line-height: 48px;
-}
-#sponsorsLite {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  padding-top: 10px;
 }
 #sponsorsLite.blocking {
   background-color: rgba(34, 34, 34, 0.95);
@@ -10784,12 +10810,12 @@ a[class*="game"]:not( .disabled ):hover h6,
     text-align: center;
   }
 }
-/* player state
+/* state
 -------------------------*/
 #playerState {
   padding: 0 0 20px 20px;
 }
-/* player target
+/* target
 -------------------------*/
 #playerTarget #playerTargetPortrait {
   padding: 0 20px 20px 0;
@@ -10797,4 +10823,13 @@ a[class*="game"]:not( .disabled ):hover h6,
 #playerTarget .target-name {
   background: #222222;
   color: #eeeeee;
+}
+/* messages
+-------------------------*/
+#playerMessages .player-message,
+#playerMessages .player-message * {
+  pointer-events: none;
+}
+#playerMessages .player-message h2 {
+  padding: 0;
 }

@@ -1,7 +1,7 @@
 [
 	{
 		"name": "Michal Budzynski",
-		"presentation": "Opening",
+		"presentation": "Opening Statements",
 		"about": "Hi there, I'm Michal Budzynski, organizer of this event. I'm also addicted to Tabasco & TV Series of all kind, and love to code ridiculous things to make web the better place - like my <a href='https://developer.mozilla.org/en-US/demos/detail/css-nyan-cat' target='_blank'>CSS NYAN CAT</a>",
 		"links": "<a href='http://michalbe.blogspot.com/' target='_blank'>michalbe.blogspot.com</a>",
 		"options": {
@@ -88,12 +88,16 @@
 	},
 	{
 		"name": "Peter van den Zee",
+		"presentation": "Using Gamer Psychology",
+		"about": "You found me! I'm Peter van der Zee. I work at Uxebu on a big environment called Bikeshed. It's like flash in the browser, only better. I've spent the past six months writing a parser for the swf (flash) format, parsing as3 byte code, and creating an as3 vm. Not alone, of course. And all of this in JS! Some of my personal projects include js1k and zeonjs.",
 		"links": "<a href='https://twitter.com/kuvos' target='_blank'>@kuvos</a>",
 		"options": {
 			"paths": {
 				"assets": "speaker_zee_petervanden"
 			},
 			"dialogues": {
+				"presenting": "I'll explain the psychology of gamers and how to use this in game design!",
+				"about": "I work at Uxebu on a big environment called Bikeshed.",
 				"fun": "I do the JS dance!"
 			}
 		}
