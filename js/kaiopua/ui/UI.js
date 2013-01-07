@@ -18,8 +18,8 @@
 		playerMessagesNumMax = 3,
 		playerMessagesDuration = 2000,
 		speakersShown = [],
-		workerCollapseDelay = 1000,
-		workerCollapseTimeoutHandle,
+		workerHideDelay = 1000,
+		workerHideTimeoutHandle,
 		$menuActive,
 		$error;
     
@@ -210,13 +210,23 @@
 			
 		} ).on('show.active', function () {
 			
-			shared.domElements.$statusActive.append( this );
+			shared.domElements.$statusActive
+				.removeClass( 'hidden' )
+				.append( this );
 			
 		}).on('hidden.active', function () {
 			
 			shared.domElements.$statusInactive.append( this );
 			
+			if ( shared.domElements.$statusActive.children().length === 0 ) {
+				
+				shared.domElements.$statusActive.addClass( 'hidden' );
+				
+			}
+			
 		});
+		
+		shared.domElements.$statusActive.addClass( 'hidden' );
 		
 		// primary action items
 		
@@ -730,20 +740,20 @@
 	
 	function worker_task_start ( id ) {
 		
-		// clear collapse delay
+		// clear hide delay
 		
-		if ( typeof workerCollapseTimeoutHandle !== 'undefined' ) {
+		if ( typeof workerHideTimeoutHandle !== 'undefined' ) {
 			
-			window.clearTimeout( workerCollapseTimeoutHandle );
-			workerCollapseTimeoutHandle = undefined;
+			window.clearTimeout( workerHideTimeoutHandle );
+			workerHideTimeoutHandle = undefined;
 			
 		}
 		
 		// show if hidden
 		
-		main.dom_collapse( {
+		main.dom_fade( {
 			element: shared.domElements.$worker,
-			show: true
+			opacity: 1
 		} );
 		
 		// add into worker started progress bar
@@ -766,26 +776,26 @@
 	
 	function worker_tasks_complete () {
 		
-		// clear collapse delay
+		// clear hide delay
 		
-		if ( typeof workerCollapseTimeoutHandle !== 'undefined' ) {
+		if ( typeof workerHideTimeoutHandle !== 'undefined' ) {
 			
-			window.clearTimeout( workerCollapseTimeoutHandle );
-			workerCollapseTimeoutHandle = undefined;
+			window.clearTimeout( workerHideTimeoutHandle );
+			workerHideTimeoutHandle = undefined;
 			
 		}
 		
-		// new collapse delay
+		// new hide delay
 		
-		workerCollapseTimeoutHandle = window.setTimeout( function () {
+		workerHideTimeoutHandle = window.setTimeout( function () {
 			
-			// collapse
+			// hide
 			
-			main.dom_collapse( {
+			main.dom_fade( {
 				element: shared.domElements.$worker
 			} );
 			
-		}, workerCollapseDelay );
+		}, workerHideDelay );
 		
 	}
 	
@@ -982,6 +992,9 @@
 			duration: 0
 		} );
 		
+		shared.domElements.$social.removeClass( 'blocking' );
+		shared.domElements.$sponsorsLite.removeClass( 'hidden' );
+		
 		if ( shared.domElements.$menuToggleDefault.length > 0 ) {
 			
 			shared.domElements.$menuToggleDefault.trigger( 'tap' );
@@ -1064,6 +1077,8 @@
 			nonDefaultMenu = forMenu && !shared.domElements.$menuDefault.is( $menu );
 		
 		paused = true;
+		
+		if ( main.focusLost === true && main.started !== true ) return;
 		
 		// hide buttons
 		
@@ -1171,9 +1186,6 @@
 		if ( refocused !== true ) {
 			
 			if ( typeof $menuActive !== 'undefined' ) {
-				
-				shared.domElements.$social.removeClass( 'blocking' );
-				shared.domElements.$sponsorsLite.removeClass( 'hidden' );
 				
 				open_default_menu();
 				
@@ -1292,9 +1304,9 @@
 				
 			}
 			
-			// allow click to clear error
+			// allow tap to clear error
 			
-			$( window ).one( 'click.errorclear', function () {
+			$( document ).one( 'tap.errorclear', function () {
 				
 				clear_error();
 				

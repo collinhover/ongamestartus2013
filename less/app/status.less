@@ -2,10 +2,6 @@
 -------------------------*/
 
 #statusActive {
-	position: absolute;
-	bottom: 0;
-	left: 0;
-	right: 0;
 }
 
 .status-item {
@@ -51,9 +47,6 @@
 -------------------------*/
 
 #worker {
-	position: absolute;
-	bottom: 0;
-	width: 100%;
 	
 	.worker-bar {
 		.inline-block;
@@ -71,15 +64,15 @@
 	.worker-bar-left {
 		position: absolute;
 		right: 50%;
+		top: 0;
 		margin-right: @workerTextWidth * 0.5 + 1px;
-		bottom: 0;
 	}
 	
 	.worker-bar-right {
 		position: absolute;
 		left: 50%;
+		top: 0;
 		margin-left: @workerTextWidth * 0.5 + 1px;
-		bottom: 0;
 	}
 	
 	#workerStatusText {
