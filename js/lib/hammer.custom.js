@@ -410,8 +410,9 @@ var HAMMER = ( function ( main ) {
 			var pos = [], src, touches = event.touches.length > 0 ? event.touches : event.changedTouches;
 			for(var t=0, len=touches.length; t<len; t++) {
 				src = touches[t];
-				pos.push({ x: src.pageX, y: src.pageY });
+				pos.push( { x: src.pageX, y: src.pageY } );
 			}
+			console.log(' > hammer pos > ', pos );
 			return pos;
 		}
 	}
@@ -593,7 +594,7 @@ var HAMMER = ( function ( main ) {
 				// update event object
 				
 				eventObject.touches = getXYfromEvent( eventObject.originalEvent || eventObject );
-				eventObject.position = eventObject.position || eventObject.touches;
+				eventObject.position = eventObject.touches || eventObject.position;
 				eventObject.type = eventName;
 				
 				// if event does not yet have a target
@@ -603,7 +604,7 @@ var HAMMER = ( function ( main ) {
 					eventObject.target = hammerInstance.element;
 					
 				}
-				
+				console.log( 'hammer eventObject after xy', eventObject );
 				hammerInstance["on"+ eventName].call( hammerInstance, eventObject );
 				
 				// only trigger hammer vent once from first hammer instance that is listening for it
