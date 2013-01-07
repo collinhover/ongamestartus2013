@@ -406,6 +406,7 @@ var HAMMER = ( function ( main ) {
 		}
 		// multitouch, return array with positions
 		else {
+			console.log('hammer xy event', event, event.touches );
 			var pos = [], src, touches = event.touches.length > 0 ? event.touches : event.changedTouches;
 			for(var t=0, len=touches.length; t<len; t++) {
 				src = touches[t];
