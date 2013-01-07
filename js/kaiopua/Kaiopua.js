@@ -144,7 +144,7 @@ var KAIOPUA = (function (main) {
     $LAB.script( libsPrimaryList ).wait().script( libsSecondaryList ).wait( init );
     
     function init () {
-		
+		console.log( "[ KAI 'OPUA <3 ]" );
 		shared.domElements.$game = $('#game');
 		
 		shared.supports.pointerEvents = Modernizr.testProp('pointerEvents');
@@ -393,7 +393,7 @@ var KAIOPUA = (function (main) {
     =====================================================*/
 	
 	function compatibility_check ( ui, kh ) {
-		console.log('GAME: compatiblity check');
+		//console.log('GAME: compatiblity check');
 		
 		var i, l,
 			canvas, 
@@ -501,7 +501,7 @@ var KAIOPUA = (function (main) {
     =====================================================*/
     
     function init_foundation () {
-		console.log('GAME: foundation');
+		//console.log('GAME: foundation');
 		
 		// universe gravity
 		
@@ -534,7 +534,7 @@ var KAIOPUA = (function (main) {
     =====================================================*/
     
     function init_setup ( sc, cc ) {
-		console.log('GAME: setup');
+		//console.log('GAME: setup');
 		// utility
 		
 		_Scene = sc;
@@ -638,7 +638,7 @@ var KAIOPUA = (function (main) {
     =====================================================*/
 	
 	function init_playable ( st ) {
-		console.log('GAME: playable');
+		//console.log('GAME: playable');
 		
 		sectionStart = st;
 		
@@ -767,7 +767,7 @@ var KAIOPUA = (function (main) {
 			// start or resume
 			
 			if ( started === false ) {
-				console.log('GAME: START');
+				//console.log('GAME: START');
 				// set started
 				
 				started = true;
@@ -796,7 +796,7 @@ var KAIOPUA = (function (main) {
 	function stop () {
 		
 		if ( playable === true ) {
-			console.log('GAME: STOP');
+			//console.log('GAME: STOP');
 			started = false;
 			
 			// signal
@@ -826,7 +826,7 @@ var KAIOPUA = (function (main) {
 		// set state
 		
         if ( paused === false ) {
-            console.log('GAME: PAUSE');
+            //console.log('GAME: PAUSE');
             paused = true;
 			
 			shared.signals.onGamePaused.dispatch( preventDefault, $menu );
@@ -842,7 +842,7 @@ var KAIOPUA = (function (main) {
     function resume ( refocused ) {
 		
         if ( paused === true && ( typeof shared.errorCurrent === 'undefined' || started !== true ) ) {
-			console.log('GAME: RESUME');
+			//console.log('GAME: RESUME');
 			paused = false;
 			
 			shared.signals.onGameResumed.dispatch( refocused );
@@ -3225,7 +3225,7 @@ var KAIOPUA = (function (main) {
 			
 		},
 		on_ready: function () {
-			console.log( '[ KAIOPUA ] Module / Asset Ready: ' + this.path );
+			//console.log( '[ KAIOPUA ] Module / Asset Ready: ' + this.path );
 			asset_ready( this.path, this );
 			
 		}

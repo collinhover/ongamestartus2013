@@ -169,7 +169,7 @@
 			var options = data.options = data.options || {};
 			var dialogues = options.dialogues = options.dialogues || {};
 			var name = dialogues.name = dialogues.name || {};
-			name.callback = function () { _UI.show_speaker( data ) };
+			name.callback = function () { _UI.show_speaker( data ); };
 			
 			// init
 			

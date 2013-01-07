@@ -1227,7 +1227,7 @@
 			
 		}
 		
-		 if ( main.started === true && main.paused !== true ) {
+		if ( main.started === true && main.paused !== true ) {
 			
 			// show pause button
 			

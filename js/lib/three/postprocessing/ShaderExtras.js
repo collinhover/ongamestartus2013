@@ -165,12 +165,12 @@ THREE.ShaderExtras = {
 
 		uniforms: {
 
-			tDiffuse:   { type: "t", value: null },
-			time: 	    { type: "f", value: 0.0 },
+			tDiffuse: { type: "t", value: null },
+			time: { type: "f", value: 0.0 },
 			nIntensity: { type: "f", value: 0.5 },
 			sIntensity: { type: "f", value: 0.05 },
-			sCount: 	{ type: "f", value: 4096 },
-			grayscale:  { type: "i", value: 1 }
+			sCount: { type: "f", value: 4096 },
+			grayscale: { type: "i", value: 1 }
 
 		},
 
@@ -249,17 +249,18 @@ THREE.ShaderExtras = {
 	//	Depth-of-field shader with bokeh
 	//	ported from GLSL shader by Martins Upitis
 	//	http://artmartinsh.blogspot.com/2010/02/glsl-lens-blur-filter-with-bokeh.html
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'bokeh'	: {
 
-	uniforms: { tColor:   { type: "t", value: null },
-				tDepth:   { type: "t", value: null },
-				focus:    { type: "f", value: 1.0 },
-				aspect:   { type: "f", value: 1.0 },
-				aperture: { type: "f", value: 0.025 },
-				maxblur:  { type: "f", value: 1.0 }
-			  },
+	uniforms: {
+		tColor: { type: "t", value: null },
+		tDepth: { type: "t", value: null },
+		focus: { type: "f", value: 1.0 },
+		aspect: { type: "f", value: 1.0 },
+		aperture: { type: "f", value: 0.025 },
+		maxblur: { type: "f", value: 1.0 }
+	},
 
 	vertexShader: [
 
@@ -281,8 +282,8 @@ THREE.ShaderExtras = {
 	"uniform sampler2D tColor;",
 	"uniform sampler2D tDepth;",
 
-	"uniform float maxblur;",  	// max blur amount
-	"uniform float aperture;",	// aperture - bigger values for shallower depth of field
+	"uniform float maxblur;", // max blur amount
+	"uniform float aperture;", // aperture - bigger values for shallower depth of field
 
 	"uniform float focus;",
 	"uniform float aspect;",
@@ -361,7 +362,7 @@ THREE.ShaderExtras = {
 	//	Depth-of-field shader using mipmaps
 	//	- from Matt Handley @applmak
 	//	- requires power-of-2 sized render target with enabled mipmaps
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'dofmipmap': {
 
@@ -418,7 +419,7 @@ THREE.ShaderExtras = {
 	//	Sepia tone shader
 	//  - based on glfx.js sepia shader
 	//		https://github.com/evanw/glfx.js
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'sepia': {
 
@@ -471,18 +472,17 @@ THREE.ShaderExtras = {
 	//	Dot screen shader
 	//  - based on glfx.js sepia shader
 	//		https://github.com/evanw/glfx.js
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'dotscreen': {
 
 		uniforms: {
 
 			tDiffuse: { type: "t", value: null },
-			tSize:    { type: "v2", value: new THREE.Vector2( 256, 256 ) },
-			center:   { type: "v2", value: new THREE.Vector2( 0.5, 0.5 ) },
-			angle:	  { type: "f", value: 1.57 },
-			scale:	  { type: "f", value: 1.0 }
-
+			tSize: { type: "v2", value: new THREE.Vector2( 256, 256 ) },
+			center: { type: "v2", value: new THREE.Vector2( 0.5, 0.5 ) },
+			angle: { type: "f", value: 1.57 },
+			scale: { type: "f", value: 1.0 }
 		},
 
 		vertexShader: [
@@ -538,7 +538,7 @@ THREE.ShaderExtras = {
 	//	Vignette shader
 	//	- based on PaintEffect postprocess from ro.me
 	//		http://code.google.com/p/3-dreams-of-black/source/browse/deploy/js/effects/PaintEffect.js
-	 ------------------------------------------------------------------------------------------------ */
+	------------------------------------------------------------------------------------------------ */
 
 	'vignette': {
 
@@ -600,7 +600,7 @@ THREE.ShaderExtras = {
 	//	Bleach bypass shader [http://en.wikipedia.org/wiki/Bleach_bypass]
 	//	- based on Nvidia example
 	//		http://developer.download.nvidia.com/shaderlibrary/webpages/shader_library.html#post_bleach_bypass
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'bleachbypass': {
 
@@ -663,18 +663,17 @@ THREE.ShaderExtras = {
 	//	Focus shader
 	//	- based on PaintEffect postprocess from ro.me
 	//		http://code.google.com/p/3-dreams-of-black/source/browse/deploy/js/effects/PaintEffect.js
-	 -------------------------------------------------------------------------------------------------- */
+	-------------------------------------------------------------------------------------------------- */
 
 	'focus': {
 
 		uniforms : {
 
-			"tDiffuse": 		{ type: "t", value: null },
-			"screenWidth": 		{ type: "f", value: 1024 },
-			"screenHeight": 	{ type: "f", value: 1024 },
-			"sampleDistance": 	{ type: "f", value: 0.94 },
-			"waveFactor": 		{ type: "f", value: 0.00125 }
-
+			"tDiffuse": { type: "t", value: null },
+			"screenWidth": { type: "f", value: 1024 },
+			"screenHeight": { type: "f", value: 1024 },
+			"sampleDistance": { type: "f", value: 0.94 },
+			"waveFactor": { type: "f", value: 0.00125 }
 		},
 
 		vertexShader: [
@@ -751,21 +750,20 @@ THREE.ShaderExtras = {
 
 	/* -------------------------------------------------------------------------
 	//	Triangle blur shader
-	//  - based on glfx.js triangle blur shader
-	//		https://github.com/evanw/glfx.js
-
-	// 	A basic blur filter, which convolves the image with a
-	// 	pyramid filter. The pyramid filter is separable and is applied as two
-	//  perpendicular triangle filters.
-	 ------------------------------------------------------------------------- */
+	// - based on glfx.js triangle blur shader
+	// https://github.com/evanw/glfx.js
+	// A basic blur filter, which convolves the image with a
+	// pyramid filter. The pyramid filter is separable and is applied as two
+	// perpendicular triangle filters.
+	------------------------------------------------------------------------- */
 
 	'triangleBlur': {
 
 
 		uniforms : {
 
-			"texture": 	{ type: "t", value: null },
-			"delta": 	{ type: "v2", value:new THREE.Vector2( 1, 1 )  }
+			"texture": { type: "t", value: null },
+			"delta": { type: "v2", value:new THREE.Vector2( 1, 1 )  }
 
 		},
 
@@ -821,7 +819,7 @@ THREE.ShaderExtras = {
 
 			"gl_FragColor = color / total;",
 
-		"}",
+		"}"
 
 		].join("\n")
 
@@ -829,7 +827,7 @@ THREE.ShaderExtras = {
 
 	/* -------------------------------------------------------------------------
 	//	Simple test shader
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'basic': {
 
@@ -860,19 +858,19 @@ THREE.ShaderExtras = {
 	/* --------------------------------------------------------------------------------------------------
 	//	Two pass Gaussian blur filter (horizontal and vertical blur shaders)
 	//	- described in http://www.gamerendering.com/2008/10/11/gaussian-blur-filter-shader/
-	//	  and used in http://www.cake23.de/traveling-wavefronts-lit-up.html
+	// and used in http://www.cake23.de/traveling-wavefronts-lit-up.html
 	//
 	//	- 9 samples per pass
 	//	- standard deviation 2.7
 	//	- "h" and "v" parameters should be set to "1 / width" and "1 / height"
-	 -------------------------------------------------------------------------------------------------- */
+	-------------------------------------------------------------------------------------------------- */
 
 	'horizontalBlur': {
 
 		uniforms: {
 
 			"tDiffuse": { type: "t", value: null },
-			"h": 		{ type: "f", value: 1.0 / 512.0 }
+			"h": { type: "f", value: 1.0 / 512.0 }
 
 		},
 
@@ -904,7 +902,7 @@ THREE.ShaderExtras = {
 				"sum += texture2D( tDiffuse, vec2( vUv.x - 3.0 * h, vUv.y ) ) * 0.0918;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x - 2.0 * h, vUv.y ) ) * 0.12245;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x - 1.0 * h, vUv.y ) ) * 0.1531;",
-				"sum += texture2D( tDiffuse, vec2( vUv.x, 		  	vUv.y ) ) * 0.1633;",
+				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y ) ) * 0.1633;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x + 1.0 * h, vUv.y ) ) * 0.1531;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x + 2.0 * h, vUv.y ) ) * 0.12245;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x + 3.0 * h, vUv.y ) ) * 0.0918;",
@@ -924,8 +922,7 @@ THREE.ShaderExtras = {
 		uniforms: {
 
 			"tDiffuse": { type: "t", value: null },
-			"v": 		{ type: "f", value: 1.0 / 512.0 }
-
+			"v": { type: "f", value: 1.0 / 512.0 }
 		},
 
 		vertexShader: [
@@ -956,7 +953,7 @@ THREE.ShaderExtras = {
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 3.0 * v ) ) * 0.0918;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 2.0 * v ) ) * 0.12245;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 1.0 * v ) ) * 0.1531;",
-				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y			  ) ) * 0.1633;",
+				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y ) ) * 0.1633;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 1.0 * v ) ) * 0.1531;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 2.0 * v ) ) * 0.12245;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 3.0 * v ) ) * 0.0918;",
@@ -978,15 +975,15 @@ THREE.ShaderExtras = {
 	//	- standard deviation 2.7
 	//	- "h" and "v" parameters should be set to "1 / width" and "1 / height"
 	//	- "r" parameter control where "focused" horizontal line lies
-	 -------------------------------------------------------------------------------------------------- */
+	-------------------------------------------------------------------------------------------------- */
 
 	'horizontalTiltShift': {
 
 		uniforms: {
 
 			"tDiffuse": { type: "t", value: null },
-			"h": 		{ type: "f", value: 1.0 / 512.0 },
-			"r": 		{ type: "f", value: 0.35 }
+			"h": { type: "f", value: 1.0 / 512.0 },
+			"r": { type: "f", value: 0.35 }
 
 		},
 
@@ -1021,7 +1018,7 @@ THREE.ShaderExtras = {
 				"sum += texture2D( tDiffuse, vec2( vUv.x - 3.0 * hh, vUv.y ) ) * 0.0918;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x - 2.0 * hh, vUv.y ) ) * 0.12245;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x - 1.0 * hh, vUv.y ) ) * 0.1531;",
-				"sum += texture2D( tDiffuse, vec2( vUv.x, 		  	 vUv.y ) ) * 0.1633;",
+				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y ) ) * 0.1633;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x + 1.0 * hh, vUv.y ) ) * 0.1531;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x + 2.0 * hh, vUv.y ) ) * 0.12245;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x + 3.0 * hh, vUv.y ) ) * 0.0918;",
@@ -1041,8 +1038,8 @@ THREE.ShaderExtras = {
 		uniforms: {
 
 			"tDiffuse": { type: "t", value: null },
-			"v": 		{ type: "f", value: 1.0 / 512.0 },
-			"r": 		{ type: "f", value: 0.35 }
+			"v": { type: "f", value: 1.0 / 512.0 },
+			"r": { type: "f", value: 0.35 }
 
 		},
 
@@ -1077,7 +1074,7 @@ THREE.ShaderExtras = {
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 3.0 * vv ) ) * 0.0918;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 2.0 * vv ) ) * 0.12245;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y - 1.0 * vv ) ) * 0.1531;",
-				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y			   ) ) * 0.1633;",
+				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y ) ) * 0.1633;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 1.0 * vv ) ) * 0.1531;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 2.0 * vv ) ) * 0.12245;",
 				"sum += texture2D( tDiffuse, vec2( vUv.x, vUv.y + 3.0 * vv ) ) * 0.0918;",
@@ -1094,7 +1091,7 @@ THREE.ShaderExtras = {
 
 	/* -------------------------------------------------------------------------
 	//	Blend two textures
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'blend': {
 
@@ -1147,14 +1144,14 @@ THREE.ShaderExtras = {
 	//		http://timothylottes.blogspot.com/2011/06/fxaa3-source-released.html
 	//	- WebGL port by @supereggbert
 	//		http://www.glge.org/demos/fxaa/
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'fxaa': {
 
 		uniforms: {
 
-			"tDiffuse": 	{ type: "t", value: null },
-			"resolution": 	{ type: "v2", value: new THREE.Vector2( 1 / 1024, 1 / 512 )  }
+			"tDiffuse": { type: "t", value: null },
+			"resolution": { type: "v2", value: new THREE.Vector2( 1 / 1024, 1 / 512 )  }
 
 		},
 
@@ -1211,7 +1208,7 @@ THREE.ShaderExtras = {
 
 				"float rcpDirMin = 1.0 / ( min( abs( dir.x ), abs( dir.y ) ) + dirReduce );",
 				"dir = min( vec2( FXAA_SPAN_MAX,  FXAA_SPAN_MAX),",
-					  "max( vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),",
+				"max( vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),",
 							"dir * rcpDirMin)) * resolution;",
 
 				"vec3 rgbA = 0.5 * (",
@@ -1243,13 +1240,13 @@ THREE.ShaderExtras = {
 	/* -------------------------------------------------------------------------
 	//	Luminosity
 	//	http://en.wikipedia.org/wiki/Luminosity
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'luminosity': {
 
 		uniforms: {
 
-			"tDiffuse": 	{ type: "t", value: null }
+			"tDiffuse": { type: "t", value: null }
 
 		},
 
@@ -1291,15 +1288,15 @@ THREE.ShaderExtras = {
 
 	/* -------------------------------------------------------------------------
 	//	Color correction
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'colorCorrection': {
 
 		uniforms: {
 
-			"tDiffuse" : 	{ type: "t", value: null },
-			"powRGB" :		{ type: "v3", value: new THREE.Vector3( 2, 2, 2 ) },
-			"mulRGB" :		{ type: "v3", value: new THREE.Vector3( 1, 1, 1 ) }
+			"tDiffuse" : { type: "t", value: null },
+			"powRGB" : { type: "v3", value: new THREE.Vector3( 2, 2, 2 ) },
+			"mulRGB" : { type: "v3", value: new THREE.Vector3( 1, 1, 1 ) }
 
 		},
 
@@ -1339,7 +1336,7 @@ THREE.ShaderExtras = {
 	/* -------------------------------------------------------------------------
 	//	Normal map shader
 	//	- compute normals from heightmap
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'normalmap': {
 
@@ -1383,7 +1380,7 @@ THREE.ShaderExtras = {
 
 				"gl_FragColor = vec4( ( 0.5 * normalize( vec3( val - valU, val - valV, height  ) ) + 0.5 ), 1.0 );",
 
-			"}",
+			"}"
 
 		].join("\n")
 
@@ -1399,23 +1396,23 @@ THREE.ShaderExtras = {
 	//		- modified to use RGBA packed depth texture (use clear color 1,1,1,1 for depth pass)
 	//		- made fog more compatible with three.js linear fog
 	//		- refactoring and optimizations
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'ssao': {
 
 		uniforms: {
 
-			"tDiffuse": 	{ type: "t", value: null },
-			"tDepth":   	{ type: "t", value: null },
-			"size": 		{ type: "v2", value: new THREE.Vector2( 512, 512 ) },
-			"cameraNear":	{ type: "f", value: 1 },
-			"cameraFar":	{ type: "f", value: 100 },
-			"fogNear":		{ type: "f", value: 5 },
-			"fogFar":		{ type: "f", value: 100 },
-			"fogEnabled":	{ type: "i", value: 0 },
-			"onlyAO":		{ type: "i", value: 0 },
-			"aoClamp":		{ type: "f", value: 0.3 },
-			"lumInfluence":	{ type: "f", value: 0.9 }
+			"tDiffuse": { type: "t", value: null },
+			"tDepth": { type: "t", value: null },
+			"size": { type: "v2", value: new THREE.Vector2( 512, 512 ) },
+			"cameraNear": { type: "f", value: 1 },
+			"cameraFar": { type: "f", value: 100 },
+			"fogNear": { type: "f", value: 5 },
+			"fogFar": { type: "f", value: 100 },
+			"fogEnabled": { type: "i", value: 0 },
+			"onlyAO": { type: "i", value: 0 },
+			"aoClamp": { type: "f", value: 0.3 },
+			"lumInfluence": { type: "f", value: 0.9 }
 
 		},
 
@@ -1441,13 +1438,13 @@ THREE.ShaderExtras = {
 			"uniform float fogNear;",
 			"uniform float fogFar;",
 
-			"uniform bool fogEnabled;",		// attenuate AO with linear fog
-			"uniform bool onlyAO;", 		// use only ambient occlusion pass?
+			"uniform bool fogEnabled;", // attenuate AO with linear fog
+			"uniform bool onlyAO;", // use only ambient occlusion pass?
 
-			"uniform vec2 size;",			// texture width, height
-			"uniform float aoClamp;", 		// depth clamp - reduces haloing at screen edges
+			"uniform vec2 size;", // texture width, height
+			"uniform float aoClamp;", // depth clamp - reduces haloing at screen edges
 
-			"uniform float lumInfluence;",  // how much luminance affects occlusion
+			"uniform float lumInfluence;", // how much luminance affects occlusion
 
 			"uniform sampler2D tDiffuse;",
 			"uniform sampler2D tDepth;",
@@ -1460,8 +1457,8 @@ THREE.ShaderExtras = {
 
 			// helpers
 
-			"float width = size.x;", 	// texture width
-			"float height = size.y;", 	// texture height
+			"float width = size.x;", // texture width
+			"float height = size.y;", // texture height
 
 			"float cameraFarPlusNear = cameraFar + cameraNear;",
 			"float cameraFarMinusNear = cameraFar - cameraNear;",
@@ -1469,14 +1466,14 @@ THREE.ShaderExtras = {
 
 			// user variables
 
-			"const int samples = 8;", 		// ao sample count
-			"const float radius = 5.0;", 	// ao radius
+			"const int samples = 8;", // ao sample count
+			"const float radius = 5.0;", // ao radius
 
-			"const bool useNoise = false;", 		 // use noise instead of pattern for sample dithering
+			"const bool useNoise = false;", // use noise instead of pattern for sample dithering
 			"const float noiseAmount = 0.0003;", // dithering amount
 
-			"const float diffArea = 0.4;", 		// self-shadowing reduction
-			"const float gDisplace = 0.4;", 	// gauss bell center
+			"const float diffArea = 0.4;", // self-shadowing reduction
+			"const float gDisplace = 0.4;", // gauss bell center
 
 			"const vec3 onlyAOColor = vec3( 1.0, 0.7, 0.5 );",
 			//"const vec3 onlyAOColor = vec3( 1.0, 1.0, 1.0 );",
@@ -1537,7 +1534,7 @@ THREE.ShaderExtras = {
 
 			"float compareDepths( const in float depth1, const in float depth2, inout int far ) {",
 
-				"float garea = 2.0;", 						 // gauss bell width
+				"float garea = 2.0;", // gauss bell width
 				"float diff = ( depth1 - depth2 ) * 100.0;", // depth difference (0-100)
 
 				// reduce left bell width to avoid self-shadowing
@@ -1649,7 +1646,7 @@ THREE.ShaderExtras = {
 
 	/* -------------------------------------------------------------------------
 	//	Colorify shader
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'colorify': {
 
@@ -1698,7 +1695,7 @@ THREE.ShaderExtras = {
 	/* -------------------------------------------------------------------------
 	//	Unpack RGBA depth shader
 	//	- show RGBA encoded depth as monochrome color
-	 ------------------------------------------------------------------------- */
+	------------------------------------------------------------------------- */
 
 	'unpackDepthRGBA': {
 
