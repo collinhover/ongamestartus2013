@@ -18,7 +18,7 @@
 	{
 		"name": "Collin Hover",
 		"presentation": "Raycast-orama!",
-		"about": "Hi, I'm Collin Hover, and I designed and developed this site for Michal, with great help by Blackmoon Design on the 3D models. I hope you're enjoying it! I grew up in a nomadic family of (hyper)polyglots, travelling and living in the middle East, Holland, Taiwan, Japan, and the triangle of Polynesia, so I'm always looking for new things.",
+		"about": "Hi, I'm Collin Hover, and I designed and developed this site for Michal, with great help by Blackmoon Design on the 3D models. I hope you're enjoying it! I grew up in a nomadic family of (hyper)polyglots, travelling and living in the middle East, Holland, Taiwan, Japan, and the triangle of Polynesia, so I'm always looking for new things. You should check out the other site my students and I just launched for NASA at <a href='http://nasaprospect.com/' target='_blank'>nasaprospect.com</a>",
 		"links": "<a href='http://collinhover.com/' target='_blank'>collinhover.com</a>",
 		"options": {
 			"paths": {
@@ -87,18 +87,56 @@
 		}
 	},
 	{
-		"name": "Peter van den Zee",
+		"name": "Peter van der Zee",
 		"presentation": "Using Gamer Psychology",
 		"about": "You found me! I'm Peter van der Zee. I work at Uxebu on a big environment called Bikeshed. It's like flash in the browser, only better. I've spent the past six months writing a parser for the swf (flash) format, parsing as3 byte code, and creating an as3 vm. Not alone, of course. And all of this in JS! Some of my personal projects include js1k and zeonjs.",
 		"links": "<a href='https://twitter.com/kuvos' target='_blank'>@kuvos</a>",
 		"options": {
 			"paths": {
-				"assets": "speaker_zee_petervanden"
+				"assets": "speaker_zee_petervander"
 			},
 			"dialogues": {
 				"presenting": "I'll explain the psychology of gamers and how to use this in game design!",
 				"about": "I work at Uxebu on a big environment called Bikeshed.",
 				"fun": "I do the JS dance!"
+			}
+		}
+	},
+	{
+		"name": "Chandler Prall",
+		"about": "I'm a general web developer focusing on WebGL/THREE.js and Javascript. I also created <a href='http://chandlerprall.github.com/Physijs/' target='_blank'>Physijs</a>, a physics plugin for THREE.js.",
+		"links": "<a href='http://www.chandlerprall.com/' target='_blank'>chandlerprall.com</a>",
+		"options": {
+			"paths": {
+				"assets": "speaker_prall_chandler"
+			},
+			"animation": {
+				"durations": {
+					"idle": 1600
+				}
+			},
+			"dialogues": {
+				"about": "I do mostly WebGL and THREE.js stuff these days.",
+				"fun": "Check out my js13k game: Mindless!"
+			}
+		}
+	},
+	{
+		"name": "Sangmin Shim",
+		"about": "Hi! I'm working at NHN Korea and the creator of <a href='http://jindo.dev.naver.com/collie' target='_blank'>Collie</a>, the high performance animation library for Javascript.",
+		"links": "<a href='http://www.sshim.com/' target='_blank'>sshim.com</a>",
+		"options": {
+			"paths": {
+				"assets": "speaker_shim_sangmin"
+			},
+			"animation": {
+				"durations": {
+					"idle": 1600
+				}
+			},
+			"dialogues": {
+				"about": "I'm a Front-end engineer and graphic designer!",
+				"fun": "Help! I can't stop dancing like PSY!"
 			}
 		}
 	}

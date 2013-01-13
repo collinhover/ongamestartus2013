@@ -559,7 +559,20 @@
 		
 		for ( i = 0, il = speakersList.length; i < il; i++ ) {
 			
-			init_speaker( speakersList[ i ] );
+			var data = speakersList[ i ];
+			var assetsPath = data.options.paths.assets;
+			
+			// if already found speaker
+			
+			if ( window.localStorage ) {
+				
+				if ( typeof window.localStorage[ assetsPath ] !== 'undefined' ) {
+					
+					show_speaker( data, true );
+					
+				}
+				
+			}
 			
 		}
 		
@@ -609,17 +622,7 @@
 			.addClass( 'hidden' )
 			.appendTo( shared.domElements.$speakersList );
 		
-		// if already found speaker
-		
-		if ( window.localStorage ) {
-			
-			if ( typeof window.localStorage[ assetsPath ] !== 'undefined' ) {
-				
-				show_speaker( data, true );
-				
-			}
-			
-		}
+		return $speaker;
 		
 	}
 	
@@ -631,6 +634,12 @@
 			
 			var assetsPath = data.options.paths.assets;
 			var $speaker = shared.domElements.$speakersList.find( '#' + assetsPath );
+			
+			if ( $speaker.length === 0 ) {
+				
+				$speaker = init_speaker( data );
+				
+			}
 			
 			main.dom_fade( {
 				element: $speaker,

@@ -202,10 +202,6 @@ var KAIOPUA = (function (main) {
         // add listeners for global events
         // each listener dispatches shared signal
 		
-        $( document )
-			.on( 'keydown', on_key_pressed )
-			.on( 'keyup', on_key_released );
-		
 		shared.throttled.reposition_pointer = $.throttle( shared.throttleTimeShort, reposition_pointer );
 		shared.throttled.on_window_resized = $.throttle( shared.throttleTimeLong, on_window_resized );
 		
@@ -592,6 +588,10 @@ var KAIOPUA = (function (main) {
 		shared.domElements.$game.prepend( shared.renderer.domElement );
 		
 		// events
+		
+        $( document )
+			.on( 'keydown', on_key_pressed )
+			.on( 'keyup', on_key_released );
 		
 		shared.throttled.on_game_pointer_moved = $.throttle( shared.throttleTimeShort, on_game_pointer_moved );
 		shared.throttled.on_game_pointer_dragged = $.throttle( shared.throttleTimeShort, true, on_game_pointer_dragged );

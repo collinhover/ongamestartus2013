@@ -645,7 +645,7 @@
 			this.actions.execute( 'communicate', 'greeting', { target: this.targetInteract } );
 			
 		}
-		else {
+		else if ( this.targetHover ) {
 			
 			this.tooltip.show().content( 'Too far away!' );
 			this.tooltipNeedsUpdate = true;

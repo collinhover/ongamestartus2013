@@ -73,6 +73,7 @@
 		
 		_MorphAnimator.Instance.prototype.prepare = prepare;
 		_MorphAnimator.Instance.prototype.recycle = recycle;
+		_MorphAnimator.Instance.prototype.resetTime = resetTime;
 		_MorphAnimator.Instance.prototype.change = change;
 		
 		_MorphAnimator.Instance.prototype.play = play;
@@ -168,6 +169,14 @@
 		
 		this.framesUpdated = 0;
 		this.frameTimeDelta = 0;
+		this.resetTime();
+		
+		return this;
+		
+	}
+	
+	function resetTime () {
+		
 		this.time = this.timeLast = this.timeStart = new Date().getTime();
 		
 		return this;
@@ -370,6 +379,7 @@
 			
 			this.animating = true;
 			this.cleared = false;
+			this.resetTime();
 			
 			shared.signals.onGameUpdated.add( this.update, this );
 			
@@ -497,9 +507,9 @@
 	
 	function loop ( delay ) {
 		
-		delay = this.options.duration * this.options.loopDelayPct * ( this.options.loopDelayRandom === true ? Math.random() : 1 );
-		
 		this.prepare( true );
+		
+		delay = this.options.duration * this.options.loopDelayPct * ( this.options.loopDelayRandom === true ? Math.random() : 1 );
 		
 		// alternate loop delay
 		
@@ -543,7 +553,7 @@
 		// else resume
 		else {
 			
-			this.resume();
+			this.resetTime().resume();
 			
 		}
 		
@@ -640,15 +650,15 @@
 			influences = mesh.morphTargetInfluences,
 			map = this.map;
 		
+		this.cleared = true;
+		
 		this.stop().prepare();
-			
+		
 		for ( i = 0, l = map.length; i < l; i ++ ) {
 			
 			influences[ map[ i ].index ] = 0;
 			
 		}
-		
-		this.cleared = true;
 		
 		this.morphs.remove( this.name );
 		
@@ -670,7 +680,7 @@
 			map = this.map,
 			o = this.options,
 			duration,
-			timeFromStart,
+			timeFromStart = this.time - this.timeStart,
 			cyclePct,
 			direction,
 			interpolationDirection,
@@ -679,12 +689,6 @@
 			frameDuration,
 			index,
 			indexLast;
-		
-		// update time
-		
-		this.timeLast = this.time;
-		this.time += timeDelta;
-		timeFromStart = this.time - this.timeStart;
 		
 		// clearing
 		
@@ -798,6 +802,11 @@
 			this.complete();
 			
 		}
+		
+		// update time
+		
+		this.timeLast = this.time;
+		this.time += timeDelta;
 		
 	}
 	

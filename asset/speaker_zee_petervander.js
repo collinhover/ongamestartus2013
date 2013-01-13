@@ -26,7 +26,7 @@
 	"colorSpecular" : [0.5, 0.5, 0.5],
 	"depthTest" : true,
 	"depthWrite" : true,
-	"mapDiffuse" : "speaker_zee_petervanden.jpg",
+	"mapDiffuse" : "speaker_zee_petervander.jpg",
 	"mapDiffuseWrap" : ["repeat", "repeat"],
 	"shading" : "Lambert",
 	"specularCoef" : 50,

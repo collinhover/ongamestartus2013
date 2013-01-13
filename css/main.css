@@ -7377,6 +7377,14 @@ a.badge:hover {
   -ms-user-select: none;
   user-select: none;
 }
+.selectable-text {
+  -webkit-user-select: text;
+  -khtml-user-select: text;
+  -moz-user-select: text;
+  -o-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
 /* Hide from both screenreaders and browsers: h5bp.com/u */
 .hidden {
   display: none !important;
@@ -10250,6 +10258,9 @@ body {
 -------------------------*/#game {
   background-color: #222222;
 }
+#game canvas {
+  pointer-events: none;
+}
 #game,
 #ui {
   width: 100%;
@@ -10630,6 +10641,9 @@ a[class*="game"]:not( .disabled ):hover h6,
 -------------------------*/
 #headerMain .logo-group .logo {
   cursor: auto;
+}
+#navMain li a {
+  z-index: 550;
 }
 #social.blocking {
   background-color: rgba(34, 34, 34, 0.95);
