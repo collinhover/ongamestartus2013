@@ -1,11 +1,11 @@
 <!doctype html>
 
-<!--[if lt IE 7 ]><html class="ie ie6 no-js" lang="en"><![endif]-->
-<!--[if IE 7 ]><html class="ie ie7 no-js" lang="en"><![endif]-->
-<!--[if IE 8 ]><html class="ie ie8 no-js" lang="en"><![endif]-->
-<!--[if IE 9 ]><html class="ie ie9 no-js" lang="en"><![endif]-->
+<!--[if lt IE 7 ]> <html class="ie ie6 no-js" lang="en"> <![endif]-->
+<!--[if IE 7 ]>    <html class="ie ie7 no-js" lang="en"> <![endif]-->
+<!--[if IE 8 ]>    <html class="ie ie8 no-js" lang="en"> <![endif]-->
+<!--[if IE 9 ]>    <html class="ie ie9 no-js" lang="en"> <![endif]-->
 <!--[if gt IE 9]><!--><html class="no-js" lang="en"><!--<![endif]-->
-
+<!-- the "no-js" class is for Modernizr. -->
 
 <head id="onGameStartUS2013" data-template-set="html5-reset">
 
@@ -20,34 +20,48 @@
 	<meta name="author" content="Conference: Michal Budzynski, Website: Collin Hover">
 	<meta name="copyright" content="Copyright onGameStartUS. All Rights Reserved.">
 
-	
+	<!-- Dublin Core Metadata : http://dublincore.org/ -->
 	<meta name="DC.title" content="onGameStart US 2013">
 	<meta name="DC.subject" content="onGameStart US: HTML5 Game Conference">
 	<meta name="DC.creator" content="Conference: Michal Budzynski, Website: Collin Hover">
     
-    
-    <meta property="og:title" content="onGameStart US 2013"/>
-    <meta property="og:description" content="onGameStart US: HTML5 Game Conference"/>
-    <meta property="og:image" content="img/apple-touch-icon-precomposed.png"/>
+    <!-- Facebook metadata: http://developers.facebook.com/docs/share/ -->
+    <meta property="og:title" content="onGameStart US 2013" />
+    <meta property="og:description" content="onGameStart US: HTML5 Game Conference" />
+    <meta property="og:image" content="img/apple-touch-icon-precomposed.png" />
 	
-	
+	<!--  Mobile Viewport Fix
+	j.mp/mobileviewport & davidbcalhoun.com/2010/viewport-metatag 
+	device-width : Occupy full width of the screen in its current orientation
+	initial-scale = 1.0 retains dimensions instead of zooming out if page height > device height
+	maximum-scale = 1.0 retains dimensions instead of zooming in if page width < device width
+	-->
 	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
 	<link rel="shortcut icon" href="favicon.ico">
-	
+	<!-- This is the traditional favicon.
+		 - size: 16x16 or 32x32
+		 - transparency is OK
+		 - see wikipedia for info on browser support: http://mky.be/favicon/ -->
 		 
 	<link rel="apple-touch-icon" href="img/apple-touch-icon-precomposed.png">
+	<!-- The is the icon for iOS's Web Clip.
+		 - size: 57x57 for older iPhones, 72x72 for iPads, 114x114 for iPhone4's retina display (IMHO, just go ahead and use the biggest one)
+		 - To prevent iOS from applying its styles to the icon name it thusly: apple-touch-icon-precomposed.png
+		 - Transparency is not recommended (iOS will put a black BG behind the icon) -->
 	
+	<!-- CSS -->
+	<link rel="stylesheet" type="text/css" href="css/main.css">
 	
-	
-	<link rel="stylesheet" type="text/css" href='css/main.css'>
-	
-	
+	<!-- setup javascript only -->
 	<script src="js/lib/modernizr-2.6.2.min.js"></script>
 
-	
-	  <!--[if lt IE 7 ]><script defer src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
-		<script defer>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script><![endif]-->
+	<!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.
+		   chromium.org/developers/how-tos/chrome-frame-getting-started -->
+	  <!--[if lt IE 7 ]>
+		<script defer src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
+		<script defer>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
+	  <![endif]-->
 
 </head>
 
@@ -58,18 +72,18 @@
 		<div id="uiInGame" class="unselectable ignore-pointer">
 			
 		</div>
-		
+		<!-- /uiInGame -->
 		
 	</div>
+	<!-- /game -->
 	
-	
-	
+	<!-- ui -->
 	<div id="ui" class="ignore-pointer">
 		
 		<div id="uiOverGame" class="ignore-pointer">
 			
 		</div>
-		
+		<!-- /uiOverGame -->
 		
 		<div id="uiPlayer" class="ignore-pointer">
 			
@@ -125,7 +139,11 @@
 							<div class="target-image"></div>
 							<p class="target-name"></p>
 						</div>
-						
+						<!--
+						<a href="#" id="playerTargetInteract" class="btn btn-inverse btn-circle btn-semicircle-left" alt="Interact">
+							<img src="img/talk_rev_64.png" class="iconk-large">
+						</a>
+						-->
 					</div>
 				
 				</div>
@@ -133,17 +151,18 @@
 			</div>
 			
 		</div>
-		
+		<!-- /uiPlayer -->
 		
 		<div id="uiGameDimmer" class="unselectable"></div>
 		
+		<!-- uiOutGame -->
 		<div id="uiOutGame">
 			
-			<section id="menuMain" class="menu theme-dark theme-transparent active">
+			<section id="menuMain" class="unselectable menu theme-dark theme-transparent active">
 				
 				<div class="menu-inner container">
 					
-					<header id="headerMain" class="subhead menu-section">
+					<header id="headerMain" class="selectable-text subhead menu-section">
 						
 						<div class="container-center">
 							
@@ -158,7 +177,7 @@
 						</div>
 						
 					</header>
-					
+					<!-- /headerMain -->
 					
 					<section id="noscript" class="container-center menu-section">
 						<div class="well error">
@@ -213,17 +232,17 @@
 						</div>
 						
 					</section>
-					
+					<!-- /navMain -->
 					
 				</div>
 				
 			</section>
-			
+			<!-- /menuMain -->
 			
 			<section id="menuInactive" class="menu hidden">
 				
 			</section>
-			
+			<!-- /menuInactive -->
 			
 			<section id="menuActive" class="menu theme-dark theme-transparent hidden">
 				
@@ -232,9 +251,9 @@
 				</div>
 				
 			</section>
+			<!-- /menuActive -->
 			
-			
-			<section id="howto" class="menu theme-dark theme-transparent hidden">
+			<section id="howto" class="selectable-text menu theme-dark theme-transparent hidden">
 				
 				<div class="menu-inner container">
 					
@@ -244,7 +263,20 @@
 							<h1 class="inline-type">How to Play</h1>
 							<h2 class="sidekick-type">Mouse & Keyboard <span class="dim"><span class="strike">& Touch</span> <small>(soon!)</small></span></h2>
 						</div>
-						
+						<!--
+						<div id="navHowto" class="subnavbar is-sticky">
+							<div class="navbar-inner">
+								<div class="container">
+									<ul class="nav nav-pills pull-left">
+										<li><a href="#controls">Controls</a></li>
+									</ul>
+									<ul class="nav nav-pills pull-right visible-desktop">
+										<li><a href="#howto"><h6>top</h6></a></li>
+									</ul>
+								</div>
+							</div>
+						</div>
+						-->
 					</header>
 					
 					<section id="gameplay" class="menu-section">
@@ -270,7 +302,7 @@
 						</div>
 						
 					</section>
-					
+					<!-- /gameplay -->
 					
 					<section id="controls" class="menu-section">
 						
@@ -326,14 +358,14 @@
 						</div>
 						
 					</section>
-					
+					<!-- /controls -->
 					
 				</div>
 				
 			</section>
+			<!-- /howto -->
 			
-			
-			<section id="about" class="menu theme-dark theme-transparent hidden">
+			<section id="about" class="selectable-text menu theme-dark theme-transparent hidden">
 				
 				<div class="menu-inner container">
 					
@@ -353,7 +385,7 @@
 										</li>
 									</ul>
 								</div>
-								
+								<!-- /sponsorsDiamond -->
 								
 								<h6 class="sponsor-title">Saturn Platinum Sponsors</h6>
 								<div class="sponsors-platinum grid-gutterless">
@@ -363,7 +395,7 @@
 										</li>
 									</ul>
 								</div>
-								
+								<!-- /sponsorsPlatinum -->
 								
 								<h6 class="sponsor-title">Neptune Gold Sponsors</h6>
 								<div class="sponsors-gold grid-gutterless">
@@ -373,7 +405,7 @@
 										</li>
 									</ul>
 								</div>
-								
+								<!-- /sponsorsGold -->
 								
 								<h6 class="sponsor-title">Earth Silver Sponsors</h6>
 								<div class="sponsors-silver grid-gutterless">
@@ -383,7 +415,7 @@
 										</li>
 									</ul>
 								</div>
-								
+								<!-- /sponsorsSilver -->
 								
 								<ul class="sponsor-button nav nav-game nav-skewed-upright">
 									<li>
@@ -395,10 +427,22 @@
 								</ul>
 								
 							</section>
-							
+							<!-- /sponsors -->
 							
 						</div>
-						
+						<!--<div id="navAbout" class="subnavbar is-sticky">
+							<div class="navbar-inner">
+								<div class="container">
+									<ul class="nav nav-pills pull-left">
+										<li><a href="#description">Description</a></li>
+										<li><a href="#location">Location</a></li>
+									</ul>
+									<ul class="nav nav-pills pull-right visible-desktop">
+										<li><a href="#about"><h6>top</h6></a></li>
+									</ul>
+								</div>
+							</div>
+						</div>-->
 					</header>
 					
 					<section id="description" class="menu-section">
@@ -437,7 +481,7 @@
 						</div>
 						
 					</section>
-					
+					<!-- /description -->
 					
 					<section id="location" class="menu-section">
 						
@@ -455,44 +499,51 @@
 							<div class="eqheight3-container3">
 								<div class="eqheight3-container2">
 									<div class="eqheight3-container1">
-										
+										<!-- venue -->
 										<div class="eqheight3-column">
 											
 											<div class="eqheight3-content">
 												<div class="hero-anchor">
-													
+													<!--<img src="img/location_venue.jpg" alt="NYIT Auditorium on Broadway" class="iconk-spacebottom">-->
 													<h6><i class="dim icon-home icon-white"></i> Venue</h6>
 													<p class="lead">Coming soon!</p>
-													
+													<!--<p class="lead">NYIT Auditorium on Broadway</p>
+													<p>Hosted in the New York Institute of Technology on Broadway, 3 minutes from Central Park.</p>
+													<a href="http://www.nyit.edu/aob/" target="_blank" class="btn">More Info</a>-->
 												</div>
 											</div>
 											
 										</div>
-										
+										<!-- info -->
 										<div class="eqheight3-column">
 											
 											<div class="eqheight3-content">
 												
 												<div class="hero-anchor">
-													
+													<!--<img src="img/location_map.jpg" alt="NYIT Auditorium on Broadway" class="iconk-spacebottom">-->
 													<h6><i class="dim icon-road icon-white"></i> Address</h6>
 													<p>Coming soon!</p>
-													
+													<!--
+													<p>
+														1871 Broadway<br/>
+														New York, NY 10023
+													</p>-->
 													<h6><i class="dim icon-comment icon-white"></i> Phone</h6>
 													<p>Coming soon!</p>
-													
+													<!--<p>646.273.6100</p>
+													<a href="https://maps.google.com/maps?ie=UTF8&q=NYIT+Auditorium+on+Broadway&t=h&z=16&vpsrc=0&iwloc=A" target="_blank" class="btn">Google Maps</a>-->
 												</div>
 												
 											</div>
 											
 										</div>
-										
+										<!-- party -->
 										<div class="eqheight3-column">
 											
 											<div class="eqheight3-content">
 												
 												<div class="hero-anchor">
-													
+													<!--<img src="img/location_party.jpg" alt="Party" class="iconk-spacebottom">-->
 													<h6><i class="dim icon-fire icon-white"></i> Party</h6>
 													<p class="lead">Coming Soon!</p>
 												</div>
@@ -507,9 +558,9 @@
 						</div>
 						
 					</section>
+					<!-- /location -->
 					
-					
-					
+					<!-- footer -->
 					<footer id="footer" class="container menu-section">
 						<div class="row">
 							<div class="span12">
@@ -522,14 +573,14 @@
 							</div>
 						</div>
 					</footer>
-					
+					<!-- /footer -->
 					
 				</div>
 				
 			</section>
+			<!-- /about -->
 			
-			
-			<section id="speakers" class="menu theme-dark theme-transparent hidden">
+			<section id="speakers" class="selectable-text menu theme-dark theme-transparent hidden">
 				
 				<div class="menu-inner container">
 					
@@ -556,10 +607,10 @@
 				</div>
 				
 			</section>
-			
+			<!-- /speakers -->
 			
 		</div>
-		
+		<!-- /uiOutGame -->
 		
 		<div id="uiBlocker" class="unselectable hidden"></div>
 		
@@ -601,7 +652,7 @@
 			</ul>
 			
 		</header>
-		
+		<!-- /social -->
 		
 		<ul id="navMainAlt" class="ui-pane-overlay ui-pane-left unstyled nav-game nav-skewed-upright nav-opacity-lite tab-toggles hidden">
 			<li>
@@ -635,7 +686,7 @@
 				</a>
 			</li>
 		</ul>
-		
+		<!-- /navMainAlt -->
 			
 		<div id="statusInactive" class="hidden">
 			
@@ -659,8 +710,10 @@
 						<li>
 							<a href="http://www.mozilla.org/firefox/" target="_blank" class="firefox">Firefox</a>
 						</li>
-						
-						
+						<!-- safari doesn't enable webgl by default -->
+						<!--<li>
+							<a href="http://www.apple.com/safari/" target="_blank" class="safari">Safari</a>
+						</li>-->
 					</ul>
 					<p><small>(We'll try not to remind you again! <a>Tap anywhere</a> to continue...)</small></p>
 				</div>
@@ -675,10 +728,10 @@
 			</section>
 			
 		</div>
-		
+		<!-- /inactive -->
 		
 		<div id="statusActive" class="ui-pane-overlay ui-pane-middle ui-pane-body-bottom container-center ignore-pointer"></div>
-		
+		<!-- /active -->
 		
 		<section id='worker' class="ui-pane-overlay ui-pane-middle ui-pane-body-bottom container-center ignore-pointer hidden">
 			
@@ -712,15 +765,15 @@
 			</div>
 		
 		</section>
-		
+		<!-- /worker -->
 		
 		<footer id="sponsorsLite" class="ui-pane-overlay ui-pane-middle ui-pane-bottom container-center nav-opacity-lite"></footer>
-		
+		<!-- /sponsorsLite -->
 		
 	</div>
+	<!-- /ui -->
 	
-	
-	
+	<!-- javascript -->
 	
 	<script>
 		// simple hook to remove noscript if javascript present
