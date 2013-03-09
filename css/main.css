@@ -10323,14 +10323,13 @@ body {
   z-index: 400;
 }
 #uiScrollable {
-  /* use children z-index */
-  z-index: auto;
-}
-#uiOutGame {
   z-index: 500;
 }
-#uiBlocker {
+#uiOutGame {
   z-index: 600;
+}
+#uiBlocker {
+  z-index: 700;
 }
 /* uiOutGame 
 -------------------------*/#uiOutGame {
