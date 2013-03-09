@@ -7,15 +7,15 @@
 -------------------------------------------------------------------------------*/
 @font-face {
   font-family: 'LeagueGothic';
-  src: url('webfonts/leaguegothic-regular-webfont.eot');
-  src: url('webfonts/leaguegothic-regular-webfont.eot?#iefix') format('embedded-opentype'), url('webfonts/leaguegothic-regular-webfont.woff') format('woff'), url('webfonts/leaguegothic-regular-webfont.ttf') format('truetype'), url('webfonts/leaguegothic-regular-webfont.svg#leaguegothic-regular-webfont') format('svg');
+  src: url('http://127.0.0.1:8000/less/webfonts/leaguegothic-regular-webfont.eot');
+  src: url('http://127.0.0.1:8000/less/webfonts/leaguegothic-regular-webfont.eot?#iefix') format('embedded-opentype'), url('http://127.0.0.1:8000/less/webfonts/leaguegothic-regular-webfont.woff') format('woff'), url('http://127.0.0.1:8000/less/webfonts/leaguegothic-regular-webfont.ttf') format('truetype'), url('http://127.0.0.1:8000/less/webfonts/leaguegothic-regular-webfont.svg#leaguegothic-regular-webfont') format('svg');
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
   font-family: 'Georgia';
-  src: url('webfonts/georgia.eot');
-  src: url('webfonts/georgia.eot?#iefix') format('embedded-opentype'), url('webfonts/georgia.woff') format('woff'), url('webfonts/georgia.ttf') format('truetype'), url('webfonts/georgia.svg#georgia') format('svg');
+  src: url('http://127.0.0.1:8000/less/webfonts/georgia.eot');
+  src: url('http://127.0.0.1:8000/less/webfonts/georgia.eot?#iefix') format('embedded-opentype'), url('http://127.0.0.1:8000/less/webfonts/georgia.woff') format('woff'), url('http://127.0.0.1:8000/less/webfonts/georgia.ttf') format('truetype'), url('http://127.0.0.1:8000/less/webfonts/georgia.svg#georgia') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -2391,7 +2391,7 @@ table [class*=span],
   *margin-right: .3em;
   line-height: 14px;
   vertical-align: text-top;
-  background-image: url("../img/glyphicons-halflings.png");
+  background-image: url("http://127.0.0.1:8000/less/lib/bootstrap/../img/glyphicons-halflings.png");
   background-position: 14px 14px;
   background-repeat: no-repeat;
   margin-top: 1px;
@@ -2410,7 +2410,7 @@ table [class*=span],
 .dropdown-menu > li > a:hover > [class*=" icon-"],
 .dropdown-menu > .active > a > [class^="icon-"],
 .dropdown-menu > .active > a > [class*=" icon-"] {
-  background-image: url("../img/glyphicons-halflings-white.png");
+  background-image: url("http://127.0.0.1:8000/less/lib/bootstrap/../img/glyphicons-halflings-white.png");
 }
 .icon-glass {
   background-position: 0      0;
@@ -7844,13 +7844,13 @@ small {
   top: 0;
 }
 .ui-pane-middle {
-  width: 80%;
-  left: 10%;
-  right: 10%;
+  width: 60%;
+  left: 20%;
+  right: 20%;
 }
 .ui-pane-left,
 .ui-pane-right {
-  min-width: 10%;
+  min-width: 20%;
 }
 .ui-pane-right {
   right: 0;
@@ -8029,7 +8029,7 @@ small {
 }
 /* game 
 -------------------------*/#game {
-  background: #ffffff url("../img/nowebgl.png") repeat-x 50%;
+  background: #ffffff url("http://127.0.0.1:8000/less/lib/kaiopua/../img/nowebgl.png") repeat-x 50%;
 }
 /* icons 
 -------------------------*/.iconk,
@@ -10075,7 +10075,7 @@ a:hover,
   padding-top: 95px;
   width: 95px;
   margin: 0 20px 0 20px;
-  background-image: url(../img/browsers_chrome.png);
+  background-image: url(http://127.0.0.1:8000/less/lib/kaiopua/../img/browsers_chrome.png);
 }
 .browsers .firefox {
   background-position: 50% 0;
@@ -10083,7 +10083,7 @@ a:hover,
   padding-top: 95px;
   width: 95px;
   margin: 0 20px 0 20px;
-  background-image: url(../img/browsers_firefox.png);
+  background-image: url(http://127.0.0.1:8000/less/lib/kaiopua/../img/browsers_firefox.png);
 }
 .browsers .safari {
   background-position: 50% 0;
@@ -10091,7 +10091,7 @@ a:hover,
   padding-top: 95px;
   width: 95px;
   margin: 0 20px 0 20px;
-  background-image: url(../img/browsers_safari.png);
+  background-image: url(http://127.0.0.1:8000/less/lib/kaiopua/../img/browsers_safari.png);
 }
 /* player state
 -------------------------*/
@@ -10274,76 +10274,13 @@ body {
   left: 0;
   top: 0;
   overflow: hidden;
-  z-index: 0;
 }
-/* ui 
--------------------------*/#uiInGame {
-  width: 100%;
-  position: relative;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  position: absolute;
-  left: 0;
-  top: 0;
-  overflow: hidden;
-  z-index: 100;
-}
-#uiOverGame {
-  width: 100%;
-  position: relative;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  position: absolute;
-  left: 0;
-  top: 0;
-  overflow: auto;
-  z-index: 200;
-}
-#uiPlayer {
-  width: 100%;
-  position: relative;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  position: absolute;
-  left: 0;
-  top: 0;
-  overflow: hidden;
-  z-index: 300;
-}
-#uiGameDimmer {
-  width: 100%;
-  position: relative;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  position: absolute;
-  left: 0;
-  top: 0;
-  background: #222222;
-  z-index: 400;
-}
-#uiOutGame {
-  width: 100%;
-  position: relative;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  position: absolute;
-  left: 0;
-  top: 0;
-  overflow: auto;
-  z-index: 500;
-}
-#uiOutGame #footer {
-  color: #777;
-  position: relative;
-  margin-top: 10px;
-  padding-top: 40px;
-  padding-bottom: 50px;
-}
+#uiInGame,
+#uiOverGame,
+#uiPlayer,
+#uiGameDimmer,
+#uiScrollable,
+#uiOutGame,
 #uiBlocker {
   width: 100%;
   position: relative;
@@ -10353,21 +10290,51 @@ body {
   position: absolute;
   left: 0;
   top: 0;
+  overflow: hidden;
+}
+#uiGameDimmer,
+#uiBlocker {
   background: #222222;
+}
+#uiOutGame #footer {
+  color: #777;
+  position: relative;
+  margin-top: 10px;
+  padding-top: 40px;
+  padding-bottom: 50px;
+}
+/* ui layering
+-------------------------*/#game {
+  z-index: 0;
+}
+#ui {
+  z-index: 0;
+}
+#uiInGame {
+  z-index: 100;
+}
+#uiOverGame {
+  z-index: 200;
+}
+#uiPlayer {
+  z-index: 300;
+}
+#uiGameDimmer {
+  z-index: 400;
+}
+#uiScrollable {
+  /* use children z-index */
+  z-index: auto;
+}
+#uiOutGame {
+  z-index: 500;
+}
+#uiBlocker {
   z-index: 600;
 }
-/* ui overlay 
--------------------------*/#uiOverlay {
-  width: 100%;
-  position: relative;
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  position: absolute;
-  left: 0;
-  top: 0;
-  overflow: hidden;
-  z-index: 9999;
+/* uiOutGame 
+-------------------------*/#uiOutGame {
+  overflow: auto;
 }
 /* ui header 
 -------------------------*/#uiHeader {
@@ -10400,26 +10367,6 @@ body {
 #uiHeader .nav li a [class^="iconk-"],
 #uiHeader .nav li a [class*=" iconk-"] {
   padding: 0;
-}
-@media (max-width: 979px) {
-  #uiHeader .nav-collapse {
-    position: absolute;
-    width: 100%;
-    top: 100%;
-    background: #2b2b2b;
-    -webkit-border-radius: 0 0 15px 15px;
-    -moz-border-radius: 0 0 15px 15px;
-    border-radius: 0 0 15px 15px;
-  }
-  #uiHeader .nav-collapse ul {
-    margin: 0;
-  }
-  #uiHeader .nav-collapse ul li:last-child a {
-    margin-bottom: 0;
-    -webkit-border-radius: 0 0 15px 15px;
-    -moz-border-radius: 0 0 15px 15px;
-    border-radius: 0 0 15px 15px;
-  }
 }
 /* status 
 -------------------------*/
@@ -10645,6 +10592,9 @@ a[class*="game"]:not( .disabled ):hover h6,
 #navMain li a {
   z-index: 550;
 }
+#social {
+  width: 100%;
+}
 #social.blocking {
   background-color: rgba(34, 34, 34, 0.95);
   -webkit-border-radius: 0 0 5.5px 5.5px;
@@ -10669,7 +10619,7 @@ a[class*="game"]:not( .disabled ):hover h6,
   border: 5px solid rgba(0, 0, 0, 0.1);
 }
 .sponsor {
-  background-image: url("../img/sponsor_unknown.png");
+  background-image: url("http://127.0.0.1:8000/less/app/../img/sponsor_unknown.png");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: 50% 50%;
@@ -10819,15 +10769,10 @@ a[class*="game"]:not( .disabled ):hover h6,
   left: 12.5%;
   bottom: -5px;
 }
-@media (max-width: 767px) {
-  #speakers .speaker {
-    text-align: center;
-  }
-}
 /* state
 -------------------------*/
 #playerState {
-  padding: 0 0 20px 20px;
+  padding: 20px 0 20px 20px;
 }
 /* target
 -------------------------*/
@@ -10846,4 +10791,79 @@ a[class*="game"]:not( .disabled ):hover h6,
 }
 #playerMessages .player-message h2 {
   padding: 0;
+}
+/* tablet and smaller */
+@media (max-width: 767px) {
+  /* text mostly centered */
+  body {
+    text-align: center;
+  }
+  /* scrollable becomes scroller and ui swaps to vertical stack */
+  #uiScrollable {
+    overflow: auto;
+  }
+  #uiOutGame {
+    position: relative;
+    overflow: hidden;
+    height: auto;
+  }
+  #social {
+    position: relative;
+  }
+  #social.blocking {
+    background: transparent;
+    -webkit-transition: none;
+    -moz-transition: none;
+    -o-transition: none;
+    transition: none;
+  }
+  #sponsorsLite {
+    position: relative;
+  }
+  #menuMain {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1;
+  }
+  #navMain {
+    width: 240px;
+    margin: 0 auto;
+  }
+  #navMainAlt {
+    display: none !important;
+  }
+  .menu-inner {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+  /* no more hover opacity transitions */
+  .nav-opacity-lite,
+  .nav-opacity,
+  [class*="nav-skewed"],
+  .nav-opacity-lite li a:not( .disabled ),
+  .nav-opacity li a:not( .disabled ),
+  [class*="nav-skewed"] li a:not( .disabled ) {
+    opacity: 1;
+  }
+  /* loader fixed and stacked */
+  #worker {
+    position: fixed;
+    bottom: 10px;
+  }
+  #worker .worker-bar-left {
+    position: relative;
+    right: auto;
+    margin-right: 0;
+    margin-bottom: 5px;
+  }
+  #worker .worker-bar-right {
+    position: relative;
+    margin-left: 0;
+    margin-bottom: 5px;
+    left: auto;
+  }
+  #worker #workerStatusText,
+  #worker .worker-bar {
+    width: 100%;
+  }
 }

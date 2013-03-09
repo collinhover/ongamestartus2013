@@ -122,21 +122,44 @@
 		}
 	},
 	{
-		"name": "Sangmin Shim",
-		"about": "Hi! I'm working at NHN Korea and the creator of <a href='http://jindo.dev.naver.com/collie' target='_blank'>Collie</a>, the high performance animation library for Javascript.",
-		"links": "<a href='http://www.sshim.com/' target='_blank'>sshim.com</a>",
+		"name": "Elle Chen",
+		"about": "I'm the License Manager of BoosterMedia, a cloud-gaming network specialized in #HTML5 mobile #gaming. Contact me at <a href='mailto:elle.chen@boostermedia.com'>elle.chen@boostermedia.com</a>!",
+		"links": "<a href='https://twitter.com/ElleYCChen' target='_blank'>@ElleYCChen</a>",
 		"options": {
 			"paths": {
-				"assets": "speaker_shim_sangmin"
-			},
-			"animation": {
-				"durations": {
-					"idle": 1600
-				}
+				"assets": "speaker_chen_elle"
 			},
 			"dialogues": {
-				"about": "I'm a Front-end engineer and graphic designer!",
-				"fun": "Help! I can't stop dancing like PSY!"
+				"about": "I'm the License Manager of BoosterMedia.",
+				"fun": "I pray to the HTML5 gods for card games."
+			}
+		}
+	},
+	{
+		"name": "Ibon Tolosana",
+		"about": "CTO <a href='http://www.ludei.com/' target='_blank'>Ludei</a>. JavaScript. C++. Java. Go. Love chocolate.",
+		"links": "<a href='https://twitter.com/hyperandroid' target='_blank'>@hyperandroid</a>",
+		"options": {
+			"paths": {
+				"assets": "speaker_tolosana_ibon"
+			},
+			"dialogues": {
+				"about": "I'm the CTO at Ludei.",
+				"fun": "Do you have any chocolate?"
+			}
+		}
+	},
+	{
+		"name": "James long",
+		"about": "I'm James Long, and I play with lots of cool technology. I enjoy sharing my experiences and learning from others, so this where I sit back, tell my story, and engage with others.I work at Mozilla as a web developer, helping developers get excited about web apps. I'm also very interested in compilers and games.",
+		"links": "<a href='http://jlongster.com/' target='_blank'>jlongster.com</a>",
+		"options": {
+			"paths": {
+				"assets": "speaker_long_james"
+			},
+			"dialogues": {
+				"about": "I'm a senior web developer at Mozilla!",
+				"fun": "Are webapps everywhere yet?"
 			}
 		}
 	}

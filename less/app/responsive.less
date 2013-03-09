@@ -1,0 +1,90 @@
+
+/* tablet and smaller */
+@media (max-width: 767px) {
+    
+    /* text mostly centered */
+    
+    body {
+        text-align: center;
+    }
+    
+    /* scrollable becomes scroller and ui swaps to vertical stack */
+	
+	#uiScrollable {
+		overflow: auto;
+	}
+	
+	#uiOutGame {
+		position: relative;
+		overflow: hidden;
+		height: auto;
+	}
+	
+	#social {
+		position: relative;
+		
+		&.blocking {
+			background: transparent;
+			.transition( none );
+		}
+	}
+	
+	#sponsorsLite {
+		position: relative;
+	}
+	
+	#menuMain {
+		display: block !important;
+        visibility: visible !important;
+        opacity: 1;
+	}
+    
+    #navMain {
+        width: 240px;
+        margin: 0 auto;
+    }
+    
+    #navMainAlt {
+        display: none !important;
+    }
+		
+    .menu-inner {
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+    
+    /* no more hover opacity transitions */
+    
+    .nav-opacity-lite, .nav-opacity, [class*="nav-skewed"] {
+        &, li a:not( .disabled ) {
+            opacity: 1;
+        }
+    }
+	
+	/* loader fixed and stacked */
+	
+	#worker {
+		position: fixed;
+		bottom: 10px;
+		
+		.worker-bar-left {
+			position: relative;
+			right: auto;
+			margin-right: 0;
+			margin-bottom: 5px;
+		}
+		
+		.worker-bar-right {
+			position: relative;
+			margin-left: 0;
+			margin-bottom: 5px;
+			left: auto;
+		}
+		
+		#workerStatusText, .worker-bar {
+			width: 100%;
+		}
+		
+	}
+    
+}

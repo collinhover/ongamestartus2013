@@ -429,6 +429,8 @@
 						last: last
 					} );
 				
+				( $menu[0] ).scrollIntoView( true );
+				
 			};
 			
 			close = function () {
