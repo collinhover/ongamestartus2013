@@ -7,15 +7,15 @@
 -------------------------------------------------------------------------------*/
 @font-face {
   font-family: 'LeagueGothic';
-  src: url('http://127.0.0.1:8000/less/webfonts/leaguegothic-regular-webfont.eot');
-  src: url('http://127.0.0.1:8000/less/webfonts/leaguegothic-regular-webfont.eot?#iefix') format('embedded-opentype'), url('http://127.0.0.1:8000/less/webfonts/leaguegothic-regular-webfont.woff') format('woff'), url('http://127.0.0.1:8000/less/webfonts/leaguegothic-regular-webfont.ttf') format('truetype'), url('http://127.0.0.1:8000/less/webfonts/leaguegothic-regular-webfont.svg#leaguegothic-regular-webfont') format('svg');
+  src: url('webfonts/leaguegothic-regular-webfont.eot');
+  src: url('webfonts/leaguegothic-regular-webfont.eot?#iefix') format('embedded-opentype'), url('webfonts/leaguegothic-regular-webfont.woff') format('woff'), url('webfonts/leaguegothic-regular-webfont.ttf') format('truetype'), url('webfonts/leaguegothic-regular-webfont.svg#leaguegothic-regular-webfont') format('svg');
   font-weight: normal;
   font-style: normal;
 }
 @font-face {
   font-family: 'Georgia';
-  src: url('http://127.0.0.1:8000/less/webfonts/georgia.eot');
-  src: url('http://127.0.0.1:8000/less/webfonts/georgia.eot?#iefix') format('embedded-opentype'), url('http://127.0.0.1:8000/less/webfonts/georgia.woff') format('woff'), url('http://127.0.0.1:8000/less/webfonts/georgia.ttf') format('truetype'), url('http://127.0.0.1:8000/less/webfonts/georgia.svg#georgia') format('svg');
+  src: url('webfonts/georgia.eot');
+  src: url('webfonts/georgia.eot?#iefix') format('embedded-opentype'), url('webfonts/georgia.woff') format('woff'), url('webfonts/georgia.ttf') format('truetype'), url('webfonts/georgia.svg#georgia') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -2391,7 +2391,7 @@ table [class*=span],
   *margin-right: .3em;
   line-height: 14px;
   vertical-align: text-top;
-  background-image: url("http://127.0.0.1:8000/less/lib/bootstrap/../img/glyphicons-halflings.png");
+  background-image: url("../img/glyphicons-halflings.png");
   background-position: 14px 14px;
   background-repeat: no-repeat;
   margin-top: 1px;
@@ -2410,7 +2410,7 @@ table [class*=span],
 .dropdown-menu > li > a:hover > [class*=" icon-"],
 .dropdown-menu > .active > a > [class^="icon-"],
 .dropdown-menu > .active > a > [class*=" icon-"] {
-  background-image: url("http://127.0.0.1:8000/less/lib/bootstrap/../img/glyphicons-halflings-white.png");
+  background-image: url("../img/glyphicons-halflings-white.png");
 }
 .icon-glass {
   background-position: 0      0;
@@ -8029,7 +8029,7 @@ small {
 }
 /* game 
 -------------------------*/#game {
-  background: #ffffff url("http://127.0.0.1:8000/less/lib/kaiopua/../img/nowebgl.png") repeat-x 50%;
+  background: #ffffff url("../img/nowebgl.png") repeat-x 50%;
 }
 /* icons 
 -------------------------*/.iconk,
@@ -10075,7 +10075,7 @@ a:hover,
   padding-top: 95px;
   width: 95px;
   margin: 0 20px 0 20px;
-  background-image: url(http://127.0.0.1:8000/less/lib/kaiopua/../img/browsers_chrome.png);
+  background-image: url(../img/browsers_chrome.png);
 }
 .browsers .firefox {
   background-position: 50% 0;
@@ -10083,7 +10083,7 @@ a:hover,
   padding-top: 95px;
   width: 95px;
   margin: 0 20px 0 20px;
-  background-image: url(http://127.0.0.1:8000/less/lib/kaiopua/../img/browsers_firefox.png);
+  background-image: url(../img/browsers_firefox.png);
 }
 .browsers .safari {
   background-position: 50% 0;
@@ -10091,7 +10091,7 @@ a:hover,
   padding-top: 95px;
   width: 95px;
   margin: 0 20px 0 20px;
-  background-image: url(http://127.0.0.1:8000/less/lib/kaiopua/../img/browsers_safari.png);
+  background-image: url(../img/browsers_safari.png);
 }
 /* player state
 -------------------------*/
@@ -10618,7 +10618,7 @@ a[class*="game"]:not( .disabled ):hover h6,
   border: 5px solid rgba(0, 0, 0, 0.1);
 }
 .sponsor {
-  background-image: url("http://127.0.0.1:8000/less/app/../img/sponsor_unknown.png");
+  background-image: url("../img/sponsor_unknown.png");
   background-size: contain;
   background-repeat: no-repeat;
   background-position: 50% 50%;
